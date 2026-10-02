@@ -16,5 +16,11 @@
         "STATUS": "PART IN",
         "DETAIL": "Em ghi chi tiết part nhập kho",
         "LOG": ""
+    },
+    {
+        "DATE": "10/02/26",
+        "STATUS": "PART OUT",
+        "DETAIL": "Em ghi chi tiết part xuất kho",
+        "LOG": ""
     }
 ]
