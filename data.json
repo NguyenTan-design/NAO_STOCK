@@ -20,5 +20,16 @@
         "QTY": "3",
         "VỊ TRÍ": "NAO-SHE000",
         "PIC": "ĐỨC"
+    },
+    {
+        "DATE": "10/02/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "WARRANTY",
+        "PART NUMBER": "DFDF",
+        "DETAIL": "DFDFDF",
+        "QTY": "1",
+        "VỊ TRÍ": "SD",
+        "PIC": "LY"
     }
 ]
