@@ -4,5 +4,11 @@
         "email": "tan@fuji-smt.com.sg",
         "role": "user",
         "createdAt": "2026-10-02T09:11:36.207Z"
+    },
+    "quoctan91@gmail.com": {
+        "password": "uHWShy7Anx",
+        "email": "quoctan91@gmail.com",
+        "role": "user",
+        "createdAt": "2026-10-02T09:18:29.053Z"
     }
 }
