@@ -1,17 +1,12 @@
 const OWNER = "NguyenTan-design";
-
 const REPO = "NAO_STOCK";
-
 const BRANCH = "main";
-
 const FILE = "data.json";
+const LOG_MAP_FILE = "log_map.json";
+const LOGS_DIR = "logs";
 
 const GITHUB_API =
     `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`;
-
-const LOG_MAP_FILE = "log_map.json";
-
-const LOGS_DIR = "logs";
 
 const GITHUB_GIT_API =
     `https://api.github.com/repos/${OWNER}/${REPO}/git`;
@@ -21,7 +16,7 @@ const GITHUB_CONTENTS_API =
 
 
 // ============================================================
-// FIELD NAMES (schema mới)
+// FIELD NAMES
 // ============================================================
 
 const FIELDS = [
@@ -35,14 +30,16 @@ const FIELDS = [
     "PIC"
 ];
 
-const ALL_FIELDS = FIELDS.concat(["LOG"]);
-
 
 // ============================================================
 // CUSTOM ERROR
 // ============================================================
 
 class HttpError extends Error {
+    /**
+     * @param {string} message
+     * @param {number} status
+     */
     constructor(message, status) {
         super(message);
         this.name = "HttpError";
@@ -91,6 +88,8 @@ export default {
         const path = url.pathname;
 
         const allowedPaths = [
+            "/login",
+            "/register",
             "/add-issue",
             "/update-issue",
             "/delete-issue",
@@ -122,6 +121,14 @@ export default {
             );
         }
 
+        if (!env.USERS_KV) {
+            return jsonResponse(
+                { success: false, message: "USERS_KV binding is not configured. Vui lòng thêm KV binding vào Worker." },
+                500,
+                origin
+            );
+        }
+
         let body;
 
         try {
@@ -133,6 +140,50 @@ export default {
                 400,
                 origin
             );
+        }
+
+        // ----------------------------------------------------
+        // Public endpoints
+        // ----------------------------------------------------
+
+        if (path === "/login") {
+            return handleLogin(body, env, origin);
+        }
+
+        if (path === "/register") {
+            return handleRegister(body, env, origin);
+        }
+
+        // ----------------------------------------------------
+        // Protected endpoints — cần auth
+        // ----------------------------------------------------
+
+        const auth = await verifyAuth(body, env);
+
+        if (!auth.valid) {
+            return jsonResponse(
+                { success: false, message: auth.message || "Unauthorized." },
+                401,
+                origin
+            );
+        }
+
+        // Chỉ MASTER được add/update/delete
+        if (
+            path === "/add-issue" ||
+            path === "/update-issue" ||
+            path === "/delete-issue"
+        ) {
+            if (auth.role !== "master") {
+                return jsonResponse(
+                    {
+                        success: false,
+                        message: "Chỉ MASTER mới được phép thực hiện thao tác này."
+                    },
+                    403,
+                    origin
+                );
+            }
         }
 
         if (path === "/update-issue") {
@@ -154,6 +205,314 @@ export default {
         return handleAddIssue(body, env, origin);
     }
 };
+
+
+// ============================================================
+// USERS STORAGE — CLOUDFLARE KV
+//
+// Key format: "user:<username>"
+// Value: JSON string { password, email, role, createdAt }
+// ============================================================
+
+/**
+ * Đảm bảo MASTER tồn tại trong KV.
+ * Nếu chưa có → tạo MASTER mặc định.
+ */
+async function ensureMasterUser(env) {
+    const raw = await env.USERS_KV.get("user:MASTER");
+
+    if (raw) return;
+
+    const master = {
+        password: "MASTER",
+        email: "master@example.com",
+        role: "master",
+        createdAt: new Date().toISOString()
+    };
+
+    await env.USERS_KV.put("user:MASTER", JSON.stringify(master));
+}
+
+
+/**
+ * Đọc 1 user từ KV.
+ * @returns {Promise<{password: string, email: string, role: string, createdAt: string} | null>}
+ */
+async function readUser(env, username) {
+    const raw = await env.USERS_KV.get("user:" + username);
+
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+
+/**
+ * Ghi / cập nhật 1 user vào KV.
+ */
+async function saveUser(env, username, userData) {
+    await env.USERS_KV.put(
+        "user:" + username,
+        JSON.stringify(userData)
+    );
+}
+
+
+// ============================================================
+// HANDLER: LOGIN
+// ============================================================
+
+async function handleLogin(body, env, origin) {
+    const username = String(body.username || "").trim();
+    const password = String(body.password || "");
+
+    if (!username || !password) {
+        return jsonResponse(
+            { success: false, message: "Username và password là bắt buộc." },
+            400,
+            origin
+        );
+    }
+
+    try {
+        // Đảm bảo MASTER luôn tồn tại
+        await ensureMasterUser(env);
+
+        const user = await readUser(env, username);
+
+        if (!user) {
+            return jsonResponse(
+                { success: false, message: "Tài khoản không tồn tại." },
+                401,
+                origin
+            );
+        }
+
+        const ok = timingSafeEqual(password, String(user.password || ""));
+
+        if (!ok) {
+            return jsonResponse(
+                { success: false, message: "Sai password." },
+                401,
+                origin
+            );
+        }
+
+        const token = utf8ToBase64(
+            username + "|" + Date.now() + "|" + Math.random().toString(36).slice(2)
+        );
+
+        return jsonResponse(
+            {
+                success: true,
+                username: username,
+                role: user.role || "user",
+                token: token
+            },
+            200,
+            origin
+        );
+    }
+    catch (error) {
+        console.error(error);
+
+        return jsonResponse(
+            { success: false, message: error.message || "Login failed." },
+            500,
+            origin
+        );
+    }
+}
+
+
+// ============================================================
+// HANDLER: REGISTER
+// ============================================================
+
+async function handleRegister(body, env, origin) {
+    const email = String(body.email || "").trim().toLowerCase();
+
+    if (!email) {
+        return jsonResponse(
+            { success: false, message: "Email là bắt buộc." },
+            400,
+            origin
+        );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        return jsonResponse(
+            { success: false, message: "Email không hợp lệ." },
+            400,
+            origin
+        );
+    }
+
+    try {
+        // Đảm bảo MASTER tồn tại
+        await ensureMasterUser(env);
+
+        const existing = await readUser(env, email);
+
+        if (existing) {
+            return jsonResponse(
+                { success: false, message: "Email này đã được đăng ký." },
+                409,
+                origin
+            );
+        }
+
+        const password = generatePassword(10);
+
+        await saveUser(env, email, {
+            password: password,
+            email: email,
+            role: "user",
+            createdAt: new Date().toISOString()
+        });
+
+        let emailSent = false;
+        let emailError = null;
+
+        if (env.RESEND_API_KEY) {
+            try {
+                await sendWelcomeEmail(env, email, email, password);
+                emailSent = true;
+            }
+            catch (err) {
+                console.error("Email send error:", err);
+                emailError = err.message;
+            }
+        }
+
+        return jsonResponse(
+            {
+                success: true,
+                message: emailSent
+                    ? "Đăng ký thành công. Vui lòng kiểm tra email để nhận tài khoản và mật khẩu."
+                    : "Đăng ký thành công. (Vui lòng liên hệ Mr Tân để lấy mật khẩu.)",
+                emailSent: emailSent,
+                emailError: emailError
+            },
+            200,
+            origin
+        );
+    }
+    catch (error) {
+        console.error(error);
+
+        const status = error instanceof HttpError ? error.status : 500;
+
+        return jsonResponse(
+            { success: false, message: error.message || "Register failed." },
+            status,
+            origin
+        );
+    }
+}
+
+
+// ============================================================
+// VERIFY AUTH
+// ============================================================
+
+async function verifyAuth(body, env) {
+    const username = String((body && body.username) || "").trim();
+    const token = String((body && body.token) || "");
+
+    if (!username || !token) {
+        return { valid: false, message: "Thiếu username hoặc token." };
+    }
+
+    try {
+        const user = await readUser(env, username);
+
+        if (!user) {
+            return { valid: false, message: "Tài khoản không tồn tại." };
+        }
+
+        return {
+            valid: true,
+            role: String(user.role || "user").toLowerCase()
+        };
+    }
+    catch (error) {
+        console.error("verifyAuth error:", error);
+
+        return { valid: false, message: "Auth verification failed." };
+    }
+}
+
+
+// ============================================================
+// SEND EMAIL VIA RESEND
+// ============================================================
+
+async function sendWelcomeEmail(env, toEmail, username, password) {
+    const apiKey = env.RESEND_API_KEY;
+
+    const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            from: env.RESEND_FROM || "NAO Stock <onboarding@resend.dev>",
+            to: [toEmail],
+            subject: "Tài khoản NAO Stock của bạn",
+            html: `
+                <h2>Chào mừng bạn đến với NAO Stock Management!</h2>
+                <p>Tài khoản của bạn đã được tạo thành công.</p>
+                <p><strong>Tên đăng nhập:</strong> ${escapeHtml(username)}</p>
+                <p><strong>Mật khẩu:</strong> <code>${escapeHtml(password)}</code></p>
+                <p>Vui lòng đăng nhập và đổi mật khẩu nếu cần.</p>
+                <hr>
+                <p style="color:#888;font-size:12px;">Đây là email tự động, vui lòng không trả lời.</p>
+            `
+        })
+    });
+
+    if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Resend API error: ${res.status} — ${errText}`);
+    }
+
+    return await res.json();
+}
+
+
+// ============================================================
+// UTILS: PASSWORD + ESCAPE
+// ============================================================
+
+function generatePassword(length) {
+    const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+
+    let pwd = "";
+
+    for (let i = 0; i < length; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return pwd;
+}
+
+function escapeHtml(s) {
+    return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
 
 
 // ============================================================
@@ -189,7 +548,6 @@ async function handleAddIssue(body, env, origin) {
         }
 
         const dataFile = await dataRes.json();
-
         const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         if (!Array.isArray(currentData)) {
@@ -203,7 +561,6 @@ async function handleAddIssue(body, env, origin) {
         const logPath = `${LOGS_DIR}/${logFileName}`;
 
         currentData.push(record);
-
         logMap[recordKey(record)] = logFileName;
 
         await commitMultipleFiles(
@@ -229,7 +586,6 @@ async function handleAddIssue(body, env, origin) {
     }
     catch (error) {
         console.error(error);
-
         const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
@@ -290,7 +646,6 @@ async function handleUpdateIssue(body, env, origin) {
         }
 
         const dataFile = await dataRes.json();
-
         const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         const index = findRecordIndex(currentData, original);
@@ -303,7 +658,6 @@ async function handleUpdateIssue(body, env, origin) {
         }
 
         const existing = currentData[index];
-
         const merged = Object.assign({}, existing);
 
         FIELDS.forEach(function(field) {
@@ -318,6 +672,12 @@ async function handleUpdateIssue(body, env, origin) {
         const logMap = await readLogMap(token);
         const logFileName = logMap[oldKey] || null;
 
+        /**
+         * @type {Array<
+         *     { path: string, content: string, delete?: false } |
+         *     { path: string, delete: true, content?: undefined }
+         * >}
+         */
         const files = [
             { path: FILE, content: JSON.stringify(currentData, null, 4) }
         ];
@@ -347,7 +707,6 @@ async function handleUpdateIssue(body, env, origin) {
     }
     catch (error) {
         console.error(error);
-
         const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
@@ -424,7 +783,6 @@ async function handleDeleteIssue(body, env, origin) {
         }
 
         const dataFile = await dataRes.json();
-
         const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         const index = findRecordIndex(currentData, record);
@@ -442,6 +800,12 @@ async function handleDeleteIssue(body, env, origin) {
         const key = recordKey(record);
         const logFileName = logMap[key] || null;
 
+        /**
+         * @type {Array<
+         *     { path: string, content: string, delete?: false } |
+         *     { path: string, delete: true, content?: undefined }
+         * >}
+         */
         const files = [
             { path: FILE, content: JSON.stringify(currentData, null, 4) }
         ];
@@ -474,7 +838,6 @@ async function handleDeleteIssue(body, env, origin) {
     }
     catch (error) {
         console.error(error);
-
         const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
@@ -670,7 +1033,6 @@ function validateRecord(body, original) {
         return { valid: false, message: "STATUS must be PART IN or PART OUT." };
     }
 
-    /* Các trường text bắt buộc */
     const textFields = [
         { key: "KHO", label: "KHO" },
         { key: "PART NUMBER", label: "PART NUMBER" },
@@ -680,11 +1042,8 @@ function validateRecord(body, original) {
         { key: "PIC", label: "PIC" }
     ];
 
-    const record = {
-        DATE: date,
-        STATUS: status,
-        LOG: ""
-    };
+    /** @type {Record<string, string>} */
+    const record = { DATE: date, STATUS: status, LOG: "" };
 
     for (const field of textFields) {
         const value = String(body[field.key] || "").trim();
@@ -706,7 +1065,6 @@ function validateRecord(body, original) {
 
 function isValidDate(value) {
     const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value);
-
     if (!match) return false;
 
     const month = Number(match[1]);
@@ -742,9 +1100,17 @@ function normalizeStatus(value) {
 
 
 // ============================================================
-// GIT DATA API: COMMIT MULTIPLE FILES IN ONE COMMIT
+// COMMIT MULTIPLE FILES
 // ============================================================
 
+/**
+ * @param {string} token
+ * @param {string} message
+ * @param {Array<
+ *     { path: string, content: string, delete?: false } |
+ *     { path: string, delete: true, content?: undefined }
+ * >} files
+ */
 async function commitMultipleFiles(token, message, files) {
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
@@ -778,6 +1144,7 @@ async function commitMultipleFiles(token, message, files) {
             const baseCommit = await commitRes.json();
             const baseTreeSha = baseCommit.tree.sha;
 
+            /** @type {Array<{ path: string, mode: string, type: string, sha: string | null }>} */
             const treeEntries = [];
 
             for (const file of files) {
@@ -860,7 +1227,6 @@ async function commitMultipleFiles(token, message, files) {
 
             if (!updateRefRes.ok) {
                 if (attempt === 0) continue;
-
                 throw new Error(
                     await githubErrorMessage(updateRefRes, "Cannot update branch ref.")
                 );
@@ -879,7 +1245,7 @@ async function commitMultipleFiles(token, message, files) {
 
 
 // ============================================================
-// READ / WRITE log_map.json AND LOG FILES
+// READ / WRITE LOG MAP
 // ============================================================
 
 async function readLogMap(token) {
@@ -892,9 +1258,7 @@ async function readLogMap(token) {
     if (res.status === 404) return {};
 
     if (!res.ok) {
-        throw new Error(
-            await githubErrorMessage(res, "Cannot read log_map.json.")
-        );
+        throw new Error(await githubErrorMessage(res, "Cannot read log_map.json."));
     }
 
     const data = await res.json();
@@ -914,12 +1278,6 @@ async function readLogMap(token) {
 }
 
 
-/**
- * recordKey - dùng để map record với file log.
- * Dùng TẤT CẢ các trường không phải LOG để đảm bảo
- * 2 record trùng DATE/STATUS/DETAIL nhưng khác các trường khác
- * vẫn có key khác nhau.
- */
 function recordKey(record) {
     return [
         normalizeDateForCompare(record.DATE),
@@ -944,9 +1302,7 @@ async function readLogFile(token, path) {
     if (res.status === 404) return null;
 
     if (!res.ok) {
-        throw new Error(
-            await githubErrorMessage(res, "Cannot read log file.")
-        );
+        throw new Error(await githubErrorMessage(res, "Cannot read log file."));
     }
 
     const data = await res.json();
@@ -965,9 +1321,7 @@ async function getNextLogNumber(token) {
     if (res.status === 404) return 1;
 
     if (!res.ok) {
-        throw new Error(
-            await githubErrorMessage(res, "Cannot list logs.")
-        );
+        throw new Error(await githubErrorMessage(res, "Cannot list logs."));
     }
 
     const items = await res.json();
@@ -990,9 +1344,6 @@ async function getNextLogNumber(token) {
 
 // ============================================================
 // FIND RECORD
-//
-// So sánh TẤT CẢ các trường không phải LOG. Trường LOG
-// không tham gia vì trong data.json, LOG luôn là "".
 // ============================================================
 
 function normalizeDateForCompare(value) {
@@ -1061,6 +1412,7 @@ function findRecordIndex(data, original) {
 // ============================================================
 
 async function githubRequest(method, url, token, body = null) {
+    /** @type {RequestInit} */
     const options = {
         method,
         headers: {
@@ -1093,7 +1445,7 @@ async function githubErrorMessage(response, defaultMessage) {
         }
     }
     catch (error) {
-        /* Ignore JSON parse error */
+        // Ignore JSON parse error
     }
 
     return `${defaultMessage} HTTP ${response.status}.`;

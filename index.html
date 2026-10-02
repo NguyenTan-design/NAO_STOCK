@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="Stock.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSP: chỉ cho phép script từ 2 CDN cần dùng và kết nối tới Worker. Nếu đổi địa chỉ Worker/CDN thì cập nhật dòng này. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://nao-stock.quoctan91.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>NAO STOCK Management</title>
 
-<!-- PLOTLY -->
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
-<!-- SHEETJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Plotly và SheetJS (nặng) được tải khi cần, xem ensureLib() -->
 
 <!-- DYNAMIC OPTIONS -->
-<script src="stock.js"></script>
-<script src="PIC.js"></script>
+<script src="stock.js" defer></script>
+<script src="PIC.js" defer></script>
 
 <style>
 /* =========================
@@ -1351,13 +1349,13 @@ td.date-cell { vertical-align: top; }
             type="text"
             id="searchPartNumber"
             placeholder="Search Part Number..."
-            oninput="applyFilter()"
+            oninput="applyFilterDebounced()"
         >
         <input
             type="text"
             id="searchDetail"
             placeholder="Search Detail..."
-            oninput="applyFilter()"
+            oninput="applyFilterDebounced()"
         >
     </div>
 
@@ -1502,11 +1500,93 @@ td.date-cell { vertical-align: top; }
 /* =========================================================
    API URLS
    ========================================================= */
-const BACKEND_API_URL = "https://nao-stock.quoctan91.workers.dev/add-issue";
-const GET_LOG_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/get-log");
-const SAVE_LOG_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/save-log");
-const LOGIN_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/login");
-const REGISTER_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/register");
+const API_BASE = "https://nao-stock.quoctan91.workers.dev";
+
+const NETWORK_ERROR_MESSAGE =
+    "Không kết nối được server. Kiểm tra: (1) mạng, (2) Worker đã deploy chưa, (3) ALLOWED_ORIGIN có khớp không.";
+
+/**
+ * Gọi API của Worker. Tự gắn token (Authorization) và xử lý hết phiên (401).
+ * @returns {Promise<{response: Response, result: any, ok: boolean}>}
+ */
+async function apiPost(path, payload, options) {
+    const useAuth = !(options && options.auth === false);
+    const headers = { "Content-Type": "application/json" };
+
+    if (useAuth && currentUser && currentUser.token) {
+        headers["Authorization"] = "Bearer " + currentUser.token;
+    }
+
+    let response;
+
+    try {
+        response = await fetch(API_BASE + path, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(payload || {})
+        });
+    }
+    catch (error) {
+        throw new Error(NETWORK_ERROR_MESSAGE);
+    }
+
+    let result;
+
+    try {
+        result = await response.json();
+    }
+    catch (error) {
+        throw new Error("Invalid response from Cloudflare Worker.");
+    }
+
+    if (response.status === 401 && useAuth) handleSessionExpired();
+
+    return {
+        response: response,
+        result: result || {},
+        ok: response.ok && !!result && result.success === true
+    };
+}
+
+let sessionExpiredHandled = false;
+
+function handleSessionExpired() {
+    if (sessionExpiredHandled) return;
+
+    sessionExpiredHandled = true;
+    clearSession();
+    showToast("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.", "error", 4000);
+
+    setTimeout(function() { location.reload(); }, 1500);
+}
+
+/* ---------- Tải thư viện nặng khi cần ---------- */
+const PLOTLY_URL = "https://cdn.plot.ly/plotly-2.35.2.min.js";
+const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+const libPromises = {};
+
+function ensureLib(globalName, url) {
+    if (window[globalName]) return Promise.resolve(window[globalName]);
+
+    if (!libPromises[globalName]) {
+        libPromises[globalName] = new Promise(function(resolve, reject) {
+            const script = document.createElement("script");
+
+            script.src = url;
+            script.async = true;
+            script.onload = function() { resolve(window[globalName]); };
+            script.onerror = function() {
+                delete libPromises[globalName];
+                script.remove();
+                reject(new Error("Không tải được thư viện " + globalName + ". Kiểm tra kết nối mạng."));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    return libPromises[globalName];
+}
 
 /* =========================================================
    AUTH STATE
@@ -1581,41 +1661,31 @@ async function handleLoginSubmit() {
         return;
     }
 
+    if (btn.disabled) return;
+
     btn.disabled = true;
     btn.textContent = "Đang kiểm tra...";
 
-    console.log("LOGIN → URL:", LOGIN_API_URL);
-    console.log("LOGIN → Payload:", { username, password });
-
     try {
-        const res = await fetch(LOGIN_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username, password: password })
-        });
+        const { result, ok } = await apiPost(
+            "/login",
+            { username: username, password: password },
+            { auth: false }
+        );
 
-        console.log("LOGIN → HTTP status:", res.status);
-
-        const text = await res.text();
-        console.log("LOGIN → Raw response:", text);
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        }
-        catch (e) {
-            throw new Error("Server trả về không phải JSON: " + text.slice(0, 200));
+        if (!ok) {
+            throw new Error(result.message || "Đăng nhập thất bại.");
         }
 
-        if (!data.success) {
-            throw new Error(data.message || "Đăng nhập thất bại.");
-        }
+        sessionExpiredHandled = false;
 
         saveSession({
-            username: data.username,
-            role: data.role,
-            token: data.token
+            username: result.username,
+            role: result.role,
+            token: result.token
         });
+
+        document.getElementById("loginPassword").value = "";
 
         applyRoleUI();
 
@@ -1626,13 +1696,7 @@ async function handleLoginSubmit() {
     catch (err) {
         console.error("LOGIN ERROR:", err);
 
-        let msg = err.message || "Lỗi không xác định.";
-
-        if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
-            msg = "Không kết nối được server. Kiểm tra: (1) Worker đã deploy chưa, (2) ALLOWED_ORIGIN có khớp không, (3) Có đang mở qua local server không.";
-        }
-
-        errorBox.textContent = msg;
+        errorBox.textContent = err.message || "Lỗi không xác định.";
         errorBox.style.display = "block";
     }
     finally {
@@ -1673,46 +1737,20 @@ async function handleRegisterSubmit() {
     btn.disabled = true;
     btn.textContent = "Đang đăng ký...";
 
-    console.log("REGISTER → URL:", REGISTER_API_URL);
-    console.log("REGISTER → Payload:", { email });
-
     try {
-        const res = await fetch(REGISTER_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: email })
-        });
+        const { result, ok } = await apiPost("/register", { email: email }, { auth: false });
 
-        console.log("REGISTER → HTTP status:", res.status);
-
-        const text = await res.text();
-        console.log("REGISTER → Raw response:", text);
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        }
-        catch (e) {
-            throw new Error("Server trả về không phải JSON: " + text.slice(0, 200));
+        if (!ok) {
+            throw new Error(result.message || "Đăng ký thất bại.");
         }
 
-        if (!data.success) {
-            throw new Error(data.message || "Đăng ký thất bại.");
-        }
-
-        successBox.textContent = data.message;
+        successBox.textContent = result.message;
         successBox.style.display = "block";
     }
     catch (err) {
         console.error("REGISTER ERROR:", err);
 
-        let msg = err.message || "Lỗi không xác định.";
-
-        if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
-            msg = "Không kết nối được server. Kiểm tra: (1) Worker đã deploy chưa, (2) ALLOWED_ORIGIN có khớp không, (3) Có đang mở qua local server không.";
-        }
-
-        errorBox.textContent = msg;
+        errorBox.textContent = err.message || "Lỗi không xác định.";
         errorBox.style.display = "block";
     }
     finally {
@@ -1774,11 +1812,13 @@ function toggleChart() {
         container.classList.add("show-chart");
         button.textContent = "Hide Graph";
 
-        setTimeout(function() {
-            if (statusChartLoaded && typeof Plotly !== "undefined") {
-                Plotly.Plots.resize("statusChart");
-            }
-        }, 300);
+        renderStatusChart().then(function() {
+            setTimeout(function() {
+                if (statusChartLoaded && typeof Plotly !== "undefined") {
+                    Plotly.Plots.resize("statusChart");
+                }
+            }, 300);
+        });
     }
     else {
         container.classList.remove("show-chart");
@@ -1833,27 +1873,48 @@ function computeChartData() {
     return { data: data, layout: layout, config: config };
 }
 
+/**
+ * Vẽ / cập nhật biểu đồ. Chỉ tải Plotly và vẽ khi biểu đồ đang được mở.
+ * Các lần gọi được xếp hàng để không vẽ chồng nhau.
+ */
+let chartQueue = Promise.resolve();
+
+function renderStatusChart() {
+    chartQueue = chartQueue.then(async function() {
+        if (!chartVisible) return;
+
+        const chart = computeChartData();
+        if (!chart) return;
+
+        try {
+            await ensureLib("Plotly", PLOTLY_URL);
+        }
+        catch (error) {
+            console.error(error);
+            showToast(error.message, "error", 4000);
+            return;
+        }
+
+        if (statusChartLoaded) {
+            await Plotly.react("statusChart", chart.data, chart.layout, chart.config);
+        }
+        else {
+            await Plotly.newPlot("statusChart", chart.data, chart.layout, chart.config);
+            statusChartLoaded = true;
+        }
+    }).catch(function(error) {
+        console.error("CHART ERROR:", error);
+    });
+
+    return chartQueue;
+}
+
 function createStatusChart() {
-    if (statusChartLoaded) return;
-
-    const chart = computeChartData();
-    if (!chart) return;
-
-    Plotly.newPlot("statusChart", chart.data, chart.layout, chart.config);
-    statusChartLoaded = true;
+    return renderStatusChart();
 }
 
 function updateStatusChart() {
-    const chart = computeChartData();
-    if (!chart) return;
-
-    if (!statusChartLoaded) {
-        Plotly.newPlot("statusChart", chart.data, chart.layout, chart.config);
-        statusChartLoaded = true;
-        return;
-    }
-
-    Plotly.react("statusChart", chart.data, chart.layout, chart.config);
+    return renderStatusChart();
 }
 
 /* =========================================================
@@ -1877,8 +1938,13 @@ async function loadData() {
 
         sortData();
         filteredData = [...allData];
-        createStatusChart();
         renderTable();
+        createStatusChart();
+
+        // Tải sẵn thư viện Excel khi rảnh để nút Export phản hồi ngay
+        setTimeout(function() {
+            ensureLib("XLSX", XLSX_URL).catch(function() {});
+        }, 2000);
     }
     catch (error) {
         console.error("LOAD DATA ERROR:", error);
@@ -1986,6 +2052,13 @@ function applyFilter() {
     renderTable();
 }
 
+let filterTimer = null;
+
+function applyFilterDebounced() {
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(applyFilter, 150);
+}
+
 /* =========================================================
    LOG BUTTON
    ========================================================= */
@@ -2026,20 +2099,7 @@ function createStatus(value) {
    FORMAT DATE
    ========================================================= */
 function formatDate(value) {
-    if (!value) return "";
-
-    const text = String(value).trim();
-
-    if (/^\d{2}\/\d{2}\/\d{2}$/.test(text)) return escapeHTML(text);
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return escapeHTML(text);
-
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = String(date.getFullYear()).slice(-2);
-
-    return `${month}/${day}/${year}`;
+    return escapeHTML(formatDateForExport(value));
 }
 
 /* =========================================================
@@ -2159,6 +2219,7 @@ function nextPage() {
 }
 
 function clearFilter() {
+    clearTimeout(filterTimer);
     document.getElementById("searchPartNumber").value = "";
     document.getElementById("searchDetail").value = "";
     selectedStatus = null;
@@ -2201,7 +2262,10 @@ function escapeAttribute(value) {
    EXPORT
    ========================================================= */
 async function exportToExcel() {
-    if (typeof XLSX === "undefined") {
+    try {
+        await ensureLib("XLSX", XLSX_URL);
+    }
+    catch (error) {
         alert("Excel export library failed to load. Please check your internet connection and try again.");
         return;
     }
@@ -2716,9 +2780,7 @@ async function saveNewRecord() {
         DETAIL: newRecord["DETAIL"],
         QTY: newRecord["QTY"],
         "VỊ TRÍ": newRecord["VỊ TRÍ"],
-        PIC: newRecord.PIC,
-        username: currentUser ? currentUser.username : "",
-        token: currentUser ? currentUser.token : ""
+        PIC: newRecord.PIC
     };
 
     const pendingId = "pending_" + Date.now() + "_" + Math.random().toString(36).slice(2);
@@ -2727,9 +2789,6 @@ async function saveNewRecord() {
         LOG: "",
         _pendingId: pendingId
     });
-
-    delete optimisticRecord.username;
-    delete optimisticRecord.token;
 
     allData.push(optimisticRecord);
     sortData();
@@ -2753,29 +2812,13 @@ async function saveNewRecord() {
     showToast("Đang lưu...", "info");
 
     try {
-        const response = await fetch(BACKEND_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(recordToSend)
-        });
+        const { result, ok } = await apiPost("/add-issue", recordToSend);
 
-        let result;
-
-        try {
-            result = await response.json();
-        }
-        catch (error) {
-            throw new Error("Invalid response from Cloudflare Worker.");
-        }
-
-        if (!response.ok || !result.success) {
+        if (!ok) {
             throw new Error(result.message || "Failed to save record.");
         }
 
         const savedRecord = result.record || Object.assign({}, recordToSend, { LOG: "" });
-
-        delete savedRecord.username;
-        delete savedRecord.token;
 
         const index = allData.findIndex(function(item) {
             return item._pendingId === pendingId;
@@ -2815,9 +2858,6 @@ async function saveNewRecord() {
 /* =========================================================
    EDIT RECORD
    ========================================================= */
-const EDIT_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/update-issue");
-const DELETE_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/delete-issue");
-
 const EDIT_HOLD_MS = 5000;
 
 const EDIT_FIELDS = [
@@ -2946,27 +2986,12 @@ async function saveEditedRecord() {
     showToast("Đang lưu...", "info");
 
     try {
-        const response = await fetch(EDIT_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                original: original,
-                updated: updated,
-                username: currentUser ? currentUser.username : "",
-                token: currentUser ? currentUser.token : ""
-            })
+        const { result, ok } = await apiPost("/update-issue", {
+            original: original,
+            updated: updated
         });
 
-        let result;
-
-        try {
-            result = await response.json();
-        }
-        catch (error) {
-            throw new Error("Invalid response from Cloudflare Worker.");
-        }
-
-        if (!response.ok || !result.success) {
+        if (!ok) {
             throw new Error(result.message || "Failed to update record.");
         }
 
@@ -3185,23 +3210,10 @@ async function performDeleteRecord(password) {
     let result;
 
     try {
-        response = await fetch(DELETE_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                record: payload,
-                password: password,
-                username: currentUser ? currentUser.username : "",
-                token: currentUser ? currentUser.token : ""
-            })
-        });
-
-        try {
-            result = await response.json();
-        }
-        catch (error) {
-            throw new Error("Invalid response from Cloudflare Worker.");
-        }
+        ({ response, result } = await apiPost("/delete-issue", {
+            record: payload,
+            password: password
+        }));
     }
     catch (error) {
         console.error("Backend delete error:", error);
@@ -3249,6 +3261,56 @@ async function performDeleteRecord(password) {
 /* =========================================================
    LOG MODAL
    ========================================================= */
+
+/**
+ * Làm sạch HTML của log trước khi hiển thị / đưa vào trình soạn thảo / lưu.
+ * Loại bỏ script, iframe, form, thuộc tính on*, URL javascript:... để log
+ * không thể chạy mã trong trang (chống XSS lưu trữ).
+ */
+function sanitizeLogHtml(html) {
+    if (!html) return "";
+
+    const doc = new DOMParser().parseFromString("<!DOCTYPE html><body>" + html, "text/html");
+
+    doc.body.querySelectorAll(
+        "script,style,iframe,frame,frameset,object,embed,link,meta,base,form,input,button," +
+        "textarea,select,svg,math,audio,video,source,template,noscript"
+    ).forEach(function(node) { node.remove(); });
+
+    const SAFE_LINK = /^(https?:|mailto:|tel:|#)/i;
+    const SAFE_IMAGE = /^(https?:|data:image\/(png|jpe?g|gif|webp|bmp);)/i;
+
+    doc.body.querySelectorAll("*").forEach(function(el) {
+        Array.from(el.attributes).forEach(function(attr) {
+            const name = attr.name.toLowerCase();
+            const value = attr.value.trim();
+
+            if (name.indexOf("on") === 0 || name === "srcdoc" || name === "formaction") {
+                el.removeAttribute(attr.name);
+                return;
+            }
+
+            if (name === "href" || name === "src" || name === "xlink:href" || name === "action" || name === "poster") {
+                const safe = (name === "src" && el.tagName === "IMG") ? SAFE_IMAGE : SAFE_LINK;
+
+                if (!safe.test(value)) el.removeAttribute(attr.name);
+                return;
+            }
+
+            if (name === "style" && /(expression|javascript:|url\s*\()/i.test(value)) {
+                el.removeAttribute(attr.name);
+            }
+        });
+
+        if (el.tagName === "A") {
+            el.setAttribute("target", "_blank");
+            el.setAttribute("rel", "noopener noreferrer");
+        }
+    });
+
+    return doc.body.innerHTML;
+}
+
 let logCurrentRecord = null;
 let logCurrentFileName = null;
 let logCurrentContent = "";
@@ -3320,19 +3382,14 @@ function openLogModal(record) {
 
 async function fetchLogContent(record) {
     try {
-        const res = await fetch(GET_LOG_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                record: buildRecordPayloadForBackend(record),
-                username: currentUser ? currentUser.username : "",
-                token: currentUser ? currentUser.token : ""
-            })
+        const { result: data, ok } = await apiPost("/get-log", {
+            record: buildRecordPayloadForBackend(record)
         });
 
-        const data = await res.json();
+        // Người dùng đã đóng / mở record khác trong lúc chờ → bỏ kết quả cũ
+        if (logCurrentRecord !== record) return;
 
-        if (!data.success) {
+        if (!ok) {
             throw new Error(data.message || "Cannot load log.");
         }
 
@@ -3345,6 +3402,8 @@ async function fetchLogContent(record) {
     }
     catch (err) {
         console.error(err);
+
+        if (logCurrentRecord !== record) return;
 
         renderLogInViewer(
             "<p style='color:#dc3545;'>Không tải được log: " +
@@ -3373,7 +3432,7 @@ function renderLogInViewer(htmlContent) {
     else {
         bodyHtml =
             htmlContent && htmlContent.length
-                ? htmlContent
+                ? sanitizeLogHtml(htmlContent)
                 : "<p style='color:#999;font-style:italic;'>File log rỗng — ấn ✏️ Edit để viết</p>";
     }
 
@@ -3473,7 +3532,7 @@ function toggleLogMode() {
                 : "";
         }
         else {
-            editor.innerHTML = logCurrentContent || "";
+            editor.innerHTML = sanitizeLogHtml(logCurrentContent || "");
         }
 
         editor.style.display = "block";
@@ -3511,26 +3570,18 @@ async function saveLogContent() {
     let content;
 
     if (isLegacyText) content = editor.innerText || "";
-    else content = editor.innerHTML || "";
+    else content = sanitizeLogHtml(editor.innerHTML || "");
 
     saveBtn.disabled = true;
     saveBtn.textContent = "Đang lưu...";
 
     try {
-        const res = await fetch(SAVE_LOG_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                record: buildRecordPayloadForBackend(logCurrentRecord),
-                content: content,
-                username: currentUser ? currentUser.username : "",
-                token: currentUser ? currentUser.token : ""
-            })
+        const { result: data, ok } = await apiPost("/save-log", {
+            record: buildRecordPayloadForBackend(logCurrentRecord),
+            content: content
         });
 
-        const data = await res.json();
-
-        if (!data.success) {
+        if (!ok) {
             throw new Error(data.message || "Save failed.");
         }
 
@@ -3742,6 +3793,23 @@ if (restoreSession()) {
 else {
     document.getElementById("loginOverlay").style.display = "flex";
 }
+
+function bindEnterKey(id, handler) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handler();
+        }
+    });
+}
+
+bindEnterKey("loginUsername", handleLoginSubmit);
+bindEnterKey("loginPassword", handleLoginSubmit);
+bindEnterKey("registerEmail", handleRegisterSubmit);
+bindEnterKey("deletePasswordInput", confirmDeletePassword);
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", setupPasteImageSupport);
