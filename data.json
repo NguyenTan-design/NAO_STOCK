@@ -4,5 +4,11 @@
         "STATUS": "PART OUT",
         "DETAIL": "test",
         "LOG": ""
+    },
+    {
+        "DATE": "10/02/26",
+        "STATUS": "PART IN",
+        "DETAIL": "test",
+        "LOG": ""
     }
 ]
