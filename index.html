@@ -1338,14 +1338,12 @@ td.date-cell { vertical-align: top; }
         NAO STOCK Management
     </div>
 
-    <!-- USER INFO BAR -->
     <div class="user-info-bar">
         <span>Xin chào, <span class="user-name" id="currentUserName">—</span></span>
         <span class="user-role" id="currentUserRole">—</span>
         <button class="filter-btn logout-btn" onclick="handleLogout()">Đăng xuất</button>
     </div>
 
-    <!-- SEARCH -->
     <div class="search-area">
         <input
             type="text"
@@ -1361,7 +1359,6 @@ td.date-cell { vertical-align: top; }
         >
     </div>
 
-    <!-- FILTERS -->
     <div class="filter-area">
         <div class="filter-row">
             <button class="filter-btn part-in-btn" id="btnPartIn" onclick="selectStatus('PART IN')">PART IN</button>
@@ -1501,15 +1498,18 @@ td.date-cell { vertical-align: top; }
 <script>
 
 /* =========================================================
-   AUTH STATE
+   API URLS
    ========================================================= */
-let currentUser = null; // { username, role, token }
-
 const BACKEND_API_URL = "https://nao-stock.quoctan91.workers.dev/add-issue";
 const GET_LOG_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/get-log");
 const SAVE_LOG_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/save-log");
 const LOGIN_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/login");
 const REGISTER_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/register");
+
+/* =========================================================
+   AUTH STATE
+   ========================================================= */
+let currentUser = null;
 
 function restoreSession() {
     try {
@@ -1538,11 +1538,14 @@ function applyRoleUI() {
 
     const isMaster = String(currentUser.role || "").toLowerCase() === "master";
 
-    document.getElementById("currentUserName").textContent = currentUser.username || "—";
+    const nameEl = document.getElementById("currentUserName");
+    if (nameEl) nameEl.textContent = currentUser.username || "—";
 
     const roleEl = document.getElementById("currentUserRole");
-    roleEl.textContent = isMaster ? "MASTER" : "USER";
-    roleEl.classList.toggle("master", isMaster);
+    if (roleEl) {
+        roleEl.textContent = isMaster ? "MASTER" : "USER";
+        roleEl.classList.toggle("master", isMaster);
+    }
 
     if (isMaster) {
         document.body.classList.remove("role-user");
@@ -1579,6 +1582,9 @@ async function handleLoginSubmit() {
     btn.disabled = true;
     btn.textContent = "Đang kiểm tra...";
 
+    console.log("LOGIN → URL:", LOGIN_API_URL);
+    console.log("LOGIN → Payload:", { username, password });
+
     try {
         const res = await fetch(LOGIN_API_URL, {
             method: "POST",
@@ -1586,7 +1592,18 @@ async function handleLoginSubmit() {
             body: JSON.stringify({ username: username, password: password })
         });
 
-        const data = await res.json();
+        console.log("LOGIN → HTTP status:", res.status);
+
+        const text = await res.text();
+        console.log("LOGIN → Raw response:", text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        }
+        catch (e) {
+            throw new Error("Server trả về không phải JSON: " + text.slice(0, 200));
+        }
 
         if (!data.success) {
             throw new Error(data.message || "Đăng nhập thất bại.");
@@ -1605,7 +1622,15 @@ async function handleLoginSubmit() {
         loadData();
     }
     catch (err) {
-        errorBox.textContent = err.message;
+        console.error("LOGIN ERROR:", err);
+
+        let msg = err.message || "Lỗi không xác định.";
+
+        if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
+            msg = "Không kết nối được server. Kiểm tra: (1) Worker đã deploy chưa, (2) ALLOWED_ORIGIN có khớp không, (3) Có đang mở qua local server không.";
+        }
+
+        errorBox.textContent = msg;
         errorBox.style.display = "block";
     }
     finally {
@@ -1646,6 +1671,9 @@ async function handleRegisterSubmit() {
     btn.disabled = true;
     btn.textContent = "Đang đăng ký...";
 
+    console.log("REGISTER → URL:", REGISTER_API_URL);
+    console.log("REGISTER → Payload:", { email });
+
     try {
         const res = await fetch(REGISTER_API_URL, {
             method: "POST",
@@ -1653,7 +1681,18 @@ async function handleRegisterSubmit() {
             body: JSON.stringify({ email: email })
         });
 
-        const data = await res.json();
+        console.log("REGISTER → HTTP status:", res.status);
+
+        const text = await res.text();
+        console.log("REGISTER → Raw response:", text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        }
+        catch (e) {
+            throw new Error("Server trả về không phải JSON: " + text.slice(0, 200));
+        }
 
         if (!data.success) {
             throw new Error(data.message || "Đăng ký thất bại.");
@@ -1663,7 +1702,15 @@ async function handleRegisterSubmit() {
         successBox.style.display = "block";
     }
     catch (err) {
-        errorBox.textContent = err.message;
+        console.error("REGISTER ERROR:", err);
+
+        let msg = err.message || "Lỗi không xác định.";
+
+        if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
+            msg = "Không kết nối được server. Kiểm tra: (1) Worker đã deploy chưa, (2) ALLOWED_ORIGIN có khớp không, (3) Có đang mở qua local server không.";
+        }
+
+        errorBox.textContent = msg;
         errorBox.style.display = "block";
     }
     finally {
@@ -2351,4 +2398,1357 @@ function renderAddStep() {
         content.innerHTML = `
             <label class="add-step-label">Status</label>
             <select id="addStatus" class="add-select">
-               
+                <option value="">Select status</option>
+                <option value="PART IN">PART IN</option>
+                <option value="PART OUT">PART OUT</option>
+            </select>
+            <div id="addError" class="add-error"></div>
+        `;
+        setSelectValueWithFallback("addStatus", newRecord.STATUS);
+    }
+    else if (addStep === 4) {
+        title.textContent = addTitlePrefix() + " — Step 4 / " + TOTAL_ADD_STEPS;
+        content.innerHTML = `
+            <label class="add-step-label">Part Number</label>
+            <input type="text" id="addPartNumber" class="add-input" placeholder="Enter part number..." value="${escapeAttribute(newRecord["PART NUMBER"] || "")}">
+            <div id="addError" class="add-error"></div>
+        `;
+        setTimeout(function() {
+            const input = document.getElementById("addPartNumber");
+            if (input) input.focus();
+        }, 50);
+    }
+    else if (addStep === 5) {
+        title.textContent = addTitlePrefix() + " — Step 5 / " + TOTAL_ADD_STEPS;
+        content.innerHTML = `
+            <label class="add-step-label">Detail</label>
+            <textarea id="addDetail" class="add-textarea" placeholder="Enter detail...">${escapeHTML(newRecord["DETAIL"] || "")}</textarea>
+            <div id="addError" class="add-error"></div>
+        `;
+        setTimeout(function() {
+            const input = document.getElementById("addDetail");
+            if (input) input.focus();
+        }, 50);
+    }
+    else if (addStep === 6) {
+        title.textContent = addTitlePrefix() + " — Step 6 / " + TOTAL_ADD_STEPS;
+        content.innerHTML = `
+            <label class="add-step-label">QTY</label>
+            <input type="text" id="addQty" class="add-input" placeholder="Enter QTY..." value="${escapeAttribute(newRecord["QTY"] || "")}">
+            <div id="addError" class="add-error"></div>
+        `;
+        setTimeout(function() {
+            const input = document.getElementById("addQty");
+            if (input) input.focus();
+        }, 50);
+    }
+    else if (addStep === 7) {
+        title.textContent = addTitlePrefix() + " — Step 7 / " + TOTAL_ADD_STEPS;
+        content.innerHTML = `
+            <label class="add-step-label">Vị Trí</label>
+            <input type="text" id="addViTri" class="add-input" placeholder="Enter vị trí..." value="${escapeAttribute(newRecord["VỊ TRÍ"] || "")}">
+            <div id="addError" class="add-error"></div>
+        `;
+        setTimeout(function() {
+            const input = document.getElementById("addViTri");
+            if (input) input.focus();
+        }, 50);
+    }
+    else if (addStep === 8) {
+        title.textContent = addTitlePrefix() + " — Step 8 / " + TOTAL_ADD_STEPS;
+        const options = getPicOptions();
+        const optionsHtml = buildOptionsHtml(options, newRecord.PIC);
+        content.innerHTML = `
+            <label class="add-step-label">PIC</label>
+            <select id="addPic" class="add-select">
+                <option value="">Select PIC</option>
+                ${optionsHtml}
+            </select>
+            <div id="addError" class="add-error"></div>
+        `;
+    }
+}
+
+function buildOptionsHtml(options, selected) {
+    const selectedText = String(selected || "");
+
+    let html = "";
+
+    options.forEach(function(opt) {
+        const value = String(opt);
+        const isSelected = value === selectedText ? " selected" : "";
+        html += `<option value="${escapeAttribute(value)}"${isSelected}>${escapeHTML(value)}</option>`;
+    });
+
+    if (selectedText && !options.map(String).includes(selectedText)) {
+        html += `<option value="${escapeAttribute(selectedText)}" selected>${escapeHTML(selectedText)}</option>`;
+    }
+
+    return html;
+}
+
+/* =========================================================
+   DATE CONVERSION
+   ========================================================= */
+function convertMMDDYYToISO(value) {
+    if (!value) return "";
+
+    const text = String(value).trim();
+    const match = text.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+
+    if (!match) return "";
+
+    const month = match[1];
+    const day = match[2];
+    const year = "20" + match[3];
+
+    return `${year}-${month}-${day}`;
+}
+
+function convertISOToMMDDYY(value) {
+    if (!value) return "";
+
+    const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return "";
+
+    const year = match[1].slice(-2);
+    const month = match[2];
+    const day = match[3];
+
+    return `${month}/${day}/${year}`;
+}
+
+function validateDateMMDDYY(value) {
+    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/([0-9]{2})$/;
+    if (!regex.test(value)) return false;
+
+    const parts = value.split("/");
+    const month = Number(parts[0]);
+    const day = Number(parts[1]);
+    const year = 2000 + Number(parts[2]);
+
+    const date = new Date(year, month - 1, day);
+
+    return (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+    );
+}
+
+/* =========================================================
+   ADD NEXT STEP
+   ========================================================= */
+function addNextStep() {
+    const error = document.getElementById("addError");
+
+    if (addStep === 1) {
+        const input = document.getElementById("addDate");
+        const isoValue = input.value.trim();
+
+        if (!isoValue) {
+            error.textContent = "Please select a date.";
+            return;
+        }
+
+        const value = convertISOToMMDDYY(isoValue);
+
+        if (!validateDateMMDDYY(value)) {
+            error.textContent = "Invalid date.";
+            return;
+        }
+
+        newRecord.DATE = value;
+    }
+    else if (addStep === 2) {
+        const value = document.getElementById("addKho").value;
+
+        if (!value) {
+            error.textContent = "Please select a KHO.";
+            return;
+        }
+
+        newRecord.KHO = value;
+    }
+    else if (addStep === 3) {
+        const value = document.getElementById("addStatus").value;
+
+        if (!value) {
+            error.textContent = "Please select a status.";
+            return;
+        }
+
+        newRecord.STATUS = value;
+    }
+    else if (addStep === 4) {
+        const value = document.getElementById("addPartNumber").value.trim();
+
+        if (!value) {
+            error.textContent = "Please enter Part Number.";
+            return;
+        }
+
+        newRecord["PART NUMBER"] = value;
+    }
+    else if (addStep === 5) {
+        const value = document.getElementById("addDetail").value.trim();
+
+        if (!value) {
+            error.textContent = "Please enter Detail.";
+            return;
+        }
+
+        newRecord["DETAIL"] = value;
+    }
+    else if (addStep === 6) {
+        const value = document.getElementById("addQty").value.trim();
+
+        if (!value) {
+            error.textContent = "Please enter QTY.";
+            return;
+        }
+
+        newRecord["QTY"] = value;
+    }
+    else if (addStep === 7) {
+        const value = document.getElementById("addViTri").value.trim();
+
+        if (!value) {
+            error.textContent = "Please enter Vị Trí.";
+            return;
+        }
+
+        newRecord["VỊ TRÍ"] = value;
+    }
+    else if (addStep === 8) {
+        const value = document.getElementById("addPic").value;
+
+        if (!value) {
+            error.textContent = "Please select a PIC.";
+            return;
+        }
+
+        newRecord.PIC = value;
+        showAddConfirmation();
+        return;
+    }
+
+    addStep++;
+    renderAddStep();
+}
+
+function addPreviousStep() {
+    if (addStep <= 1) return;
+    addStep--;
+    renderAddStep();
+}
+
+/* =========================================================
+   CONFIRM
+   ========================================================= */
+function showAddConfirmation() {
+    const title = document.getElementById("addStepTitle");
+    const content = document.getElementById("addStepContent");
+    const nextBtn = document.getElementById("addNextBtn");
+    const backBtn = document.getElementById("addBackBtn");
+
+    title.textContent = editMode ? "Confirm Edited Record" : "Confirm New Record";
+
+    content.innerHTML = `
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">DATE</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord.DATE)}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">KHO</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord.KHO)}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">STATUS</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord.STATUS)}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">PART NUMBER</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord["PART NUMBER"])}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">DETAIL</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord["DETAIL"])}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">QTY</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord["QTY"])}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">VỊ TRÍ</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord["VỊ TRÍ"])}</div>
+        </div>
+        <div class="add-confirm-row">
+            <div class="add-confirm-label">PIC</div>
+            <div class="add-confirm-value">${escapeHTML(newRecord.PIC)}</div>
+        </div>
+        <div class="backend-note">
+            ${editMode ? "Ấn vào Save Changes để lưu thay đổi." : "Ấn vào Add Record để lưu record."}
+            <br>
+            Lưu ý kiểm tra kỹ trước khi lưu!!!
+        </div>
+    `;
+
+    backBtn.style.display = "inline-block";
+    backBtn.disabled = false;
+
+    nextBtn.textContent = editMode ? "Save Changes" : "Add Record";
+    nextBtn.onclick = editMode ? saveEditedRecord : saveNewRecord;
+    nextBtn.disabled = false;
+}
+
+/* =========================================================
+   SAVE NEW RECORD
+   ========================================================= */
+async function saveNewRecord() {
+    const recordToSend = {
+        DATE: newRecord.DATE,
+        KHO: newRecord.KHO,
+        STATUS: newRecord.STATUS,
+        "PART NUMBER": newRecord["PART NUMBER"],
+        DETAIL: newRecord["DETAIL"],
+        QTY: newRecord["QTY"],
+        "VỊ TRÍ": newRecord["VỊ TRÍ"],
+        PIC: newRecord.PIC,
+        username: currentUser ? currentUser.username : "",
+        token: currentUser ? currentUser.token : ""
+    };
+
+    const pendingId = "pending_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+
+    const optimisticRecord = Object.assign({}, recordToSend, {
+        LOG: "",
+        _pendingId: pendingId
+    });
+
+    delete optimisticRecord.username;
+    delete optimisticRecord.token;
+
+    allData.push(optimisticRecord);
+    sortData();
+
+    selectedStatus = null;
+    updateStatusButtons();
+
+    const searchPartNumberInput = document.getElementById("searchPartNumber");
+    if (searchPartNumberInput) searchPartNumberInput.value = "";
+
+    const searchInput = document.getElementById("searchDetail");
+    if (searchInput) searchInput.value = "";
+
+    filteredData = [...allData];
+    currentPage = 1;
+
+    renderTable();
+    updateStatusChart();
+    closeAddDialog();
+
+    showToast("Đang lưu...", "info");
+
+    try {
+        const response = await fetch(BACKEND_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(recordToSend)
+        });
+
+        let result;
+
+        try {
+            result = await response.json();
+        }
+        catch (error) {
+            throw new Error("Invalid response from Cloudflare Worker.");
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Failed to save record.");
+        }
+
+        const savedRecord = result.record || Object.assign({}, recordToSend, { LOG: "" });
+
+        delete savedRecord.username;
+        delete savedRecord.token;
+
+        const index = allData.findIndex(function(item) {
+            return item._pendingId === pendingId;
+        });
+
+        if (index !== -1) allData[index] = savedRecord;
+        else allData.push(savedRecord);
+
+        sortData();
+        filteredData = [...allData];
+
+        renderTable();
+        updateStatusChart();
+
+        showToast("Record added successfully.", "success");
+    }
+    catch (error) {
+        console.error("Backend save error:", error);
+
+        allData = allData.filter(function(item) {
+            return item._pendingId !== pendingId;
+        });
+
+        filteredData = [...allData];
+
+        renderTable();
+        updateStatusChart();
+
+        showToast(
+            "Save failed: " + error.message + " — record was not saved.",
+            "error",
+            5000
+        );
+    }
+}
+
+/* =========================================================
+   EDIT RECORD
+   ========================================================= */
+const EDIT_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/update-issue");
+const DELETE_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/delete-issue");
+
+const EDIT_HOLD_MS = 5000;
+
+const EDIT_FIELDS = [
+    "DATE",
+    "KHO",
+    "STATUS",
+    "PART NUMBER",
+    "DETAIL",
+    "QTY",
+    "VỊ TRÍ",
+    "PIC"
+];
+
+function setSelectValueWithFallback(selectId, value) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    const text = String(value || "");
+
+    if (text === "") {
+        select.value = "";
+        return;
+    }
+
+    const exists = Array.from(select.options).some(function(option) {
+        return option.value === text;
+    });
+
+    if (!exists) {
+        const option = document.createElement("option");
+        option.value = text;
+        option.textContent = text;
+        select.appendChild(option);
+    }
+
+    select.value = text;
+}
+
+function openEditDialog(record) {
+    if (!record) return;
+
+    if (record._pendingId || record._pendingEdit) {
+        showToast("Record đang được lưu, vui lòng thử lại sau.", "info");
+        return;
+    }
+
+    editMode = true;
+    editTarget = record;
+
+    editOriginal = {
+        DATE: record["DATE"] || "",
+        KHO: record["KHO"] || "",
+        STATUS: record["STATUS"] || "",
+        "PART NUMBER": record["PART NUMBER"] || "",
+        DETAIL: record["DETAIL"] || "",
+        QTY: record["QTY"] || "",
+        "VỊ TRÍ": record["VỊ TRÍ"] || "",
+        PIC: record["PIC"] || "",
+        LOG: record["LOG"] || ""
+    };
+
+    addStep = 1;
+
+    newRecord = {
+        DATE: formatDateForExport(record["DATE"]),
+        KHO: String(record["KHO"] || ""),
+        STATUS: String(record["STATUS"] || "").trim(),
+        "PART NUMBER": String(record["PART NUMBER"] || ""),
+        DETAIL: String(record["DETAIL"] || ""),
+        QTY: String(record["QTY"] || ""),
+        "VỊ TRÍ": String(record["VỊ TRÍ"] || ""),
+        PIC: String(record["PIC"] || "")
+    };
+
+    document.getElementById("addModal").classList.add("show");
+    renderAddStep();
+}
+
+async function saveEditedRecord() {
+    const target = editTarget;
+    const original = editOriginal;
+
+    if (!target || allData.indexOf(target) === -1) {
+        closeAddDialog();
+        showToast("Không tìm thấy record cần sửa.", "error");
+        return;
+    }
+
+    const updated = {
+        DATE: newRecord.DATE,
+        KHO: newRecord.KHO,
+        STATUS: newRecord.STATUS,
+        "PART NUMBER": newRecord["PART NUMBER"],
+        DETAIL: newRecord["DETAIL"],
+        QTY: newRecord["QTY"],
+        "VỊ TRÍ": newRecord["VỊ TRÍ"],
+        PIC: newRecord.PIC
+    };
+
+    const changed = EDIT_FIELDS.some(function(field) {
+        const oldVal = field === "DATE"
+            ? formatDateForExport(original[field])
+            : original[field];
+
+        return String(updated[field] || "") !== String(oldVal || "");
+    });
+
+    if (!changed) {
+        closeAddDialog();
+        showToast("Không có thay đổi nào.", "info");
+        return;
+    }
+
+    const backup = {};
+
+    EDIT_FIELDS.forEach(function(field) {
+        backup[field] = target[field];
+    });
+
+    Object.assign(target, updated);
+    target._pendingEdit = true;
+
+    refreshAfterEdit();
+    closeAddDialog();
+
+    showToast("Đang lưu...", "info");
+
+    try {
+        const response = await fetch(EDIT_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                original: original,
+                updated: updated,
+                username: currentUser ? currentUser.username : "",
+                token: currentUser ? currentUser.token : ""
+            })
+        });
+
+        let result;
+
+        try {
+            result = await response.json();
+        }
+        catch (error) {
+            throw new Error("Invalid response from Cloudflare Worker.");
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Failed to update record.");
+        }
+
+        delete target._pendingEdit;
+
+        if (result.record && typeof result.record === "object") {
+            Object.assign(target, result.record);
+        }
+
+        refreshAfterEdit();
+        showToast("Record updated successfully.", "success");
+    }
+    catch (error) {
+        console.error("Backend update error:", error);
+
+        Object.assign(target, backup);
+        delete target._pendingEdit;
+
+        refreshAfterEdit();
+
+        showToast(
+            "Update failed: " + error.message + " — changes were not saved.",
+            "error",
+            5000
+        );
+    }
+}
+
+function refreshAfterEdit() {
+    const page = currentPage;
+
+    sortData();
+    applyFilter();
+
+    currentPage = page;
+
+    renderTable();
+    updateStatusChart();
+}
+
+/* ---------- EDIT BUTTON: CLICK -> 5s HOLD CONFIRM ---------- */
+const indicator = document.getElementById("holdIndicator");
+let holdTimer = null;
+let holdRecord = null;
+
+function cancelHold() {
+    if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+    }
+
+    holdRecord = null;
+
+    if (indicator) indicator.classList.remove("show");
+
+    document.body.classList.remove("holding-row");
+    document.removeEventListener("pointerdown", onOutsidePointerDown, true);
+}
+
+function onOutsidePointerDown(event) {
+    if (event.target.closest(".edit-btn")) return;
+    cancelHold();
+}
+
+function placeIndicator(x, y) {
+    if (!indicator) return;
+
+    const w = 190;
+    const left = Math.max(8, Math.min(x + 14, window.innerWidth - w - 8));
+    const top = Math.max(8, Math.min(y + 18, window.innerHeight - 60));
+
+    indicator.style.left = left + "px";
+    indicator.style.top = top + "px";
+}
+
+function handleEditButtonClick(event, idx) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const record = filteredData[Number(idx)];
+    if (!record) return;
+
+    cancelHold();
+
+    holdRecord = record;
+
+    document.body.classList.add("holding-row");
+
+    if (indicator) {
+        indicator.style.setProperty("--hold-ms", EDIT_HOLD_MS + "ms");
+
+        document.getElementById("holdText").textContent =
+            "Đợi " + Math.round(EDIT_HOLD_MS / 1000) + "s để sửa record...";
+
+        const rect = event.currentTarget.getBoundingClientRect();
+
+        placeIndicator(rect.right, rect.top);
+
+        indicator.classList.remove("show");
+        void indicator.offsetWidth;
+        indicator.classList.add("show");
+    }
+
+    function finishHold() {
+        holdTimer = null;
+
+        const record = holdRecord;
+        cancelHold();
+
+        if (record) openEditDialog(record);
+    }
+
+    document.addEventListener("pointerdown", onOutsidePointerDown, true);
+
+    holdTimer = setTimeout(finishHold, EDIT_HOLD_MS);
+}
+
+/* ---------- DELETE BUTTON: CONFIRM DIALOG ---------- */
+let deleteTarget = null;
+
+function handleDeleteButtonClick(event, idx) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const record = filteredData[Number(idx)];
+    if (!record) return;
+
+    if (record._pendingId || record._pendingEdit || record._pendingDelete) {
+        showToast("Record đang được xử lý, vui lòng thử lại sau.", "info");
+        return;
+    }
+
+    deleteTarget = record;
+
+    document.getElementById("deleteConfirmOverlay").classList.add("show");
+}
+
+function closeDeleteConfirm() {
+    deleteTarget = null;
+    document.getElementById("deleteConfirmOverlay").classList.remove("show");
+}
+
+function proceedToDeletePassword() {
+    document.getElementById("deleteConfirmOverlay").classList.remove("show");
+
+    const input = document.getElementById("deletePasswordInput");
+    const error = document.getElementById("deletePasswordError");
+
+    input.value = "";
+    input.disabled = false;
+    error.style.display = "none";
+
+    document.getElementById("deletePasswordOverlay").classList.add("show");
+    input.focus();
+}
+
+function cancelDeletePassword() {
+    deleteTarget = null;
+    document.getElementById("deletePasswordOverlay").classList.remove("show");
+}
+
+async function confirmDeletePassword() {
+    const input = document.getElementById("deletePasswordInput");
+    const error = document.getElementById("deletePasswordError");
+    const password = input.value;
+
+    error.style.display = "none";
+    input.disabled = true;
+
+    const outcome = await performDeleteRecord(password);
+
+    input.disabled = false;
+
+    if (outcome.status === "success") {
+        document.getElementById("deletePasswordOverlay").classList.remove("show");
+        deleteTarget = null;
+        return;
+    }
+
+    if (outcome.status === "wrong-password") {
+        error.textContent = "Sai password, vui lòng thử lại.";
+        error.style.display = "block";
+
+        input.value = "";
+        input.focus();
+        return;
+    }
+
+    document.getElementById("deletePasswordOverlay").classList.remove("show");
+    deleteTarget = null;
+}
+
+async function performDeleteRecord(password) {
+    const target = deleteTarget;
+
+    if (!target || allData.indexOf(target) === -1) {
+        showToast("Không tìm thấy record cần xóa.", "error");
+        return { status: "error" };
+    }
+
+    const payload = {
+        DATE: target["DATE"],
+        KHO: target["KHO"] || "",
+        STATUS: target["STATUS"],
+        "PART NUMBER": target["PART NUMBER"] || "",
+        DETAIL: target["DETAIL"] || "",
+        QTY: target["QTY"] || "",
+        "VỊ TRÍ": target["VỊ TRÍ"] || "",
+        PIC: target["PIC"] || "",
+        LOG: target["LOG"] || ""
+    };
+
+    showToast("Đang xóa...", "info");
+
+    let response;
+    let result;
+
+    try {
+        response = await fetch(DELETE_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                record: payload,
+                password: password,
+                username: currentUser ? currentUser.username : "",
+                token: currentUser ? currentUser.token : ""
+            })
+        });
+
+        try {
+            result = await response.json();
+        }
+        catch (error) {
+            throw new Error("Invalid response from Cloudflare Worker.");
+        }
+    }
+    catch (error) {
+        console.error("Backend delete error:", error);
+
+        showToast(
+            "Delete failed: " + error.message + " — record was not deleted.",
+            "error",
+            5000
+        );
+
+        return { status: "error" };
+    }
+
+    if (response.status === 403) {
+        const msg = String((result && result.message) || "").toLowerCase();
+
+        if (msg.includes("password")) {
+            return { status: "wrong-password" };
+        }
+
+        showToast("Lỗi 403: " + (result.message || "Unknown"), "error", 5000);
+        return { status: "error" };
+    }
+
+    if (!response.ok || !result.success) {
+        showToast(
+            "Delete failed: " + (result.message || "Unknown error") + " — record was not deleted.",
+            "error",
+            5000
+        );
+
+        return { status: "error" };
+    }
+
+    const index = allData.indexOf(target);
+
+    allData.splice(index, 1);
+    refreshAfterEdit();
+
+    showToast("Record deleted successfully.", "success");
+
+    return { status: "success" };
+}
+
+/* =========================================================
+   LOG MODAL
+   ========================================================= */
+let logCurrentRecord = null;
+let logCurrentFileName = null;
+let logCurrentContent = "";
+let logZoomLevel = 1;
+let logEditMode = false;
+
+function handleLogButtonClick(event, idx) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const record = filteredData[Number(idx)];
+    if (!record) return;
+
+    if (record._pendingId || record._pendingEdit || record._pendingDelete) {
+        showToast("Record đang được xử lý, vui lòng thử lại sau.", "info");
+        return;
+    }
+
+    openLogModal(record);
+}
+
+function buildRecordPayloadForBackend(record) {
+    return {
+        DATE: record["DATE"] || "",
+        KHO: record["KHO"] || "",
+        STATUS: record["STATUS"] || "",
+        "PART NUMBER": record["PART NUMBER"] || "",
+        DETAIL: record["DETAIL"] || "",
+        QTY: record["QTY"] || "",
+        "VỊ TRÍ": record["VỊ TRÍ"] || "",
+        PIC: record["PIC"] || "",
+        LOG: record["LOG"] || ""
+    };
+}
+
+function openLogModal(record) {
+    if (!record) return;
+
+    logCurrentRecord = record;
+    logCurrentFileName = null;
+    logCurrentContent = "";
+    logZoomLevel = 1;
+    logEditMode = false;
+
+    document.getElementById("logModalTitle").textContent =
+        "Log — " + (record["PART NUMBER"] || "") + " — " + formatDateForExport(record.DATE);
+
+    const viewer = document.getElementById("logViewer");
+
+    viewer.srcdoc = "<!DOCTYPE html><html><body style='font-family:Arial;color:#888;padding:14px;'>Đang tải...</body></html>";
+    viewer.style.display = "block";
+
+    const editor = document.getElementById("logEditor");
+
+    editor.innerHTML = "";
+    editor.style.display = "none";
+
+    document.getElementById("logSaveBtn").style.display = "none";
+    document.getElementById("logModeToggle").textContent = "✏️ Edit";
+    document.getElementById("logZoomLabel").textContent = "100%";
+
+    const cameraBtn = document.getElementById("logCameraBtn");
+    if (cameraBtn) cameraBtn.style.display = "none";
+
+    document.getElementById("logModal").classList.add("show");
+
+    fetchLogContent(record);
+}
+
+async function fetchLogContent(record) {
+    try {
+        const res = await fetch(GET_LOG_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                record: buildRecordPayloadForBackend(record),
+                username: currentUser ? currentUser.username : "",
+                token: currentUser ? currentUser.token : ""
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Cannot load log.");
+        }
+
+        logCurrentFileName = data.fileName;
+
+        logCurrentContent =
+            data.content && data.content.length ? data.content : "";
+
+        renderLogInViewer(logCurrentContent);
+    }
+    catch (err) {
+        console.error(err);
+
+        renderLogInViewer(
+            "<p style='color:#dc3545;'>Không tải được log: " +
+            escapeHTML(err.message) +
+            "</p>"
+        );
+    }
+}
+
+function renderLogInViewer(htmlContent) {
+    const viewer = document.getElementById("logViewer");
+
+    const isLegacyText =
+        logCurrentFileName && logCurrentFileName.endsWith(".txt");
+
+    let bodyHtml;
+
+    if (isLegacyText) {
+        bodyHtml =
+            htmlContent && htmlContent.length
+                ? "<pre style='white-space:pre-wrap;word-break:break-word;font-family:Consolas,Monaco,monospace;margin:0;'>" +
+                  escapeHTML(htmlContent) +
+                  "</pre>"
+                : "<p style='color:#999;font-style:italic;'>File log rỗng — ấn ✏️ Edit để viết</p>";
+    }
+    else {
+        bodyHtml =
+            htmlContent && htmlContent.length
+                ? htmlContent
+                : "<p style='color:#999;font-style:italic;'>File log rỗng — ấn ✏️ Edit để viết</p>";
+    }
+
+    const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    body {
+        margin: 0;
+        padding: 14px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        color: #222;
+        background: #ffffff;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        margin: 6px 0;
+        display: block;
+    }
+    p { margin: 6px 0; }
+    ul, ol { margin: 6px 0; padding-left: 24px; }
+    h1, h2, h3 { margin: 10px 0 6px; }
+    a { color: #1976d2; }
+    pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: Consolas, Monaco, monospace;
+        margin: 0;
+    }
+</style>
+</head>
+<body>
+${bodyHtml}
+</body>
+</html>`;
+
+    viewer.srcdoc = fullHtml;
+}
+
+function closeLogModal() {
+    document.getElementById("logModal").classList.remove("show");
+
+    logCurrentRecord = null;
+    logCurrentFileName = null;
+    logCurrentContent = "";
+    logEditMode = false;
+}
+
+function zoomLog(direction) {
+    if (!logCurrentRecord) return;
+
+    const step = 0.15;
+
+    logZoomLevel = Math.max(0.5, Math.min(3, logZoomLevel + direction * step));
+
+    const viewer = document.getElementById("logViewer");
+
+    try {
+        const doc = viewer.contentDocument || viewer.contentWindow.document;
+
+        if (doc && doc.body) {
+            doc.body.style.fontSize = (14 * logZoomLevel) + "px";
+        }
+    }
+    catch (err) {
+        console.warn("Không thể zoom iframe:", err);
+    }
+
+    document.getElementById("logZoomLabel").textContent =
+        Math.round(logZoomLevel * 100) + "%";
+}
+
+function toggleLogMode() {
+    if (!logCurrentRecord) return;
+
+    logEditMode = !logEditMode;
+
+    const viewer = document.getElementById("logViewer");
+    const editor = document.getElementById("logEditor");
+    const saveBtn = document.getElementById("logSaveBtn");
+    const modeBtn = document.getElementById("logModeToggle");
+    const cameraBtn = document.getElementById("logCameraBtn");
+
+    if (logEditMode) {
+        const isLegacyText =
+            logCurrentFileName && logCurrentFileName.endsWith(".txt");
+
+        if (isLegacyText) {
+            editor.innerHTML = logCurrentContent.length
+                ? "<pre>" + escapeHTML(logCurrentContent) + "</pre>"
+                : "";
+        }
+        else {
+            editor.innerHTML = logCurrentContent || "";
+        }
+
+        editor.style.display = "block";
+        viewer.style.display = "none";
+        saveBtn.style.display = "inline-block";
+        modeBtn.textContent = "👁 View";
+
+        if (cameraBtn) cameraBtn.style.display = "inline-block";
+
+        logZoomLevel = 1;
+        document.getElementById("logZoomLabel").textContent = "100%";
+    }
+    else {
+        viewer.style.display = "block";
+        editor.style.display = "none";
+        saveBtn.style.display = "none";
+        modeBtn.textContent = "✏️ Edit";
+
+        if (cameraBtn) cameraBtn.style.display = "none";
+    }
+}
+
+async function saveLogContent() {
+    if (!logCurrentRecord) {
+        showToast("Không tìm thấy record.", "error");
+        return;
+    }
+
+    const editor = document.getElementById("logEditor");
+    const saveBtn = document.getElementById("logSaveBtn");
+
+    const isLegacyText =
+        logCurrentFileName && logCurrentFileName.endsWith(".txt");
+
+    let content;
+
+    if (isLegacyText) content = editor.innerText || "";
+    else content = editor.innerHTML || "";
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Đang lưu...";
+
+    try {
+        const res = await fetch(SAVE_LOG_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                record: buildRecordPayloadForBackend(logCurrentRecord),
+                content: content,
+                username: currentUser ? currentUser.username : "",
+                token: currentUser ? currentUser.token : ""
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Save failed.");
+        }
+
+        if (data.fileName) logCurrentFileName = data.fileName;
+
+        logCurrentContent = content;
+
+        renderLogInViewer(content);
+
+        showToast("Đã lưu log.", "success");
+
+        toggleLogMode();
+    }
+    catch (err) {
+        console.error(err);
+
+        showToast(
+            "Lưu log thất bại: " + err.message,
+            "error",
+            5000
+        );
+    }
+    finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "💾 Save";
+    }
+}
+
+/* =========================================================
+   PASTE IMAGE SUPPORT
+   ========================================================= */
+function setupPasteImageSupport() {
+    const editor = document.getElementById("logEditor");
+    if (!editor) return;
+
+    editor.addEventListener("paste", function(event) {
+        const items =
+            (event.clipboardData || event.originalEvent.clipboardData).items;
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            if (item.type && item.type.indexOf("image") === 0) {
+                const file = item.getAsFile();
+
+                if (file) {
+                    event.preventDefault();
+                    insertImageFile(file);
+                }
+
+                break;
+            }
+        }
+    }, false);
+
+    editor.addEventListener("dragover", function(event) {
+        event.preventDefault();
+    });
+
+    editor.addEventListener("drop", function(event) {
+        const files = event.dataTransfer && event.dataTransfer.files;
+
+        if (files && files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                if (file.type && file.type.indexOf("image") === 0) {
+                    event.preventDefault();
+                    insertImageFile(file);
+                    break;
+                }
+            }
+        }
+    });
+}
+
+function insertImageFile(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(loadEvent) {
+        const img = new Image();
+
+        img.onload = function() {
+            const MAX_WIDTH = 900;
+            const MAX_HEIGHT = 900;
+            const QUALITY = 0.75;
+
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height = Math.round(height * (MAX_WIDTH / width));
+                    width = MAX_WIDTH;
+                }
+            }
+            else {
+                if (height > MAX_HEIGHT) {
+                    width = Math.round(width * (MAX_HEIGHT / height));
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", QUALITY);
+
+            const newImg = document.createElement("img");
+            newImg.src = compressedDataUrl;
+            newImg.style.maxWidth = "100%";
+            newImg.style.height = "auto";
+            newImg.style.border = "1px solid #e5e7eb";
+            newImg.style.borderRadius = "4px";
+            newImg.style.margin = "6px 0";
+            newImg.style.display = "block";
+
+            const editor = document.getElementById("logEditor");
+
+            const selection = window.getSelection();
+
+            if (
+                selection &&
+                selection.rangeCount > 0 &&
+                editor.contains(selection.anchorNode)
+            ) {
+                const range = selection.getRangeAt(0);
+
+                range.deleteContents();
+                range.insertNode(newImg);
+                range.setStartAfter(newImg);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+            else {
+                editor.appendChild(newImg);
+            }
+
+            editor.focus();
+
+            showToast("Đã chèn ảnh.", "success", 1500);
+        };
+
+        img.onerror = function() {
+            showToast("Không đọc được ảnh.", "error");
+        };
+
+        img.src = loadEvent.target.result;
+    };
+
+    reader.onerror = function() {
+        showToast("Lỗi đọc file ảnh.", "error");
+    };
+
+    reader.readAsDataURL(file);
+}
+
+/* =========================================================
+   CAMERA CAPTURE
+   ========================================================= */
+function openCameraCapture() {
+    if (!logEditMode) {
+        showToast("Vui lòng ấn ✏️ Edit trước khi chụp ảnh.", "info");
+        return;
+    }
+
+    const input = document.getElementById("cameraInput");
+    if (!input) return;
+
+    input.value = "";
+    input.click();
+}
+
+function handleCameraCapture(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type || file.type.indexOf("image") !== 0) {
+        showToast("File không phải là ảnh.", "error");
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        showToast("Ảnh quá lớn (>10MB), sẽ được nén lại.", "info");
+    }
+
+    insertImageFile(file);
+
+    event.target.value = "";
+}
+
+/* =========================================================
+   START
+   ========================================================= */
+if (restoreSession()) {
+    document.getElementById("loginOverlay").style.display = "none";
+    applyRoleUI();
+    loadData();
+}
+else {
+    document.getElementById("loginOverlay").style.display = "flex";
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupPasteImageSupport);
+}
+else {
+    setupPasteImageSupport();
+}
+
+</script>
+
+</body>
+</html>
