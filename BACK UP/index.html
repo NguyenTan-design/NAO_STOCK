@@ -12,10 +12,6 @@
 <!-- SHEETJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- DYNAMIC OPTIONS -->
-<script src="stock.js"></script>
-<script src="PIC.js"></script>
-
 <style>
 /* =========================
    GLOBAL
@@ -138,11 +134,11 @@ body { min-height: 100vh; }
    STATUS FILTER BUTTONS
    ========================= */
 .part-in-btn {
-    background: #198754;
+    background: #198754; /* Green */
     color: white;
 }
 .part-out-btn {
-    background: #dc3545;
+    background: #dc3545; /* Red */
     color: white;
 }
 
@@ -303,10 +299,10 @@ thead th {
     z-index: 10;
     background: #222;
     color: white;
-    padding: 10px 4px;
+    padding: 10px 6px;
     border: 1px solid #ddd;
     text-align: center;
-    font-size: 12px;
+    font-size: 13px;
     white-space: normal;
     word-break: break-word;
 }
@@ -316,8 +312,8 @@ thead th {
    ========================= */
 tbody td {
     border: 1px solid #ddd;
-    padding: 8px 4px;
-    font-size: 12px;
+    padding: 8px 6px;
+    font-size: 13px;
     vertical-align: top;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -327,26 +323,19 @@ tbody tr:nth-child(even) { background: #fafafa; }
 tbody tr:hover { filter: brightness(0.97); }
 
 /* =========================
-   COLUMN WIDTHS
-   =========================
-   9 cột: DATE | KHO | STATUS | PART NUMBER | DETAIL | QTY | VỊ TRÍ | PIC | LOG
+   COLUMN WIDTH
    ========================= */
-th:nth-child(1), td:nth-child(1) { width: 9%;  text-align: center; } /* DATE */
-th:nth-child(2), td:nth-child(2) { width: 9%;  text-align: center; } /* KHO */
-th:nth-child(3), td:nth-child(3) { width: 9%;  text-align: center; } /* STATUS */
-th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; } /* PART NUMBER */
-th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }   /* DETAIL */
-th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; } /* QTY */
-th:nth-child(7), td:nth-child(7) { width: 10%; text-align: center; } /* VỊ TRÍ */
-th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; } /* PIC */
-th:nth-child(9), td:nth-child(9) { width: 5%;  text-align: center; } /* LOG */
+th:nth-child(1), td:nth-child(1) { width: 15%; text-align: center; } /* DATE */
+th:nth-child(2), td:nth-child(2) { width: 15%; text-align: center; } /* STATUS */
+th:nth-child(3), td:nth-child(3) { width: 55%; text-align: left; } /* DETAIL */
+th:nth-child(4), td:nth-child(4) { width: 15%; text-align: center; } /* LOG */
 
 /* =========================
    STATUS ROW COLORS
    ========================= */
-tbody tr.part-in-row { background: #d4edda !important; }
+tbody tr.part-in-row { background: #d4edda !important; } /* Light Green */
 tbody tr.part-in-row:hover { background: #bee5c5 !important; }
-tbody tr.part-out-row { background: #f8d7da !important; }
+tbody tr.part-out-row { background: #f8d7da !important; } /* Light Red */
 tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
 
 /* =========================
@@ -354,9 +343,9 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
    ========================= */
 .status {
     display: inline-block;
-    padding: 5px 6px;
+    padding: 5px 7px;
     border-radius: 5px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     white-space: nowrap;
     max-width: 100%;
@@ -371,12 +360,12 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
    ========================= */
 .log-btn {
     display: inline-block;
-    padding: 6px 6px;
+    padding: 6px 8px;
     background: #6f42c1;
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     cursor: pointer;
     transition: 0.15s;
@@ -674,6 +663,7 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
 .log-save-btn:hover { background: #146c43; }
 .log-save-btn:disabled { opacity: 0.6; cursor: wait; }
 
+/* Nút Camera */
 .log-camera-btn {
     background: #0d7c4a;
     color: #fff;
@@ -705,6 +695,7 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     flex-direction: column;
 }
 
+/* iframe hiển thị HTML (đã render) */
 .log-viewer-iframe {
     flex: 1;
     width: 100%;
@@ -716,6 +707,7 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     box-sizing: border-box;
 }
 
+/* editor contenteditable cho phép dán ảnh */
 .log-editor-rich {
     flex: 1;
     width: 100%;
@@ -812,31 +804,31 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     .table-container {
         margin: 10px;
         max-height: calc(100vh - 330px);
-        overflow-x: auto;
+        overflow-x: hidden;
     }
 
     .record-info { margin: 8px 10px 0 10px; }
 
     thead th {
-        padding: 8px 2px;
-        font-size: 10px;
+        padding: 8px 3px;
+        font-size: 11px;
     }
 
     tbody td {
-        padding: 7px 2px;
-        font-size: 10px;
+        padding: 7px 3px;
+        font-size: 11px;
         vertical-align: top;
     }
 
     .status {
         font-size: 8px;
-        padding: 4px 3px;
+        padding: 4px 4px;
         white-space: normal;
     }
 
     .log-btn {
         font-size: 9px;
-        padding: 5px 4px;
+        padding: 5px 5px;
         display: block;
         width: 100%;
         text-align: center;
@@ -902,10 +894,10 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
         font-size: 10px;
     }
 
-    thead th { font-size: 9px; }
+    thead th { font-size: 10px; }
 
     tbody td {
-        font-size: 9px;
+        font-size: 10px;
         vertical-align: top;
     }
 
@@ -1167,13 +1159,8 @@ td.date-cell { vertical-align: top; }
         <thead>
             <tr>
                 <th>DATE</th>
-                <th>KHO</th>
                 <th>STATUS</th>
-                <th>PART NUMBER</th>
                 <th>DETAIL</th>
-                <th>QTY</th>
-                <th>VỊ TRÍ</th>
-                <th>PIC</th>
                 <th>LOG</th>
             </tr>
         </thead>
@@ -1199,7 +1186,7 @@ td.date-cell { vertical-align: top; }
 </div>
 
 <!-- =========================================================
-     LOG MODAL
+     LOG MODAL (view + edit log file content)
      ========================================================= -->
 <div class="log-modal" id="logModal">
     <div class="log-modal-content">
@@ -1208,13 +1195,16 @@ td.date-cell { vertical-align: top; }
 
             <div class="log-modal-controls">
 
+                <!-- NÚT CHỤP ẢNH TỪ CAMERA -->
                 <button
                     type="button"
                     class="log-camera-btn"
                     id="logCameraBtn"
                     onclick="openCameraCapture()"
                     title="Chụp ảnh từ camera">
+
                     📷 Camera
+
                 </button>
 
                 <button type="button" class="log-zoom-btn" onclick="zoomLog(-1)" title="Thu nhỏ">−</button>
@@ -1252,6 +1242,7 @@ td.date-cell { vertical-align: top; }
     </div>
 </div>
 
+<!-- INPUT ẨN DÙNG ĐỂ MỞ CAMERA TRÊN ĐIỆN THOẠI -->
 <input
     type="file"
     id="cameraInput"
@@ -1311,17 +1302,6 @@ let currentPage = 1;
 const rowsPerPage = 50;
 let selectedStatus = null;
 let toastTimer = null;
-
-/* Option lists loaded from stock.js / PIC.js */
-function getStockOptions() {
-    if (Array.isArray(window.STOCK_OPTIONS)) return window.STOCK_OPTIONS;
-    return [];
-}
-
-function getPicOptions() {
-    if (Array.isArray(window.PIC_OPTIONS)) return window.PIC_OPTIONS;
-    return [];
-}
 
 /* =========================================================
    TOAST
@@ -1443,6 +1423,7 @@ function updateStatusChart() {
    ========================================================= */
 async function loadData() {
     try {
+        // Only fetch data.json now
         const cacheBust = "?t=" + Date.now();
 
         const response = await fetch("data.json" + cacheBust);
@@ -1467,7 +1448,7 @@ async function loadData() {
 
         document.getElementById("tableBody").innerHTML = `
             <tr>
-                <td colspan="9" class="message">
+                <td colspan="4" class="message">
                     Failed to load data.<br><br>
                     ${escapeHTML(error.message)}
                     <br><br>
@@ -1581,7 +1562,9 @@ function createLogButton(idx) {
             class="log-btn"
             title="Xem / sửa log"
             onclick="handleLogButtonClick(event, ${idx})">
+
             📄 Log
+
         </button>
     `;
 }
@@ -1656,22 +1639,17 @@ function renderTable() {
     if (pageData.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="9" class="message">No records found.</td>
+                <td colspan="4" class="message">No records found.</td>
             </tr>
         `;
     }
     else {
         tableBody.innerHTML = pageData.map(function(item, i) {
             const date = formatDate(item["DATE"]);
-            const kho = escapeHTML(item["KHO"] || "");
             const rawStatus = String(item["STATUS"] || "").trim();
             const normalizedStatus = rawStatus.toUpperCase();
             const status = createStatus(rawStatus);
-            const partNumber = escapeHTML(item["PART NUMBER"] || "");
             const detail = escapeHTML(item["DETAIL"] || "");
-            const qty = escapeHTML(item["QTY"] || "");
-            const viTri = escapeHTML(item["VỊ TRÍ"] || "");
-            const pic = escapeHTML(item["PIC"] || "");
             const logButton = createLogButton(startIndex + i);
 
             let rowClass = "";
@@ -1704,13 +1682,8 @@ function renderTable() {
                             </div>
                         </div>
                     </td>
-                    <td>${kho}</td>
                     <td>${status}</td>
-                    <td>${partNumber}</td>
                     <td>${detail}</td>
-                    <td>${qty}</td>
-                    <td>${viTri}</td>
-                    <td>${pic}</td>
                     <td>${logButton}</td>
                 </tr>
             `;
@@ -1810,29 +1783,19 @@ async function exportToExcel() {
     const rows = filteredData.map(function(item) {
         return {
             "DATE": formatDateForExport(item["DATE"]),
-            "KHO": item["KHO"] || "",
             "STATUS": item["STATUS"] || "",
-            "PART NUMBER": item["PART NUMBER"] || "",
             "DETAIL": item["DETAIL"] || "",
-            "QTY": item["QTY"] || "",
-            "VỊ TRÍ": item["VỊ TRÍ"] || "",
-            "PIC": item["PIC"] || "",
-            "LOG": ""
+            "LOG": "" // Log is not exported as text
         };
     });
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
 
     worksheet["!cols"] = [
-        { wch: 10 },
         { wch: 12 },
-        { wch: 10 },
-        { wch: 18 },
-        { wch: 50 },
-        { wch: 8 },
-        { wch: 12 },
-        { wch: 18 },
-        { wch: 15 }
+        { wch: 15 },
+        { wch: 70 },
+        { wch: 20 }
     ];
 
     const workbook = XLSX.utils.book_new();
@@ -1905,21 +1868,14 @@ let editMode = false;
 let editTarget = null;
 let editOriginal = null;
 
-const TOTAL_ADD_STEPS = 8;
-
 function addTitlePrefix() {
     return editMode ? "Edit Record" : "Add New Record";
 }
 
 let newRecord = {
     DATE: "",
-    KHO: "",
     STATUS: "",
-    "PART NUMBER": "",
-    DETAIL: "",
-    QTY: "",
-    "VỊ TRÍ": "",
-    PIC: ""
+    DETAIL: ""
 };
 
 function openAddDialog() {
@@ -1930,13 +1886,8 @@ function openAddDialog() {
 
     newRecord = {
         DATE: "",
-        KHO: "",
         STATUS: "",
-        "PART NUMBER": "",
-        DETAIL: "",
-        QTY: "",
-        "VỊ TRÍ": "",
-        PIC: ""
+        DETAIL: ""
     };
 
     document.getElementById("addModal").classList.add("show");
@@ -1975,9 +1926,9 @@ function renderAddStep() {
 
     backBtn.style.display = addStep === 1 ? "none" : "inline-block";
 
-    /* STEP 1: DATE */
+    /* STEP 1 */
     if (addStep === 1) {
-        title.textContent = addTitlePrefix() + " — Step 1 / " + TOTAL_ADD_STEPS;
+        title.textContent = addTitlePrefix() + " — Step 1 / 3";
 
         content.innerHTML = `
             <label class="add-step-label">Date</label>
@@ -1997,26 +1948,9 @@ function renderAddStep() {
         }, 50);
     }
 
-    /* STEP 2: KHO */
+    /* STEP 2 */
     else if (addStep === 2) {
-        title.textContent = addTitlePrefix() + " — Step 2 / " + TOTAL_ADD_STEPS;
-
-        const options = getStockOptions();
-        const optionsHtml = buildOptionsHtml(options, newRecord.KHO);
-
-        content.innerHTML = `
-            <label class="add-step-label">KHO</label>
-            <select id="addKho" class="add-select">
-                <option value="">Select KHO</option>
-                ${optionsHtml}
-            </select>
-            <div id="addError" class="add-error"></div>
-        `;
-    }
-
-    /* STEP 3: STATUS */
-    else if (addStep === 3) {
-        title.textContent = addTitlePrefix() + " — Step 3 / " + TOTAL_ADD_STEPS;
+        title.textContent = addTitlePrefix() + " — Step 2 / 3";
 
         content.innerHTML = `
             <label class="add-step-label">Status</label>
@@ -2031,31 +1965,9 @@ function renderAddStep() {
         setSelectValueWithFallback("addStatus", newRecord.STATUS);
     }
 
-    /* STEP 4: PART NUMBER */
-    else if (addStep === 4) {
-        title.textContent = addTitlePrefix() + " — Step 4 / " + TOTAL_ADD_STEPS;
-
-        content.innerHTML = `
-            <label class="add-step-label">Part Number</label>
-            <input
-                type="text"
-                id="addPartNumber"
-                class="add-input"
-                placeholder="Enter part number..."
-                value="${escapeAttribute(newRecord["PART NUMBER"] || "")}"
-            >
-            <div id="addError" class="add-error"></div>
-        `;
-
-        setTimeout(function() {
-            const input = document.getElementById("addPartNumber");
-            if (input) input.focus();
-        }, 50);
-    }
-
-    /* STEP 5: DETAIL */
-    else if (addStep === 5) {
-        title.textContent = addTitlePrefix() + " — Step 5 / " + TOTAL_ADD_STEPS;
+    /* STEP 3 */
+    else if (addStep === 3) {
+        title.textContent = addTitlePrefix() + " — Step 3 / 3";
 
         content.innerHTML = `
             <label class="add-step-label">Detail</label>
@@ -2063,7 +1975,7 @@ function renderAddStep() {
                 id="addDetail"
                 class="add-textarea"
                 placeholder="Enter detail..."
-            >${escapeHTML(newRecord["DETAIL"] || "")}</textarea>
+            >${escapeHTML(newRecord["DETAIL"])}</textarea>
             <div id="addError" class="add-error"></div>
         `;
 
@@ -2072,91 +1984,6 @@ function renderAddStep() {
             if (input) input.focus();
         }, 50);
     }
-
-    /* STEP 6: QTY */
-    else if (addStep === 6) {
-        title.textContent = addTitlePrefix() + " — Step 6 / " + TOTAL_ADD_STEPS;
-
-        content.innerHTML = `
-            <label class="add-step-label">QTY</label>
-            <input
-                type="text"
-                id="addQty"
-                class="add-input"
-                placeholder="Enter QTY..."
-                value="${escapeAttribute(newRecord["QTY"] || "")}"
-            >
-            <div id="addError" class="add-error"></div>
-        `;
-
-        setTimeout(function() {
-            const input = document.getElementById("addQty");
-            if (input) input.focus();
-        }, 50);
-    }
-
-    /* STEP 7: VỊ TRÍ */
-    else if (addStep === 7) {
-        title.textContent = addTitlePrefix() + " — Step 7 / " + TOTAL_ADD_STEPS;
-
-        content.innerHTML = `
-            <label class="add-step-label">Vị Trí</label>
-            <input
-                type="text"
-                id="addViTri"
-                class="add-input"
-                placeholder="Enter vị trí..."
-                value="${escapeAttribute(newRecord["VỊ TRÍ"] || "")}"
-            >
-            <div id="addError" class="add-error"></div>
-        `;
-
-        setTimeout(function() {
-            const input = document.getElementById("addViTri");
-            if (input) input.focus();
-        }, 50);
-    }
-
-    /* STEP 8: PIC */
-    else if (addStep === 8) {
-        title.textContent = addTitlePrefix() + " — Step 8 / " + TOTAL_ADD_STEPS;
-
-        const options = getPicOptions();
-        const optionsHtml = buildOptionsHtml(options, newRecord.PIC);
-
-        content.innerHTML = `
-            <label class="add-step-label">PIC</label>
-            <select id="addPic" class="add-select">
-                <option value="">Select PIC</option>
-                ${optionsHtml}
-            </select>
-            <div id="addError" class="add-error"></div>
-        `;
-    }
-}
-
-/* =========================================================
-   BUILD <option> HTML
-   ========================================================= */
-function buildOptionsHtml(options, selected) {
-    const selectedText = String(selected || "");
-
-    let html = "";
-
-    options.forEach(function(opt) {
-        const value = String(opt);
-
-        const isSelected = value === selectedText ? " selected" : "";
-
-        html += `<option value="${escapeAttribute(value)}"${isSelected}>${escapeHTML(value)}</option>`;
-    });
-
-    // Nếu selected không nằm trong options → thêm option "fallback"
-    if (selectedText && !options.map(String).includes(selectedText)) {
-        html += `<option value="${escapeAttribute(selectedText)}" selected>${escapeHTML(selectedText)}</option>`;
-    }
-
-    return html;
 }
 
 /* =========================================================
@@ -2217,7 +2044,7 @@ function validateDateMMDDYY(value) {
 function addNextStep() {
     const error = document.getElementById("addError");
 
-    /* STEP 1: DATE */
+    /* STEP 1 */
     if (addStep === 1) {
         const input = document.getElementById("addDate");
         const isoValue = input.value.trim();
@@ -2237,20 +2064,8 @@ function addNextStep() {
         newRecord.DATE = value;
     }
 
-    /* STEP 2: KHO */
+    /* STEP 2 */
     else if (addStep === 2) {
-        const value = document.getElementById("addKho").value;
-
-        if (!value) {
-            error.textContent = "Please select a KHO.";
-            return;
-        }
-
-        newRecord.KHO = value;
-    }
-
-    /* STEP 3: STATUS */
-    else if (addStep === 3) {
         const value = document.getElementById("addStatus").value;
 
         if (!value) {
@@ -2261,20 +2076,8 @@ function addNextStep() {
         newRecord.STATUS = value;
     }
 
-    /* STEP 4: PART NUMBER */
-    else if (addStep === 4) {
-        const value = document.getElementById("addPartNumber").value.trim();
-
-        if (!value) {
-            error.textContent = "Please enter Part Number.";
-            return;
-        }
-
-        newRecord["PART NUMBER"] = value;
-    }
-
-    /* STEP 5: DETAIL */
-    else if (addStep === 5) {
+    /* STEP 3 */
+    else if (addStep === 3) {
         const value = document.getElementById("addDetail").value.trim();
 
         if (!value) {
@@ -2283,42 +2086,6 @@ function addNextStep() {
         }
 
         newRecord["DETAIL"] = value;
-    }
-
-    /* STEP 6: QTY */
-    else if (addStep === 6) {
-        const value = document.getElementById("addQty").value.trim();
-
-        if (!value) {
-            error.textContent = "Please enter QTY.";
-            return;
-        }
-
-        newRecord["QTY"] = value;
-    }
-
-    /* STEP 7: VỊ TRÍ */
-    else if (addStep === 7) {
-        const value = document.getElementById("addViTri").value.trim();
-
-        if (!value) {
-            error.textContent = "Please enter Vị Trí.";
-            return;
-        }
-
-        newRecord["VỊ TRÍ"] = value;
-    }
-
-    /* STEP 8: PIC — chuyển sang confirm */
-    else if (addStep === 8) {
-        const value = document.getElementById("addPic").value;
-
-        if (!value) {
-            error.textContent = "Please select a PIC.";
-            return;
-        }
-
-        newRecord.PIC = value;
         showAddConfirmation();
         return;
     }
@@ -2354,32 +2121,12 @@ function showAddConfirmation() {
             <div class="add-confirm-value">${escapeHTML(newRecord.DATE)}</div>
         </div>
         <div class="add-confirm-row">
-            <div class="add-confirm-label">KHO</div>
-            <div class="add-confirm-value">${escapeHTML(newRecord.KHO)}</div>
-        </div>
-        <div class="add-confirm-row">
             <div class="add-confirm-label">STATUS</div>
             <div class="add-confirm-value">${escapeHTML(newRecord.STATUS)}</div>
         </div>
         <div class="add-confirm-row">
-            <div class="add-confirm-label">PART NUMBER</div>
-            <div class="add-confirm-value">${escapeHTML(newRecord["PART NUMBER"])}</div>
-        </div>
-        <div class="add-confirm-row">
             <div class="add-confirm-label">DETAIL</div>
             <div class="add-confirm-value">${escapeHTML(newRecord["DETAIL"])}</div>
-        </div>
-        <div class="add-confirm-row">
-            <div class="add-confirm-label">QTY</div>
-            <div class="add-confirm-value">${escapeHTML(newRecord["QTY"])}</div>
-        </div>
-        <div class="add-confirm-row">
-            <div class="add-confirm-label">VỊ TRÍ</div>
-            <div class="add-confirm-value">${escapeHTML(newRecord["VỊ TRÍ"])}</div>
-        </div>
-        <div class="add-confirm-row">
-            <div class="add-confirm-label">PIC</div>
-            <div class="add-confirm-value">${escapeHTML(newRecord.PIC)}</div>
         </div>
         <div class="backend-note">
             ${editMode ? "Ấn vào Save Changes để lưu thay đổi." : "Ấn vào Add Record để lưu record."}
@@ -2409,21 +2156,19 @@ const SAVE_LOG_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/save-log");
 async function saveNewRecord() {
     const recordToSend = {
         DATE: newRecord.DATE,
-        KHO: newRecord.KHO,
         STATUS: newRecord.STATUS,
-        "PART NUMBER": newRecord["PART NUMBER"],
-        DETAIL: newRecord["DETAIL"],
-        QTY: newRecord["QTY"],
-        "VỊ TRÍ": newRecord["VỊ TRÍ"],
-        PIC: newRecord.PIC
+        DETAIL: newRecord["DETAIL"]
     };
 
     const pendingId = "pending_" + Date.now() + "_" + Math.random().toString(36).slice(2);
 
-    const optimisticRecord = Object.assign({}, recordToSend, {
+    const optimisticRecord = {
+        DATE: recordToSend.DATE,
+        STATUS: recordToSend.STATUS,
+        DETAIL: recordToSend.DETAIL,
         LOG: "",
         _pendingId: pendingId
-    });
+    };
 
     allData.push(optimisticRecord);
     sortData();
@@ -2464,7 +2209,12 @@ async function saveNewRecord() {
             throw new Error(result.message || "Failed to save record.");
         }
 
-        const savedRecord = result.record || Object.assign({}, recordToSend, { LOG: "" });
+        const savedRecord = result.record || {
+            DATE: recordToSend.DATE,
+            STATUS: recordToSend.STATUS,
+            DETAIL: recordToSend.DETAIL,
+            LOG: ""
+        };
 
         const index = allData.findIndex(function(item) {
             return item._pendingId === pendingId;
@@ -2509,16 +2259,7 @@ const DELETE_API_URL = BACKEND_API_URL.replace(/\/add-issue$/, "/delete-issue");
 
 const EDIT_HOLD_MS = 5000;
 
-const EDIT_FIELDS = [
-    "DATE",
-    "KHO",
-    "STATUS",
-    "PART NUMBER",
-    "DETAIL",
-    "QTY",
-    "VỊ TRÍ",
-    "PIC"
-];
+const EDIT_FIELDS = ["DATE", "STATUS", "DETAIL"];
 
 function setSelectValueWithFallback(selectId, value) {
     const select = document.getElementById(selectId);
@@ -2558,13 +2299,8 @@ function openEditDialog(record) {
 
     editOriginal = {
         DATE: record["DATE"] || "",
-        KHO: record["KHO"] || "",
         STATUS: record["STATUS"] || "",
-        "PART NUMBER": record["PART NUMBER"] || "",
         DETAIL: record["DETAIL"] || "",
-        QTY: record["QTY"] || "",
-        "VỊ TRÍ": record["VỊ TRÍ"] || "",
-        PIC: record["PIC"] || "",
         LOG: record["LOG"] || ""
     };
 
@@ -2572,13 +2308,9 @@ function openEditDialog(record) {
 
     newRecord = {
         DATE: formatDateForExport(record["DATE"]),
-        KHO: String(record["KHO"] || ""),
         STATUS: String(record["STATUS"] || "").trim(),
-        "PART NUMBER": String(record["PART NUMBER"] || ""),
         DETAIL: String(record["DETAIL"] || ""),
-        QTY: String(record["QTY"] || ""),
-        "VỊ TRÍ": String(record["VỊ TRÍ"] || ""),
-        PIC: String(record["PIC"] || "")
+        LOG: record["LOG"] || ""
     };
 
     document.getElementById("addModal").classList.add("show");
@@ -2597,21 +2329,15 @@ async function saveEditedRecord() {
 
     const updated = {
         DATE: newRecord.DATE,
-        KHO: newRecord.KHO,
         STATUS: newRecord.STATUS,
-        "PART NUMBER": newRecord["PART NUMBER"],
-        DETAIL: newRecord["DETAIL"],
-        QTY: newRecord["QTY"],
-        "VỊ TRÍ": newRecord["VỊ TRÍ"],
-        PIC: newRecord.PIC
+        DETAIL: newRecord["DETAIL"]
     };
 
     const changed = EDIT_FIELDS.some(function(field) {
-        const oldVal = field === "DATE"
-            ? formatDateForExport(original[field])
-            : original[field];
-
-        return String(updated[field] || "") !== String(oldVal || "");
+        return (
+            String(updated[field]) !==
+            String(field === "DATE" ? formatDateForExport(original[field]) : original[field])
+        );
     });
 
     if (!changed) {
@@ -2853,13 +2579,8 @@ async function performDeleteRecord(password) {
 
     const payload = {
         DATE: target["DATE"],
-        KHO: target["KHO"] || "",
         STATUS: target["STATUS"],
-        "PART NUMBER": target["PART NUMBER"] || "",
-        DETAIL: target["DETAIL"] || "",
-        QTY: target["QTY"] || "",
-        "VỊ TRÍ": target["VỊ TRÍ"] || "",
-        PIC: target["PIC"] || "",
+        DETAIL: target["DETAIL"],
         LOG: target["LOG"] || ""
     };
 
@@ -2949,20 +2670,6 @@ function handleLogButtonClick(event, idx) {
     openLogModal(record);
 }
 
-function buildRecordPayloadForBackend(record) {
-    return {
-        DATE: record["DATE"] || "",
-        KHO: record["KHO"] || "",
-        STATUS: record["STATUS"] || "",
-        "PART NUMBER": record["PART NUMBER"] || "",
-        DETAIL: record["DETAIL"] || "",
-        QTY: record["QTY"] || "",
-        "VỊ TRÍ": record["VỊ TRÍ"] || "",
-        PIC: record["PIC"] || "",
-        LOG: record["LOG"] || ""
-    };
-}
-
 function openLogModal(record) {
     if (!record) return;
 
@@ -2973,7 +2680,7 @@ function openLogModal(record) {
     logEditMode = false;
 
     document.getElementById("logModalTitle").textContent =
-        "Log — " + (record["PART NUMBER"] || "") + " — " + formatDateForExport(record.DATE);
+        "Log — " + (record.STATUS || "") + " — " + formatDateForExport(record.DATE);
 
     const viewer = document.getElementById("logViewer");
 
@@ -2989,6 +2696,7 @@ function openLogModal(record) {
     document.getElementById("logModeToggle").textContent = "✏️ Edit";
     document.getElementById("logZoomLabel").textContent = "100%";
 
+    /* Ẩn nút camera khi mới mở (đang ở chế độ View) */
     const cameraBtn = document.getElementById("logCameraBtn");
     if (cameraBtn) cameraBtn.style.display = "none";
 
@@ -3003,7 +2711,12 @@ async function fetchLogContent(record) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                record: buildRecordPayloadForBackend(record)
+                record: {
+                    DATE: record["DATE"],
+                    STATUS: record["STATUS"],
+                    DETAIL: record["DETAIL"],
+                    LOG: record["LOG"] || ""
+                }
             })
         });
 
@@ -3161,6 +2874,7 @@ function toggleLogMode() {
         saveBtn.style.display = "inline-block";
         modeBtn.textContent = "👁 View";
 
+        /* HIỆN NÚT CAMERA KHI Ở CHẾ ĐỘ EDIT */
         if (cameraBtn) cameraBtn.style.display = "inline-block";
 
         logZoomLevel = 1;
@@ -3172,6 +2886,7 @@ function toggleLogMode() {
         saveBtn.style.display = "none";
         modeBtn.textContent = "✏️ Edit";
 
+        /* ẨN NÚT CAMERA KHI Ở CHẾ ĐỘ VIEW */
         if (cameraBtn) cameraBtn.style.display = "none";
     }
 }
@@ -3201,7 +2916,12 @@ async function saveLogContent() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                record: buildRecordPayloadForBackend(logCurrentRecord),
+                record: {
+                    DATE: logCurrentRecord["DATE"],
+                    STATUS: logCurrentRecord["STATUS"],
+                    DETAIL: logCurrentRecord["DETAIL"],
+                    LOG: logCurrentRecord["LOG"] || ""
+                },
                 content: content
             })
         });
@@ -3264,6 +2984,7 @@ function setupPasteImageSupport() {
         }
     }, false);
 
+    /* Cho phép drag & drop ảnh vào editor */
     editor.addEventListener("dragover", function(event) {
         event.preventDefault();
     });
@@ -3295,9 +3016,10 @@ function insertImageFile(file) {
         const img = new Image();
 
         img.onload = function() {
-            const MAX_WIDTH = 900;
-            const MAX_HEIGHT = 900;
-            const QUALITY = 0.75;
+            /* === CẤU HÌNH NÉN ẢNH === */
+            const MAX_WIDTH = 900;   // Chiều rộng tối đa
+            const MAX_HEIGHT = 900;  // Chiều cao tối đa
+            const QUALITY = 0.75;    // Chất lượng JPEG
 
             let width = img.width;
             let height = img.height;
@@ -3321,6 +3043,7 @@ function insertImageFile(file) {
 
             const ctx = canvas.getContext("2d");
 
+            /* Nền trắng (tránh PNG trong suốt bị đen khi nén JPEG) */
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, width, height);
 
@@ -3387,6 +3110,7 @@ function insertImageFile(file) {
    CAMERA CAPTURE (CHỤP ẢNH TRỰC TIẾP TỪ ĐIỆN THOẠI)
    ========================================================= */
 function openCameraCapture() {
+    /* Đảm bảo editor đang ở chế độ edit */
     if (!logEditMode) {
         showToast("Vui lòng ấn ✏️ Edit trước khi chụp ảnh.", "info");
         return;
@@ -3395,6 +3119,7 @@ function openCameraCapture() {
     const input = document.getElementById("cameraInput");
     if (!input) return;
 
+    /* Reset value để có thể chọn lại cùng 1 file */
     input.value = "";
     input.click();
 }
@@ -3403,17 +3128,21 @@ function handleCameraCapture(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
+    /* Kiểm tra định dạng ảnh */
     if (!file.type || file.type.indexOf("image") !== 0) {
         showToast("File không phải là ảnh.", "error");
         return;
     }
 
+    /* Cảnh báo nếu ảnh quá lớn (>10MB) */
     if (file.size > 10 * 1024 * 1024) {
         showToast("Ảnh quá lớn (>10MB), sẽ được nén lại.", "info");
     }
 
+    /* Gọi hàm nén + chèn ảnh */
     insertImageFile(file);
 
+    /* Reset lại input */
     event.target.value = "";
 }
 
