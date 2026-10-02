@@ -4,5 +4,11 @@
         "email": "",
         "role": "user",
         "createdAt": "2026-10-02T09:11:36.207Z"
+    },
+    "MASTER": {
+        "password": "LY",
+        "email": "master@example.com",
+        "role": "master",
+        "createdAt": "2026-10-02T00:00:00.000Z"
     }
 }
