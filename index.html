@@ -290,6 +290,7 @@ body { min-height: 100vh; }
 
 table {
     width: 100%;
+    min-width: 1000px;
     table-layout: fixed;
     border-collapse: collapse;
 }
@@ -331,16 +332,15 @@ tbody tr:hover { filter: brightness(0.97); }
    =========================
    9 cột: DATE | KHO | STATUS | PART NUMBER | DETAIL | QTY | VỊ TRÍ | PIC | LOG
    ========================= */
-th:nth-child(1), td:nth-child(1) { width: 9%;  text-align: center; } /* DATE */
-th:nth-child(2), td:nth-child(2) { width: 9%;  text-align: center; } /* KHO */
-th:nth-child(3), td:nth-child(3) { width: 9%;  text-align: center; } /* STATUS */
-th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; } /* PART NUMBER */
-th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }   /* DETAIL */
-th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; } /* QTY */
-th:nth-child(7), td:nth-child(7) { width: 10%; text-align: center; } /* VỊ TRÍ */
-th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; } /* PIC */
-th:nth-child(9), td:nth-child(9) { width: 5%;  text-align: center; } /* LOG */
-
+th:nth-child(1), td:nth-child(1) { width: 13.5%; text-align: center; } /* DATE */
+th:nth-child(2), td:nth-child(2) { width: 18%;   text-align: center; } /* KHO */
+th:nth-child(3), td:nth-child(3) { width: 18%;   text-align: center; } /* STATUS */
+th:nth-child(4), td:nth-child(4) { width: 13%;   text-align: center; } /* PART NUMBER */
+th:nth-child(5), td:nth-child(5) { width: 28%;   text-align: left; }   /* DETAIL */
+th:nth-child(6), td:nth-child(6) { width: 7%;    text-align: center; } /* QTY */
+th:nth-child(7), td:nth-child(7) { width: 20%;   text-align: center; } /* VỊ TRÍ */
+th:nth-child(8), td:nth-child(8) { width: 15%;   text-align: center; } /* PIC */
+th:nth-child(9), td:nth-child(9) { width: 12.5%; text-align: center; } /* LOG */
 /* =========================
    STATUS ROW COLORS
    ========================= */
@@ -810,10 +810,12 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     .pagination-top { padding: 10px 5px; }
 
     .table-container {
-        margin: 10px;
-        max-height: calc(100vh - 330px);
-        overflow-x: auto;
-    }
+    margin: 10px;
+    max-height: calc(100vh - 330px);
+    overflow-x: auto;
+    overflow-y: auto;              
+    -webkit-overflow-scrolling: touch;  
+}
 
     .record-info { margin: 8px 10px 0 10px; }
 
