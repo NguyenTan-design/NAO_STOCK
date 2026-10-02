@@ -9,5 +9,16 @@
         "QTY": "15",
         "VỊ TRÍ": "NAO-SHE000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/10/26",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2UHEMB000100",
+        "DETAIL": "Nozzle station MB1001 for RH08 (24 sockets) [S/N. 1157]",
+        "QTY": "3",
+        "VỊ TRÍ": "NAO-SHE000",
+        "PIC": "ĐỨC"
     }
 ]
