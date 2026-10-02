@@ -327,20 +327,20 @@ tbody td {
 tbody tr:nth-child(even) { background: #fafafa; }
 tbody tr:hover { filter: brightness(0.97); }
 
-/* =========================
-   COLUMN WIDTHS
-   =========================
+/* =========================================================
+   COLUMN WIDTHS — DESKTOP (áp dụng cho màn hình > 768px)
    9 cột: DATE | KHO | STATUS | PART NUMBER | DETAIL | QTY | VỊ TRÍ | PIC | LOG
-   ========================= */
+   ========================================================= */
 th:nth-child(1), td:nth-child(1) { width: 10%; text-align: center; } /* DATE */
-th:nth-child(2), td:nth-child(2) { width: 12%;   text-align: center; } /* KHO */
-th:nth-child(3), td:nth-child(3) { width: 13%;   text-align: center; } /* STATUS */
-th:nth-child(4), td:nth-child(4) { width: 13%;   text-align: center; } /* PART NUMBER */
-th:nth-child(5), td:nth-child(5) { width: 28%;   text-align: left; }   /* DETAIL */
-th:nth-child(6), td:nth-child(6) { width: 7%;    text-align: center; } /* QTY */
-th:nth-child(7), td:nth-child(7) { width: 13%;   text-align: center; } /* VỊ TRÍ */
-th:nth-child(8), td:nth-child(8) { width: 10%;   text-align: center; } /* PIC */
+th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; } /* KHO */
+th:nth-child(3), td:nth-child(3) { width: 13%; text-align: center; } /* STATUS */
+th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; } /* PART NUMBER */
+th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }   /* DETAIL */
+th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; } /* QTY */
+th:nth-child(7), td:nth-child(7) { width: 13%; text-align: center; } /* VỊ TRÍ */
+th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; } /* PIC */
 th:nth-child(9), td:nth-child(9) { width: 10%; text-align: center; } /* LOG */
+
 /* =========================
    STATUS ROW COLORS
    ========================= */
@@ -754,9 +754,9 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     display: block;
 }
 
-/* =========================
+/* =========================================================
    MOBILE
-   ========================= */
+   ========================================================= */
 @media (max-width: 768px) {
 
     .header-inner { padding: 10px; }
@@ -810,14 +810,27 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
     .pagination-top { padding: 10px 5px; }
 
     .table-container {
-    margin: 10px;
-    max-height: calc(100vh - 330px);
-    overflow-x: auto;
-    overflow-y: auto;              
-    -webkit-overflow-scrolling: touch;  
-}
+        margin: 10px;
+        max-height: calc(100vh - 330px);
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
     .record-info { margin: 8px 10px 0 10px; }
+
+    /* =====================================================
+       COLUMN WIDTHS — MOBILE
+       ===================================================== */
+    th:nth-child(1), td:nth-child(1) { width: 10%; } /* DATE */
+    th:nth-child(2), td:nth-child(2) { width: 10%;   } /* KHO */
+    th:nth-child(3), td:nth-child(3) { width: 12%;   } /* STATUS */
+    th:nth-child(4), td:nth-child(4) { width: 14%;   } /* PART NUMBER */
+    th:nth-child(5), td:nth-child(5) { width: 28%;   } /* DETAIL */
+    th:nth-child(6), td:nth-child(6) { width: 7%;    } /* QTY */
+    th:nth-child(7), td:nth-child(7) { width: 14%;   } /* VỊ TRÍ */
+    th:nth-child(8), td:nth-child(8) { width: 7%;   } /* PIC */
+    th:nth-child(9), td:nth-child(9) { width: 7%; } /* LOG */
 
     thead th {
         padding: 8px 2px;
@@ -1114,6 +1127,12 @@ td.date-cell { vertical-align: top; }
 
     <!-- SEARCH -->
     <div class="search-area">
+        <input
+            type="text"
+            id="searchPartNumber"
+            placeholder="Search Part Number..."
+            oninput="applyFilter()"
+        >
         <input
             type="text"
             id="searchDetail"
@@ -1552,14 +1571,18 @@ function updateStatusButtons() {
 
 /* =========================================================
    FILTER
+   Lọc theo 2 ô search (PART NUMBER và DETAIL) + status.
    ========================================================= */
 function applyFilter() {
+    const partNumberText = document.getElementById("searchPartNumber").value.trim().toLowerCase();
     const detailText = document.getElementById("searchDetail").value.trim().toLowerCase();
 
     filteredData = allData.filter(function(item) {
+        const partNumber = String(item["PART NUMBER"] || "").toLowerCase();
         const detail = String(item["DETAIL"] || "").toLowerCase();
         const status = String(item["STATUS"] || "").trim().toUpperCase();
 
+        if (partNumberText && !partNumber.includes(partNumberText)) return false;
         if (detailText && !detail.includes(detailText)) return false;
 
         if (selectedStatus) {
@@ -1752,6 +1775,7 @@ function nextPage() {
    CLEAR FILTER
    ========================================================= */
 function clearFilter() {
+    document.getElementById("searchPartNumber").value = "";
     document.getElementById("searchDetail").value = "";
     selectedStatus = null;
     currentPage = 1;
@@ -2433,6 +2457,9 @@ async function saveNewRecord() {
     selectedStatus = null;
 
     updateStatusButtons();
+
+    const searchPartNumberInput = document.getElementById("searchPartNumber");
+    if (searchPartNumberInput) searchPartNumberInput.value = "";
 
     const searchInput = document.getElementById("searchDetail");
     if (searchInput) searchInput.value = "";
