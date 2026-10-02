@@ -21,14 +21,28 @@ const GITHUB_CONTENTS_API =
 
 
 // ============================================================
+// FIELD NAMES (schema mới)
+// ============================================================
+
+const FIELDS = [
+    "DATE",
+    "KHO",
+    "STATUS",
+    "PART NUMBER",
+    "DETAIL",
+    "QTY",
+    "VỊ TRÍ",
+    "PIC"
+];
+
+const ALL_FIELDS = FIELDS.concat(["LOG"]);
+
+
+// ============================================================
 // CUSTOM ERROR
 // ============================================================
 
 class HttpError extends Error {
-    /**
-     * @param {string} message
-     * @param {number} status
-     */
     constructor(message, status) {
         super(message);
         this.name = "HttpError";
@@ -48,10 +62,7 @@ export default {
 
         if (!allowedOrigin) {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "ALLOWED_ORIGIN is not configured."
-                },
+                { success: false, message: "ALLOWED_ORIGIN is not configured." },
                 500,
                 origin
             );
@@ -64,19 +75,13 @@ export default {
 
             return new Response(
                 null,
-                {
-                    status: 204,
-                    headers: corsHeaders(origin)
-                }
+                { status: 204, headers: corsHeaders(origin) }
             );
         }
 
         if (!isAllowedOrigin(origin, allowedOrigin)) {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "Origin not allowed."
-                },
+                { success: false, message: "Origin not allowed." },
                 403,
                 origin
             );
@@ -95,10 +100,7 @@ export default {
 
         if (!allowedPaths.includes(path)) {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "Endpoint not found."
-                },
+                { success: false, message: "Endpoint not found." },
                 404,
                 origin
             );
@@ -106,10 +108,7 @@ export default {
 
         if (request.method !== "POST") {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "Only POST method is allowed."
-                },
+                { success: false, message: "Only POST method is allowed." },
                 405,
                 origin
             );
@@ -117,10 +116,7 @@ export default {
 
         if (!env.GITHUB_TOKEN) {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "GITHUB_TOKEN is not configured."
-                },
+                { success: false, message: "GITHUB_TOKEN is not configured." },
                 500,
                 origin
             );
@@ -133,10 +129,7 @@ export default {
         }
         catch (error) {
             return jsonResponse(
-                {
-                    success: false,
-                    message: "Invalid JSON request."
-                },
+                { success: false, message: "Invalid JSON request." },
                 400,
                 origin
             );
@@ -172,10 +165,7 @@ async function handleAddIssue(body, env, origin) {
 
     if (!validation.valid) {
         return jsonResponse(
-            {
-                success: false,
-                message: validation.message
-            },
+            { success: false, message: validation.message },
             400,
             origin
         );
@@ -194,18 +184,13 @@ async function handleAddIssue(body, env, origin) {
 
         if (!dataRes.ok) {
             throw new Error(
-                await githubErrorMessage(
-                    dataRes,
-                    "Unable to read data.json."
-                )
+                await githubErrorMessage(dataRes, "Unable to read data.json.")
             );
         }
 
         const dataFile = await dataRes.json();
 
-        const currentData = JSON.parse(
-            base64ToUtf8(dataFile.content)
-        );
+        const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         if (!Array.isArray(currentData)) {
             throw new Error("data.json must contain a JSON array.");
@@ -213,8 +198,6 @@ async function handleAddIssue(body, env, origin) {
 
         const logMap = await readLogMap(token);
         const nextNum = await getNextLogNumber(token);
-
-        /* File log dùng đuôi .html để hỗ trợ ảnh */
 
         const logFileName = `log_${nextNum}.html`;
         const logPath = `${LOGS_DIR}/${logFileName}`;
@@ -227,18 +210,9 @@ async function handleAddIssue(body, env, origin) {
             token,
             "Add new record + log file",
             [
-                {
-                    path: FILE,
-                    content: JSON.stringify(currentData, null, 4)
-                },
-                {
-                    path: LOG_MAP_FILE,
-                    content: JSON.stringify(logMap, null, 4)
-                },
-                {
-                    path: logPath,
-                    content: ""
-                }
+                { path: FILE, content: JSON.stringify(currentData, null, 4) },
+                { path: LOG_MAP_FILE, content: JSON.stringify(logMap, null, 4) },
+                { path: logPath, content: "" }
             ]
         );
 
@@ -256,14 +230,10 @@ async function handleAddIssue(body, env, origin) {
     catch (error) {
         console.error(error);
 
-        const status =
-            error instanceof HttpError ? error.status : 500;
+        const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
-            {
-                success: false,
-                message: error.message || "Failed to update GitHub."
-            },
+            { success: false, message: error.message || "Failed to update GitHub." },
             status,
             origin
         );
@@ -285,25 +255,18 @@ async function handleUpdateIssue(body, env, origin) {
         typeof body.updated !== "object"
     ) {
         return jsonResponse(
-            {
-                success: false,
-                message: "Request must contain 'original' and 'updated'."
-            },
+            { success: false, message: "Request must contain 'original' and 'updated'." },
             400,
             origin
         );
     }
 
     const original = body.original;
-
     const validation = validateRecord(body.updated, original);
 
     if (!validation.valid) {
         return jsonResponse(
-            {
-                success: false,
-                message: validation.message
-            },
+            { success: false, message: validation.message },
             400,
             origin
         );
@@ -322,18 +285,13 @@ async function handleUpdateIssue(body, env, origin) {
 
         if (!dataRes.ok) {
             throw new Error(
-                await githubErrorMessage(
-                    dataRes,
-                    "Unable to read data.json."
-                )
+                await githubErrorMessage(dataRes, "Unable to read data.json.")
             );
         }
 
         const dataFile = await dataRes.json();
 
-        const currentData = JSON.parse(
-            base64ToUtf8(dataFile.content)
-        );
+        const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         const index = findRecordIndex(currentData, original);
 
@@ -346,10 +304,10 @@ async function handleUpdateIssue(body, env, origin) {
 
         const existing = currentData[index];
 
-        const merged = Object.assign({}, existing, {
-            DATE: updated.DATE,
-            STATUS: updated.STATUS,
-            DETAIL: updated.DETAIL
+        const merged = Object.assign({}, existing);
+
+        FIELDS.forEach(function(field) {
+            merged[field] = updated[field];
         });
 
         currentData[index] = merged;
@@ -360,17 +318,8 @@ async function handleUpdateIssue(body, env, origin) {
         const logMap = await readLogMap(token);
         const logFileName = logMap[oldKey] || null;
 
-        /**
-         * @type {Array<
-         *     { path: string, content: string, delete?: false } |
-         *     { path: string, delete: true, content?: undefined }
-         * >}
-         */
         const files = [
-            {
-                path: FILE,
-                content: JSON.stringify(currentData, null, 4)
-            }
+            { path: FILE, content: JSON.stringify(currentData, null, 4) }
         ];
 
         if (logFileName && oldKey !== newKey) {
@@ -383,11 +332,7 @@ async function handleUpdateIssue(body, env, origin) {
             });
         }
 
-        await commitMultipleFiles(
-            token,
-            "Update record",
-            files
-        );
+        await commitMultipleFiles(token, "Update record", files);
 
         return jsonResponse(
             {
@@ -403,14 +348,10 @@ async function handleUpdateIssue(body, env, origin) {
     catch (error) {
         console.error(error);
 
-        const status =
-            error instanceof HttpError ? error.status : 500;
+        const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
-            {
-                success: false,
-                message: error.message || "Failed to update GitHub."
-            },
+            { success: false, message: error.message || "Failed to update GitHub." },
             status,
             origin
         );
@@ -430,10 +371,7 @@ async function handleDeleteIssue(body, env, origin) {
         typeof body.record !== "object"
     ) {
         return jsonResponse(
-            {
-                success: false,
-                message: "Request must contain 'record'."
-            },
+            { success: false, message: "Request must contain 'record'." },
             400,
             origin
         );
@@ -446,10 +384,7 @@ async function handleDeleteIssue(body, env, origin) {
         !String(record.STATUS || "").trim()
     ) {
         return jsonResponse(
-            {
-                success: false,
-                message: "'record' must include at least DATE and STATUS."
-            },
+            { success: false, message: "'record' must include at least DATE and STATUS." },
             400,
             origin
         );
@@ -457,10 +392,7 @@ async function handleDeleteIssue(body, env, origin) {
 
     if (!env.DELETE_PASSWORD) {
         return jsonResponse(
-            {
-                success: false,
-                message: "DELETE_PASSWORD is not configured."
-            },
+            { success: false, message: "DELETE_PASSWORD is not configured." },
             500,
             origin
         );
@@ -470,10 +402,7 @@ async function handleDeleteIssue(body, env, origin) {
 
     if (!timingSafeEqual(password, env.DELETE_PASSWORD)) {
         return jsonResponse(
-            {
-                success: false,
-                message: "Sai password."
-            },
+            { success: false, message: "Sai password." },
             403,
             origin
         );
@@ -490,18 +419,13 @@ async function handleDeleteIssue(body, env, origin) {
 
         if (!dataRes.ok) {
             throw new Error(
-                await githubErrorMessage(
-                    dataRes,
-                    "Unable to read data.json."
-                )
+                await githubErrorMessage(dataRes, "Unable to read data.json.")
             );
         }
 
         const dataFile = await dataRes.json();
 
-        const currentData = JSON.parse(
-            base64ToUtf8(dataFile.content)
-        );
+        const currentData = JSON.parse(base64ToUtf8(dataFile.content));
 
         const index = findRecordIndex(currentData, record);
 
@@ -518,17 +442,8 @@ async function handleDeleteIssue(body, env, origin) {
         const key = recordKey(record);
         const logFileName = logMap[key] || null;
 
-        /**
-         * @type {Array<
-         *     { path: string, content: string, delete?: false } |
-         *     { path: string, delete: true, content?: undefined }
-         * >}
-         */
         const files = [
-            {
-                path: FILE,
-                content: JSON.stringify(currentData, null, 4)
-            }
+            { path: FILE, content: JSON.stringify(currentData, null, 4) }
         ];
 
         if (logFileName) {
@@ -545,11 +460,7 @@ async function handleDeleteIssue(body, env, origin) {
             });
         }
 
-        await commitMultipleFiles(
-            token,
-            "Delete record + log file",
-            files
-        );
+        await commitMultipleFiles(token, "Delete record + log file", files);
 
         return jsonResponse(
             {
@@ -564,14 +475,10 @@ async function handleDeleteIssue(body, env, origin) {
     catch (error) {
         console.error(error);
 
-        const status =
-            error instanceof HttpError ? error.status : 500;
+        const status = error instanceof HttpError ? error.status : 500;
 
         return jsonResponse(
-            {
-                success: false,
-                message: error.message || "Failed to update GitHub."
-            },
+            { success: false, message: error.message || "Failed to update GitHub." },
             status,
             origin
         );
@@ -586,10 +493,7 @@ async function handleDeleteIssue(body, env, origin) {
 async function handleGetLog(body, env, origin) {
     if (!body || typeof body !== "object" || !body.record) {
         return jsonResponse(
-            {
-                success: false,
-                message: "Request must contain 'record'."
-            },
+            { success: false, message: "Request must contain 'record'." },
             400,
             origin
         );
@@ -601,30 +505,17 @@ async function handleGetLog(body, env, origin) {
         const fileName = logMap[recordKey(body.record)];
 
         if (!fileName) {
-            /* Record chưa có file log — trả về rỗng,
-               user có thể Edit để tạo mới. */
             return jsonResponse(
-                {
-                    success: true,
-                    content: "",
-                    fileName: null
-                },
+                { success: true, content: "", fileName: null },
                 200,
                 origin
             );
         }
 
-        const content = await readLogFile(
-            token,
-            `${LOGS_DIR}/${fileName}`
-        );
+        const content = await readLogFile(token, `${LOGS_DIR}/${fileName}`);
 
         return jsonResponse(
-            {
-                success: true,
-                content: content || "",
-                fileName: fileName
-            },
+            { success: true, content: content || "", fileName: fileName },
             200,
             origin
         );
@@ -633,10 +524,7 @@ async function handleGetLog(body, env, origin) {
         console.error(error);
 
         return jsonResponse(
-            {
-                success: false,
-                message: error.message || "Failed to read log."
-            },
+            { success: false, message: error.message || "Failed to read log." },
             500,
             origin
         );
@@ -646,18 +534,12 @@ async function handleGetLog(body, env, origin) {
 
 // ============================================================
 // HANDLER: SAVE LOG
-//
-// Nếu record chưa có file log (record cũ, hoặc log_map bị
-// mất), tự tạo file log mới và ghi nội dung vào đó.
 // ============================================================
 
 async function handleSaveLog(body, env, origin) {
     if (!body || typeof body !== "object" || !body.record) {
         return jsonResponse(
-            {
-                success: false,
-                message: "Request must contain 'record'."
-            },
+            { success: false, message: "Request must contain 'record'." },
             400,
             origin
         );
@@ -665,10 +547,7 @@ async function handleSaveLog(body, env, origin) {
 
     if (typeof body.content !== "string") {
         return jsonResponse(
-            {
-                success: false,
-                message: "Request must contain 'content' string."
-            },
+            { success: false, message: "Request must contain 'content' string." },
             400,
             origin
         );
@@ -681,10 +560,6 @@ async function handleSaveLog(body, env, origin) {
 
         let fileName = logMap[key];
 
-        // ----------------------------------------------------
-        // Chưa có file log → tạo file mới và ghi nội dung
-        // ----------------------------------------------------
-
         if (!fileName) {
             const nextNum = await getNextLogNumber(token);
 
@@ -695,49 +570,28 @@ async function handleSaveLog(body, env, origin) {
                 token,
                 "Create log file for existing record",
                 [
-                    {
-                        path: `${LOGS_DIR}/${fileName}`,
-                        content: body.content
-                    },
-                    {
-                        path: LOG_MAP_FILE,
-                        content: JSON.stringify(logMap, null, 4)
-                    }
+                    { path: `${LOGS_DIR}/${fileName}`, content: body.content },
+                    { path: LOG_MAP_FILE, content: JSON.stringify(logMap, null, 4) }
                 ]
             );
 
             return jsonResponse(
-                {
-                    success: true,
-                    message: "Log file created and saved.",
-                    fileName: fileName
-                },
+                { success: true, message: "Log file created and saved.", fileName: fileName },
                 200,
                 origin
             );
         }
 
-        // ----------------------------------------------------
-        // Đã có file log → chỉ cập nhật nội dung
-        // ----------------------------------------------------
-
         await commitMultipleFiles(
             token,
             "Update log content",
             [
-                {
-                    path: `${LOGS_DIR}/${fileName}`,
-                    content: body.content
-                }
+                { path: `${LOGS_DIR}/${fileName}`, content: body.content }
             ]
         );
 
         return jsonResponse(
-            {
-                success: true,
-                message: "Log saved.",
-                fileName: fileName
-            },
+            { success: true, message: "Log saved.", fileName: fileName },
             200,
             origin
         );
@@ -746,10 +600,7 @@ async function handleSaveLog(body, env, origin) {
         console.error(error);
 
         return jsonResponse(
-            {
-                success: false,
-                message: error.message || "Failed to save log."
-            },
+            { success: false, message: error.message || "Failed to save log." },
             500,
             origin
         );
@@ -784,13 +635,7 @@ function jsonResponse(data, status, origin) {
         headers["Access-Control-Allow-Origin"] = origin;
     }
 
-    return new Response(
-        JSON.stringify(data),
-        {
-            status,
-            headers
-        }
-    );
+    return new Response(JSON.stringify(data), { status, headers });
 }
 
 
@@ -800,23 +645,16 @@ function jsonResponse(data, status, origin) {
 
 function validateRecord(body, original) {
     if (!body || typeof body !== "object") {
-        return {
-            valid: false,
-            message: "Invalid request data."
-        };
+        return { valid: false, message: "Invalid request data." };
     }
 
     const date = String(body.DATE || "").trim();
 
     if (!isValidDate(date)) {
-        return {
-            valid: false,
-            message: "DATE must be a valid date in MM/DD/YY format."
-        };
+        return { valid: false, message: "DATE must be a valid date in MM/DD/YY format." };
     }
 
     const rawStatus = String(body.STATUS || "").trim();
-
     let status = normalizeStatus(rawStatus);
 
     if (
@@ -829,30 +667,36 @@ function validateRecord(body, original) {
     }
 
     if (!status) {
-        return {
-            valid: false,
-            message: "STATUS must be PART IN or PART OUT."
-        };
+        return { valid: false, message: "STATUS must be PART IN or PART OUT." };
     }
 
-    const detail = String(body.DETAIL || "").trim();
+    /* Các trường text bắt buộc */
+    const textFields = [
+        { key: "KHO", label: "KHO" },
+        { key: "PART NUMBER", label: "PART NUMBER" },
+        { key: "DETAIL", label: "DETAIL" },
+        { key: "QTY", label: "QTY" },
+        { key: "VỊ TRÍ", label: "VỊ TRÍ" },
+        { key: "PIC", label: "PIC" }
+    ];
 
-    if (!detail) {
-        return {
-            valid: false,
-            message: "DETAIL is required."
-        };
-    }
-
-    return {
-        valid: true,
-        record: {
-            DATE: date,
-            STATUS: status,
-            DETAIL: detail,
-            LOG: ""
-        }
+    const record = {
+        DATE: date,
+        STATUS: status,
+        LOG: ""
     };
+
+    for (const field of textFields) {
+        const value = String(body[field.key] || "").trim();
+
+        if (!value) {
+            return { valid: false, message: field.label + " is required." };
+        }
+
+        record[field.key] = value;
+    }
+
+    return { valid: true, record: record };
 }
 
 
@@ -863,17 +707,13 @@ function validateRecord(body, original) {
 function isValidDate(value) {
     const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value);
 
-    if (!match) {
-        return false;
-    }
+    if (!match) return false;
 
     const month = Number(match[1]);
     const day = Number(match[2]);
     const year = 2000 + Number(match[3]);
 
-    if (month < 1 || month > 12 || day < 1) {
-        return false;
-    }
+    if (month < 1 || month > 12 || day < 1) return false;
 
     const date = new Date(year, month - 1, day);
 
@@ -905,19 +745,9 @@ function normalizeStatus(value) {
 // GIT DATA API: COMMIT MULTIPLE FILES IN ONE COMMIT
 // ============================================================
 
-/**
- * @param {string} token
- * @param {string} message
- * @param {Array<
- *     { path: string, content: string, delete?: false } |
- *     { path: string, delete: true, content?: undefined }
- * >} files
- */
 async function commitMultipleFiles(token, message, files) {
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
-            // 1. Read current branch ref
-
             const refRes = await githubRequest(
                 "GET",
                 `${GITHUB_GIT_API}/ref/heads/${BRANCH}`,
@@ -926,17 +756,12 @@ async function commitMultipleFiles(token, message, files) {
 
             if (!refRes.ok) {
                 throw new Error(
-                    await githubErrorMessage(
-                        refRes,
-                        "Cannot read branch ref."
-                    )
+                    await githubErrorMessage(refRes, "Cannot read branch ref.")
                 );
             }
 
             const refData = await refRes.json();
             const baseCommitSha = refData.object.sha;
-
-            // 2. Read base commit to get its tree
 
             const commitRes = await githubRequest(
                 "GET",
@@ -946,19 +771,13 @@ async function commitMultipleFiles(token, message, files) {
 
             if (!commitRes.ok) {
                 throw new Error(
-                    await githubErrorMessage(
-                        commitRes,
-                        "Cannot read base commit."
-                    )
+                    await githubErrorMessage(commitRes, "Cannot read base commit.")
                 );
             }
 
             const baseCommit = await commitRes.json();
             const baseTreeSha = baseCommit.tree.sha;
 
-            // 3. Create blobs for each file
-
-            /** @type {Array<{ path: string, mode: string, type: string, sha: string | null }>} */
             const treeEntries = [];
 
             for (const file of files) {
@@ -976,10 +795,7 @@ async function commitMultipleFiles(token, message, files) {
                     "POST",
                     `${GITHUB_GIT_API}/blobs`,
                     token,
-                    {
-                        content: utf8ToBase64(file.content),
-                        encoding: "base64"
-                    }
+                    { content: utf8ToBase64(file.content), encoding: "base64" }
                 );
 
                 if (!blobRes.ok) {
@@ -1001,30 +817,20 @@ async function commitMultipleFiles(token, message, files) {
                 });
             }
 
-            // 4. Create new tree
-
             const treeRes = await githubRequest(
                 "POST",
                 `${GITHUB_GIT_API}/trees`,
                 token,
-                {
-                    base_tree: baseTreeSha,
-                    tree: treeEntries
-                }
+                { base_tree: baseTreeSha, tree: treeEntries }
             );
 
             if (!treeRes.ok) {
                 throw new Error(
-                    await githubErrorMessage(
-                        treeRes,
-                        "Cannot create tree."
-                    )
+                    await githubErrorMessage(treeRes, "Cannot create tree.")
                 );
             }
 
             const newTree = await treeRes.json();
-
-            // 5. Create commit
 
             const newCommitRes = await githubRequest(
                 "POST",
@@ -1039,48 +845,31 @@ async function commitMultipleFiles(token, message, files) {
 
             if (!newCommitRes.ok) {
                 throw new Error(
-                    await githubErrorMessage(
-                        newCommitRes,
-                        "Cannot create commit."
-                    )
+                    await githubErrorMessage(newCommitRes, "Cannot create commit.")
                 );
             }
 
             const newCommit = await newCommitRes.json();
 
-            // 6. Update branch ref
-
             const updateRefRes = await githubRequest(
                 "PATCH",
                 `${GITHUB_GIT_API}/refs/heads/${BRANCH}`,
                 token,
-                {
-                    sha: newCommit.sha,
-                    force: false
-                }
+                { sha: newCommit.sha, force: false }
             );
 
             if (!updateRefRes.ok) {
-                if (attempt === 0) {
-                    continue;
-                }
+                if (attempt === 0) continue;
 
                 throw new Error(
-                    await githubErrorMessage(
-                        updateRefRes,
-                        "Cannot update branch ref."
-                    )
+                    await githubErrorMessage(updateRefRes, "Cannot update branch ref.")
                 );
             }
 
-            return {
-                commitSha: newCommit.sha
-            };
+            return { commitSha: newCommit.sha };
         }
         catch (error) {
-            if (attempt === 0) {
-                continue;
-            }
+            if (attempt === 0) continue;
             throw error;
         }
     }
@@ -1100,31 +889,20 @@ async function readLogMap(token) {
         token
     );
 
-    if (res.status === 404) {
-        return {};
-    }
+    if (res.status === 404) return {};
 
     if (!res.ok) {
         throw new Error(
-            await githubErrorMessage(
-                res,
-                "Cannot read log_map.json."
-            )
+            await githubErrorMessage(res, "Cannot read log_map.json.")
         );
     }
 
     const data = await res.json();
 
     try {
-        const parsed = JSON.parse(
-            base64ToUtf8(data.content)
-        );
+        const parsed = JSON.parse(base64ToUtf8(data.content));
 
-        if (
-            parsed &&
-            typeof parsed === "object" &&
-            !Array.isArray(parsed)
-        ) {
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
             return parsed;
         }
 
@@ -1136,11 +914,22 @@ async function readLogMap(token) {
 }
 
 
+/**
+ * recordKey - dùng để map record với file log.
+ * Dùng TẤT CẢ các trường không phải LOG để đảm bảo
+ * 2 record trùng DATE/STATUS/DETAIL nhưng khác các trường khác
+ * vẫn có key khác nhau.
+ */
 function recordKey(record) {
     return [
         normalizeDateForCompare(record.DATE),
+        String(record.KHO || "").trim(),
         String(record.STATUS || "").trim().toUpperCase(),
-        String(record.DETAIL || "").trim()
+        String(record["PART NUMBER"] || "").trim(),
+        String(record.DETAIL || "").trim(),
+        String(record.QTY || "").trim(),
+        String(record["VỊ TRÍ"] || "").trim(),
+        String(record.PIC || "").trim()
     ].join("||");
 }
 
@@ -1152,16 +941,11 @@ async function readLogFile(token, path) {
         token
     );
 
-    if (res.status === 404) {
-        return null;
-    }
+    if (res.status === 404) return null;
 
     if (!res.ok) {
         throw new Error(
-            await githubErrorMessage(
-                res,
-                "Cannot read log file."
-            )
+            await githubErrorMessage(res, "Cannot read log file.")
         );
     }
 
@@ -1178,16 +962,11 @@ async function getNextLogNumber(token) {
         token
     );
 
-    if (res.status === 404) {
-        return 1;
-    }
+    if (res.status === 404) return 1;
 
     if (!res.ok) {
         throw new Error(
-            await githubErrorMessage(
-                res,
-                "Cannot list logs."
-            )
+            await githubErrorMessage(res, "Cannot list logs.")
         );
     }
 
@@ -1197,9 +976,6 @@ async function getNextLogNumber(token) {
 
     if (Array.isArray(items)) {
         for (const item of items) {
-            /* Chấp nhận cả log_N.txt (file cũ) và log_N.html (file mới)
-               để số thứ tự không bị trùng */
-
             const m = /^log_(\d+)\.(txt|html)$/.exec(item.name);
 
             if (m) {
@@ -1215,13 +991,8 @@ async function getNextLogNumber(token) {
 // ============================================================
 // FIND RECORD
 //
-// NOTE: Chỉ so sánh DATE + STATUS + DETAIL.
-// Trường LOG không tham gia vào việc tìm record vì:
-// - Trong data.json, LOG luôn là chuỗi rỗng "" (file log
-//   được lưu riêng trong logs/ và map qua log_map.json).
-// - Nếu so sánh LOG, có thể gây lỗi "Record not found" khi
-//   Edit/Delete do payload frontend gửi lên và dữ liệu trong
-//   data.json không khớp nhau về trường này.
+// So sánh TẤT CẢ các trường không phải LOG. Trường LOG
+// không tham gia vì trong data.json, LOG luôn là "".
 // ============================================================
 
 function normalizeDateForCompare(value) {
@@ -1246,10 +1017,7 @@ function normalizeDateForCompare(value) {
 
 
 function sameText(a, b) {
-    return (
-        String(a || "").trim() ===
-        String(b || "").trim()
-    );
+    return String(a || "").trim() === String(b || "").trim();
 }
 
 
@@ -1257,18 +1025,33 @@ function findRecordIndex(data, original) {
     const wantedDate = normalizeDateForCompare(original.DATE);
 
     return data.findIndex(function (item) {
-        return (
-            item &&
-            normalizeDateForCompare(item.DATE) === wantedDate &&
-            sameText(
-                String(item.STATUS || "").toUpperCase(),
-                String(original.STATUS || "").toUpperCase()
-            ) &&
-            sameText(
-                item.DETAIL,
-                original.DETAIL
-            )
-        );
+        if (!item) return false;
+
+        if (normalizeDateForCompare(item.DATE) !== wantedDate) return false;
+
+        const compareFields = [
+            "KHO",
+            "STATUS",
+            "PART NUMBER",
+            "DETAIL",
+            "QTY",
+            "VỊ TRÍ",
+            "PIC"
+        ];
+
+        for (const field of compareFields) {
+            let a = item[field];
+            let b = original[field];
+
+            if (field === "STATUS") {
+                a = String(a || "").toUpperCase();
+                b = String(b || "").toUpperCase();
+            }
+
+            if (!sameText(a, b)) return false;
+        }
+
+        return true;
     });
 }
 
@@ -1310,7 +1093,7 @@ async function githubErrorMessage(response, defaultMessage) {
         }
     }
     catch (error) {
-        // Ignore JSON parsing error
+        /* Ignore JSON parse error */
     }
 
     return `${defaultMessage} HTTP ${response.status}.`;
@@ -1346,7 +1129,7 @@ function timingSafeEqual(a, b) {
 
 
 // ============================================================
-// UTF-8 → BADSE64
+// UTF-8 → BASE64
 // ============================================================
 
 function utf8ToBase64(value) {
