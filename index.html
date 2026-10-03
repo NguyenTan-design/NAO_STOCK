@@ -1548,6 +1548,29 @@ async function apiPost(path, payload, options) {
     };
 }
 
+/* =========================================================
+   TRACK VISIT — ghi IP vào Worker (KV)
+   ========================================================= */
+function trackVisit() {
+    // Chỉ ghi 1 lần mỗi tab (sessionStorage) để tránh spam khi F5
+    try {
+        if (sessionStorage.getItem("naoStockTracked") === "1") return;
+        sessionStorage.setItem("naoStockTracked", "1");
+    }
+    catch (e) { /* sessionStorage có thể bị chặn → vẫn ghi */ }
+
+    fetch(API_BASE + "/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            path: location.pathname,
+            referrer: document.referrer || ""
+        })
+    }).catch(function (err) {
+        console.warn("Track failed:", err);
+    });
+}
+
 let sessionExpiredHandled = false;
 
 function handleSessionExpired() {
@@ -3785,7 +3808,9 @@ function handleCameraCapture(event) {
 /* =========================================================
    START
    ========================================================= */
-if (restoreSession()) {
+
+    trackVisit();
+    if (restoreSession()) {
     document.getElementById("loginOverlay").style.display = "none";
     applyRoleUI();
     loadData();
