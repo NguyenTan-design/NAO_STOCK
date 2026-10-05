@@ -20,7 +20,6 @@
     "09/15/25||FMA||PART IN||2AHENA002800||Nozzle, Dia. 3.7 nozzle (for RH20 head)||20||NAO-SHE000-000||LY": "log_19.html",
     "09/15/25||FMA||PART IN||2AHENB001200||Nozzle, Dia. 3.7 (for RH08 head)||4||NAO-SHE000-000||LY": "log_20.html",
     "09/15/25||FMA||PART IN||2AHENB001300||Nozzle, Dia. 5.0 (for RH08 head)||4||NAO-SHE000-000||LY": "log_21.html",
-    "09/15/25||FMA||PART IN||2AHENB002000||Nozzle Dia. 2.5G (for RH08 head)||Nozzle Dia. 2.5G (for RH08 head)||NAO-SHE000-000||LY": "log_22.html",
     "09/15/25||FMA||PART IN||2AHENB003600||Nozzle, Wide range nozzle S (for RH08 head)||2||NAO-SHE000-000||LY": "log_23.html",
     "09/15/25||FMA||PART IN||2AHENB003700||Nozzle, Wide range nozzle M (for RH08 head)||2||NAO-SHE000-000||LY": "log_24.html",
     "09/15/25||FMA||PART IN||2AHENB003800||Nozzle, Wide range nozzle L (for RH08 head)||2||NAO-SHE000-000||LY": "log_25.html",
@@ -30,5 +29,6 @@
     "09/15/25||FMA||PART IN||2AHENC001800||Nozzle Dia. 15.0G (for NXTR RH02 head)||1||NAO-SHE000-000||LY": "log_29.html",
     "09/15/25||FMA||PART IN||2AHENC001900||Nozzle, dia 20.0G (for NXTR RH02 HEAD)||1||NAO-SHE000-000||LY": "log_30.html",
     "09/15/25||FMA||PART IN||2AHENH000200||Auto backup pin picker nozzle (for RH28 head)||1||NAO-SHE000-000||LY": "log_31.html",
-    "09/15/25||FMA||PART IN||2AHETF000600||Tray drawer for tray unit-RW||44||NAO-SHE000-000||LY": "log_32.html"
+    "09/15/25||FMA||PART IN||2AHETF000600||Tray drawer for tray unit-RW||44||NAO-SHE000-000||LY": "log_32.html",
+    "09/15/25||FMA||PART IN||2AHENB002000||Nozzle Dia. 2.5G (for RH08 head)||2||NAO-SHE000-000||LY": "log_22.html"
 }
