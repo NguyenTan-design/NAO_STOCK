@@ -383,5 +383,16 @@
         "QTY": "5",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2UHEFA011800",
+        "DETAIL": "W08t Intelligent feeder + 7 inch reel holder",
+        "QTY": "10",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
