@@ -229,5 +229,16 @@
         "QTY": "4",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2AHENB002000",
+        "DETAIL": "Nozzle Dia. 2.5G (for RH08 head)",
+        "QTY": "Nozzle Dia. 2.5G (for RH08 head)",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
