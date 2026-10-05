@@ -141,5 +141,16 @@
         "QTY": "2",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2AHENA001600",
+        "DETAIL": "Nozzle, Dia. 1.3 nozzle (for RH20 head)",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
