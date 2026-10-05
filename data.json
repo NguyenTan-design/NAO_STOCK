@@ -75,5 +75,16 @@
         "QTY": "28",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2AGKNX007600",
+        "DETAIL": "NOZZLE H24 WIDE-RANGE M (1005 TO 1608), R047-011WRM-035",
+        "QTY": "28",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
