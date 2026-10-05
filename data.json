@@ -97,5 +97,16 @@
         "QTY": "28",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2AHEHJ027700",
+        "DETAIL": "Head storage case for RH28/ RH08/ RH02 Head",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
