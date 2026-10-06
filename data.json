@@ -504,5 +504,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "INV25026a",
+        "DETAIL": "S1 module (double conveyor) S/N. 1289 with 1 x Front acrylic cover (std, open/close type), 1 x Signal lamp (std, horizontal type), 1 x Backup plate (1R) & 1 x Standard parts camera (PC01)",
+        "QTY": "1",
+        "VỊ TRÍ": "Phòng Máy",
+        "PIC": "LY"
     }
 ]
