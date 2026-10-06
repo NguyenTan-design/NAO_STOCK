@@ -878,5 +878,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/12/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "GPX-CII SPARE PART",
+        "DETAIL": "PCB Backup Pin\t\t\nPin (Magnet type) Standard type  (  ) pcs/set\nPin (Magnet type) Straight type  ( ) pcs/set\nPin (Magnet type) Eccentric type ( ) pcs/s Total: 30pcs",
+        "QTY": "10",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
