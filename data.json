@@ -482,5 +482,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "INV23044",
+        "DETAIL": "HIGH PRECISION SCREEN PRINTER GPX-C II (S/NO: G3153)",
+        "QTY": "1",
+        "VỊ TRÍ": "Phòng Máy",
+        "PIC": "LY"
     }
 ]
