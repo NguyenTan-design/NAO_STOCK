@@ -537,5 +537,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "INV25027",
+        "DETAIL": "MFU-63, S/N. 1542 with 1 x Waste tape box for MFU-52/63 (large capacity for S model line), 1 x Waste tape duct for MFU & packing & FOB charge for MFU63",
+        "QTY": "1",
+        "VỊ TRÍ": "Phòng Máy",
+        "PIC": "LY"
     }
 ]
