@@ -757,5 +757,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "NHƠN"
+    },
+    {
+        "DATE": "12/12/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "GPX-CII SPARE PART",
+        "DETAIL": "Machine Colour　\t\tA: Standard (White&Sliver)",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
