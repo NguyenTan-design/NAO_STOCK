@@ -614,5 +614,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/12/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "GPX-CII SPARE PART",
+        "DETAIL": "Operation System Windows10",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
