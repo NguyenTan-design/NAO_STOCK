@@ -548,5 +548,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "REEL-SET-STAND",
+        "DETAIL": "\"Reel setting stand (kitting compatible) (USB support) (includes harness [RH1963] with Japanese E plug) [S/N. 6543 & 6544]",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
