@@ -515,5 +515,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "INV25026b",
+        "DETAIL": "Side cover (left-side) (standard) (2UHEKK000200), S/N. 802",
+        "QTY": "1",
+        "VỊ TRÍ": "Phòng Máy",
+        "PIC": "LY"
     }
 ]
