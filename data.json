@@ -493,5 +493,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "INV25026",
+        "DETAIL": "NXTR 1M-S base S/N. SD0121340, with 1 x Chute for waste tape (for MFU)(for 1MB / right side of 2MB) , 1 x Anchor bolts (when H = 912 mm) (5 bolts per set) & packing & FOB charge for NXTR 1 module base",
+        "QTY": "1",
+        "VỊ TRÍ": "Phòng Máy",
+        "PIC": "LY"
     }
 ]
