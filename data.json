@@ -1483,5 +1483,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Đo điện áp, dòng, … Xuất xứ: Kyoritsu/ K1009 S/N: A0351247",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Xe đựng dụng cụ",
+        "DETAIL": "1 nắp mở & 2 ngăn kéo\nNhập từ KTC Nhật/ SKX2614",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
