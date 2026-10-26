@@ -1428,5 +1428,16 @@
         "QTY": "8",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/12/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Bộ lục giác chữ đầu dài Gồm 9 cỡ, 1.5-10mm",
+        "DETAIL": "Xuất xứ: Eight Nhật/ TLS-9N",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
