@@ -1934,5 +1934,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN039",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "2MHBSJ0028**",
+        "DETAIL": "CX origin position jig",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN032",
+        "PIC": "LY"
     }
 ]
