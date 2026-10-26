@@ -1956,5 +1956,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN032",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "K5HJ000184",
+        "DETAIL": "CZ origin position jig",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-LKN032",
+        "PIC": "LY"
     }
 ]
