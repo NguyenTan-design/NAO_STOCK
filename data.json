@@ -1461,5 +1461,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Kìm tuốt dây đ. kính: 0.25 - 1.0 mm",
+        "DETAIL": "Xuất xứ: Marvel Nhật/ MWSM10",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
