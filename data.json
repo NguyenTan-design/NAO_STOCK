@@ -1802,5 +1802,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/02/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "WARRANTY",
+        "PART NUMBER": "2MHESH000501",
+        "DETAIL": "AC Servo Motor\tWHRS-010986",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
