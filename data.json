@@ -1626,5 +1626,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "04/03/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3",
+        "DETAIL": "Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
