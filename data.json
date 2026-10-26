@@ -1054,5 +1054,16 @@
         "QTY": "11",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/13/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "BĂNG DÍNH 80",
+        "DETAIL": "BĂNG DÍNH 80",
+        "QTY": "3",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
