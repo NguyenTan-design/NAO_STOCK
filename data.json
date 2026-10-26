@@ -1120,5 +1120,16 @@
         "QTY": "2",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/07/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "WARRANTY",
+        "PART NUMBER": "K61324",
+        "DETAIL": "Warranty part WHRS-008911\nI/O BOARD\nJAPMC-IO2304-ET1",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
