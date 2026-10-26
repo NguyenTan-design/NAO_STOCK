@@ -1516,5 +1516,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Bộ lục giác mini chữ L Gồm 7 cỡ từ 0.71-3mm",
+        "DETAIL": "Xuất xứ: Eight Nhật/ M-7M",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
