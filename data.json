@@ -1901,5 +1901,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN032",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "2MHBHJ001300",
+        "DETAIL": "Jig",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN039",
+        "PIC": "LY"
     }
 ]
