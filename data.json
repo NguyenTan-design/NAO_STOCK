@@ -2143,5 +2143,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN033",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "K64431",
+        "DETAIL": "Grease",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN038",
+        "PIC": "LY"
     }
 ]
