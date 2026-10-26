@@ -2132,5 +2132,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN038",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "K3036W",
+        "DETAIL": "Grease",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN033",
+        "PIC": "LY"
     }
 ]
