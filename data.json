@@ -2044,5 +2044,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "7033-B",
+        "DETAIL": "Dial gauge Stand",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN026",
+        "PIC": "LY"
     }
 ]
