@@ -1846,5 +1846,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/19/26",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Thiết bị phát wifi",
+        "DETAIL": "Thiết bị phát wifi",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "THÔNG"
     }
 ]
