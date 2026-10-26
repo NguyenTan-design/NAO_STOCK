@@ -1615,5 +1615,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/04/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Tô Vít D1P2-1",
+        "DETAIL": "Tô Vít D1P2-1",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
