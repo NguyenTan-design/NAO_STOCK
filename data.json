@@ -1472,5 +1472,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Đồng hồ đo điện",
+        "DETAIL": "Đo điện áp, dòng, … Xuất xứ: Kyoritsu/ K1009 S/N: A0351247",
+        "QTY": "1",
+        "VỊ TRÍ": "Đo điện áp, dòng, … Xuất xứ: Kyoritsu/ K1009 S/N: A0351247",
+        "PIC": "LY"
     }
 ]
