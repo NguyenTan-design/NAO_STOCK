@@ -1857,5 +1857,16 @@
         "QTY": "2",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "THÔNG"
+    },
+    {
+        "DATE": "10/19/26",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "SIM",
+        "DETAIL": "SIM 5G",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "THÔNG"
     }
 ]
