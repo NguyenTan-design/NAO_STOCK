@@ -1098,5 +1098,16 @@
         "QTY": "4",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/24/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "WARRANTY",
+        "PART NUMBER": "2AHESC000812",
+        "DETAIL": "Linear Motor",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
