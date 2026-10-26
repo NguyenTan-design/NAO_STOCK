@@ -1835,5 +1835,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Phòng Máy",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/19/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "VÃNG LAI",
+        "PART NUMBER": "HEAD RH08",
+        "DETAIL": "Xưởng BU11\n LINE VS2-05\nHead RH08 HB1012 3049\nNgày lắp đặt: 06/08/2026\nBase SN: SE0211581\nERR code: 3A22 \nZ1 Encoder data.",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
