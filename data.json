@@ -1538,5 +1538,16 @@
         "QTY": "2",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Lục giác chữ T, 3mm Chiều dài: 340mm",
+        "DETAIL": "Xuất xứ: Eight Nhật/ 018L-3H",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
