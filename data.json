@@ -1989,5 +1989,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN045",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "K5HJ000204",
+        "DETAIL": "JIG",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN045",
+        "PIC": "LY"
     }
 ]
