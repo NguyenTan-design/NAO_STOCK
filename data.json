@@ -2055,5 +2055,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-LKN026",
         "PIC": "LY"
+    },
+    {
+        "DATE": "03/12/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "K71332",
+        "DETAIL": "Gauge dial",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-LKN026",
+        "PIC": "LY"
     }
 ]
