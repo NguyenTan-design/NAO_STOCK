@@ -1758,5 +1758,16 @@
         "QTY": "1",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "08/19/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "2UHEHF000100",
+        "DETAIL": "Head RH08 \nHB1012\n0000722",
+        "QTY": "1",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
