@@ -1307,5 +1307,16 @@
         "QTY": "2",
         "VỊ TRÍ": "NAO-SHE000-000",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/12/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "GPX-CII SPARE PART",
+        "DETAIL": "\"Metal Squeegee Holder (480mm)  2pcs/set\nInclude Hanger 1set\"\t\tB1: Yes  60deg  (  2   ) set",
+        "QTY": "2",
+        "VỊ TRÍ": "NAO-SHE000-000",
+        "PIC": "LY"
     }
 ]
