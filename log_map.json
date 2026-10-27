@@ -140,7 +140,6 @@
     "12/25/25||SERVICE||PART IN||Thiết bị đo chỉ thị pha KYORITSU 8031||(110~600V AC)\nModel: 8031\nHãng sản xuất: KYORITSU Xuất xứ: Japan (Nhật Bản) S/N: E0231019||1||NAO-SHE000-000||LY": "log_142.html",
     "12/25/25||SERVICE||PART IN||Mũi Taro FCT F1-PO M 30x2.0||Mũi Taro FCT F1-PO M 30x2.0||1||NAO-SHE000-000||LY": "log_143.html",
     "12/25/25||SERVICE||PART IN||Dưỡng đo khe hở||L150mm 0.01-1mm 19 lá SK (150ML)||1||NAO-SHE000-000||LY": "log_144.html",
-    "03/02/26||SERVICE||PART IN||2AHBC015001||Control Box||1||NAO-SHE000-000||LY": "log_145.html",
     "03/04/25||SERVICE||PART IN||Tô Vít D1P2-1||Tô Vít D1P2-1||1||NAO-SHE000-000||LY": "log_146.html",
     "04/03/26||SERVICE||PART IN||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||1||NAO-SHE000-000||LY": "log_147.html",
     "06/03/26||SERVICE||PART IN||PC BOARD||PC BOARD||1||NAO-SHE000-000||LY": "log_148.html",
@@ -203,5 +202,6 @@
     "10/27/26||SERVICE||PART IN||H2120X||Cầu chì ống 125V 7A||10||temp||LY": "log_207.html",
     "12/25/25||SERVICE||PART IN||Lục giác chữ T, 2mm Chiều dài: 240mm||Xuất xứ: Eight Nhật/ 018L-2H||2||LKN-38||LY": "log_208.html",
     "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28\nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_160.html",
-    "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000342||1||NAO-SHE000-000||LY": "log_159.html"
+    "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000342||1||NAO-SHE000-000||LY": "log_159.html",
+    "03/02/26||WARRANTY||PART IN||2AHEBC016600||Control Box\nWHRS011367||1||NAO-SHE000-000||LY": "log_145.html"
 }
