@@ -2154,5 +2154,16 @@
         "QTY": "13",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H20013",
+        "DETAIL": "Cầu chì găm 2.0A",
+        "QTY": "4",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
