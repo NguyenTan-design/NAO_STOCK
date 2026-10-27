@@ -2187,5 +2187,16 @@
         "QTY": "10",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H65866",
+        "DETAIL": "Cầu chì ống 250V 6,3A",
+        "QTY": "10",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
