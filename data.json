@@ -2143,5 +2143,16 @@
         "QTY": "1",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H2001F",
+        "DETAIL": "Cầu chì dán loại 3.5A",
+        "QTY": "13",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
