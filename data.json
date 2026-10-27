@@ -2165,5 +2165,16 @@
         "QTY": "4",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H2124A",
+        "DETAIL": "Cầu chì ống 25V 3A",
+        "QTY": "10",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
