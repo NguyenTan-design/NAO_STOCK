@@ -32,7 +32,6 @@
     "09/15/25||FMA||PART IN||2UDLFB000700||W16f Intelligent feeder + 15 inch reel holder||3||NAO-SHE000-000||LY": "log_34.html",
     "09/15/25||FMA||PART IN||2UDLFB000900||W12f Intelligent feeder + 7 inch reel holder||5||NAO-SHE000-000||LY": "log_35.html",
     "09/15/25||FMA||PART IN||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||10||NAO-SHE000-000||LY": "log_36.html",
-    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725||1||NAO-SHE000-000||LY": "log_37.html",
     "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||NAO-SHE000-000||LY": "log_38.html",
     "09/15/25||FMA||PART IN||2UHEMA000100||Nozzle station for RH20 head (62 sockets) MA1002 [S/N. 1462]||1||NAO-SHE000-000||LY": "log_39.html",
     "09/25/25||FMA||PART IN||2UHEMB000100||Nozzle station MB1001 for RH08 (24 sockets) [S/N. 1157]||1||NAO-SHE000-000||LY": "log_40.html",
@@ -200,5 +199,6 @@
     "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000342||1||NAO-SHE000-000||LY": "log_159.html",
     "03/02/26||WARRANTY||PART IN||2AHEBC016600||Control Box\nWHRS011367||1||NAO-SHE000-000||LY": "log_145.html",
     "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html",
-    "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html"
+    "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html",
+    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||NAO-SHE000-000||LY": "log_37.html"
 }
