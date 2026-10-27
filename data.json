@@ -2264,5 +2264,16 @@
         "QTY": "10",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "12/25/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Lục giác chữ T, 2mm Chiều dài: 240mm",
+        "DETAIL": "Xuất xứ: Eight Nhật/ 018L-2H",
+        "QTY": "2",
+        "VỊ TRÍ": "LKN-38",
+        "PIC": "LY"
     }
 ]
