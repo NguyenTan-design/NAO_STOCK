@@ -2220,5 +2220,16 @@
         "QTY": "10",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H65867",
+        "DETAIL": "Cầu chì ống 250V 5A",
+        "QTY": "10",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
