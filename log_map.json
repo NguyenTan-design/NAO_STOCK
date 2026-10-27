@@ -154,7 +154,6 @@
     "08/12/26||SERVICE||PART IN||2AHESC000414||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_156.html",
     "08/12/26||SERVICE||PART IN||2EHESC000801||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_157.html",
     "08/18/26||SERVICE||PART IN||USB phục hồi máy in||USB phục hồi máy in||1||NAO-SHE000-000||LY": "log_158.html",
-    "08/19/26||SERVICE||PART IN||2UHEHF000100||Head RH28\nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_160.html",
     "08/19/26||WARRANTY||PART IN||K1HK000407||Board||1||NAO-SHE000-000||LY": "log_161.html",
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge||1||NAO-SHE000-000||LY": "log_162.html",
     "10/02/26||WARRANTY||PART IN||2MHESH000501||AC Servo Motor\tWHRS-010986||1||NAO-SHE000-000||LY": "log_163.html",
@@ -203,5 +202,6 @@
     "10/27/26||SERVICE||PART IN||H2001R||Cầu chì găm 1.0A||4||temp||LY": "log_206.html",
     "10/27/26||SERVICE||PART IN||H2120X||Cầu chì ống 125V 7A||10||temp||LY": "log_207.html",
     "12/25/25||SERVICE||PART IN||Lục giác chữ T, 2mm Chiều dài: 240mm||Xuất xứ: Eight Nhật/ 018L-2H||2||LKN-38||LY": "log_208.html",
-    "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_159.html"
+    "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_159.html",
+    "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28\nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_160.html"
 }
