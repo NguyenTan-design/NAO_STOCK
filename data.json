@@ -2242,5 +2242,16 @@
         "QTY": "1",
         "VỊ TRÍ": "LKN37",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "Bộ hoa thị lỗ chữ L Đầu bi, T8-T40",
+        "DETAIL": "Xuất xứ: Eight Nhật/ TXBH-S8",
+        "QTY": "1",
+        "VỊ TRÍ": "ANH TÂN CẦM",
+        "PIC": "LY"
     }
 ]
