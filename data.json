@@ -2253,5 +2253,16 @@
         "QTY": "1",
         "VỊ TRÍ": "ANH TÂN CẦM",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/27",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2UHEFA011800",
+        "DETAIL": "W08t Intelligent feeder + 7 inch reel holder",
+        "QTY": "1",
+        "VỊ TRÍ": "XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284",
+        "PIC": "LY"
     }
 ]
