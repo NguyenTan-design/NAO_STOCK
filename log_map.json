@@ -140,7 +140,6 @@
     "03/04/25||SERVICE||PART IN||Tô Vít D1P2-1||Tô Vít D1P2-1||1||NAO-SHE000-000||LY": "log_146.html",
     "04/03/26||SERVICE||PART IN||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||1||NAO-SHE000-000||LY": "log_147.html",
     "06/03/26||SERVICE||PART IN||PC BOARD||PC BOARD||1||NAO-SHE000-000||LY": "log_148.html",
-    "06/06/25||SERVICE||PART IN||Operation Panel||Bảng điều khiển hoạt động||1||NAO-SHE000-000||LY": "log_149.html",
     "06/19/25||WARRANTY||PART IN||2AHEGA000809||Cover\nWHRS-009979||4||NAO-SHE000-000||LY": "log_150.html",
     "06/09/26||WARRANTY||PART IN||K1HEBA125300||CPU BOX\nVGA CABLE\nHARNESS||1||NAO-SHE000-000||LY": "log_152.html",
     "08/06/26||SERVICE||PART IN||2MHBHJ000400||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_153.html",
@@ -200,5 +199,6 @@
     "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28\nHF1021 \n000894||1||NAO-SHE000-000||LY": "log_160.html",
     "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000342||1||NAO-SHE000-000||LY": "log_159.html",
     "03/02/26||WARRANTY||PART IN||2AHEBC016600||Control Box\nWHRS011367||1||NAO-SHE000-000||LY": "log_145.html",
-    "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html"
+    "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html",
+    "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html"
 }

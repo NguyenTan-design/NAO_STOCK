@@ -1585,13 +1585,13 @@
     },
     {
         "DATE": "06/06/25",
-        "STATUS": "PART IN",
+        "STATUS": "PART OUT",
         "LOG": "",
         "KHO": "SERVICE",
-        "PART NUMBER": "Operation Panel",
-        "DETAIL": "Bảng điều khiển hoạt động",
+        "PART NUMBER": "H60345",
+        "DETAIL": "DIGITAL OPERATOR",
         "QTY": "1",
-        "VỊ TRÍ": "NAO-SHE000-000",
+        "VỊ TRÍ": "ANH TÂN CẦM",
         "PIC": "LY"
     },
     {
