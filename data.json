@@ -2275,5 +2275,16 @@
         "QTY": "2",
         "VỊ TRÍ": "LKN-38",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "THƯỚC MỰC",
+        "DETAIL": "THƯỚC MỰC",
+        "QTY": "1",
+        "VỊ TRÍ": "LKN37",
+        "PIC": "LY"
     }
 ]
