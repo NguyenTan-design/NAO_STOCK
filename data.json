@@ -2176,5 +2176,16 @@
         "QTY": "10",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/27/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "H66510",
+        "DETAIL": "Cầu chì dán 2A",
+        "QTY": "10",
+        "VỊ TRÍ": "temp",
+        "PIC": "LY"
     }
 ]
