@@ -27,7 +27,6 @@
     "09/15/25||FMA||PART IN||2AHENH000200||Auto backup pin picker nozzle (for RH28 head)||1||NAO-SHE000-000||LY": "log_31.html",
     "09/15/25||FMA||PART IN||2AHETF000600||Tray drawer for tray unit-RW||44||NAO-SHE000-000||LY": "log_32.html",
     "09/15/25||FMA||PART IN||2AHENB002000||Nozzle Dia. 2.5G (for RH08 head)||2||NAO-SHE000-000||LY": "log_22.html",
-    "09/15/25||FMA||PART IN||2UDLFB000700||W16f Intelligent feeder + 15 inch reel holder||3||NAO-SHE000-000||LY": "log_34.html",
     "09/15/25||FMA||PART IN||2UDLFB000900||W12f Intelligent feeder + 7 inch reel holder||5||NAO-SHE000-000||LY": "log_35.html",
     "09/15/25||FMA||PART IN||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||10||NAO-SHE000-000||LY": "log_36.html",
     "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||NAO-SHE000-000||LY": "log_38.html",
@@ -202,5 +201,6 @@
     "06/09/26||WARRANTY||PART IN||K1HEBA125300||CPU BOX\nVGA CABLE\nHARNESS\n( Hàng Fuji KS gủi FMV , lưu trữ ở NAO )||1||NAO-SHE000-000||LY": "log_152.html",
     "09/15/25||FMA||PART IN||2AGKNX000400||Nozzle Jig for Auto-Calibration (RH28/H24) (J34)||28||Phòng Máy||LY": "log_5.html",
     "09/15/25||FMA||PART IN||2GHECB000800||Backup pin stocker for double conveyor (with 48 hard backup pins)||1||LKN26||LY": "log_212.html",
-    "09/15/25||FMA||PART IN||2UDLFA001300||W04f Intelligent feeder + 7 inch reel holder||4||SHE004||LY": "log_33.html"
+    "09/15/25||FMA||PART IN||2UDLFA001300||W04f Intelligent feeder + 7 inch reel holder||4||SHE004||LY": "log_33.html",
+    "09/15/25||FMA||PART IN||2UDLFB000700||W16f Intelligent feeder + 15 inch reel holder||3||SHE009||LY": "log_34.html"
 }
