@@ -177,7 +177,6 @@
     "03/02/26||WARRANTY||PART IN||2AHEBC016600||Control Box\nWHRS011367||1||NAO-SHE000-000||LY": "log_145.html",
     "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html",
     "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html",
-    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||NAO-SHE000-000||LY": "log_37.html",
     "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
     "08/19/26||WARRANTY||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_156.html",
@@ -202,5 +201,6 @@
     "09/15/25||FMA||PART IN||2UHEMC000400||Nozzle station MC1004 for RH02/RH01(10 sockets) [S/N. 476]||1||LKN08||LY": "log_41.html",
     "09/25/25||FMA||PART IN||2UHEMB000100||Nozzle station MB1001 for RH08 (24 sockets) [S/N. 1157]||1||LKN08||LY": "log_40.html",
     "09/15/25||FMA||PART IN||2UHEMA000100||Nozzle station for RH20 head (62 sockets) MA1002 [S/N. 1462]||1||LKN08||LY": "log_39.html",
-    "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||Phòng Máy||LY": "log_38.html"
+    "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||Phòng Máy||LY": "log_38.html",
+    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||SHE008||LY": "log_37.html"
 }
