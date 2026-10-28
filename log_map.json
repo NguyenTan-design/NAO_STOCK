@@ -37,7 +37,6 @@
     "09/15/25||FMA||PART IN||INV25026b||Side cover (left-side) (standard) (2UHEKK000200), S/N. 802||1||Phòng Máy||LY": "log_47.html",
     "09/15/25||FMA||PART IN||INV25026c||Side cover (right-side) (2UHEKK000100), S/N. 796||1||Phòng Máy||LY": "log_48.html",
     "09/15/25||FMA||PART IN||INV25027||MFU-63, S/N. 1542 with 1 x Waste tape box for MFU-52/63 (large capacity for S model line), 1 x Waste tape duct for MFU & packing & FOB charge for MFU63||1||Phòng Máy||LY": "log_49.html",
-    "09/15/25||FMA||PART IN||UF11100||W56c Intelligent feeder + 15 inch reel holder||2||NAO-SHE000-000||LY": "log_54.html",
     "12/12/25||SERVICE||PART IN||INV23044||Machine Type GPX-CII||1||Phòng Máy||LY": "log_55.html",
     "12/12/25||SERVICE||PART IN||GPX-CII SPARE PART||Operation System Windows10||1||NAO-SHE000-000||LY": "log_56.html",
     "12/12/25||SERVICE||PART IN||GPX-CII SPARE PART||PCB Flow L=>R or R=>L or R=>R or L=>L (software setting only)||1||NAO-SHE000-000||LY": "log_57.html",
@@ -202,5 +201,6 @@
     "09/15/25||FMA||PART IN||REEL-SET-STAND||\"Reel setting stand (kitting compatible) (USB support) (includes harness [RH1963] with Japanese E plug) [S/N. 6543 & 6544]||1||SHE004||LY": "log_50.html",
     "09/15/25||FMA||PART IN||RH21380||Panel conveyance signal cable (SMEMA, 1.5 m)||4||LKN20||LY": "log_51.html",
     "09/15/25||FMA||PART IN||UF02500||W72 Intelligent feeder + 15 inch reel holder||1||SHE007||LY": "log_52.html",
-    "09/15/25||FMA||PART IN||UF10900||W44c Intelligent feeder + 15 inch reel holder||1||SHE006||LY": "log_53.html"
+    "09/15/25||FMA||PART IN||UF10900||W44c Intelligent feeder + 15 inch reel holder||1||SHE006||LY": "log_53.html",
+    "09/15/25||FMA||PART IN||UF11100||W56c Intelligent feeder + 15 inch reel holder||2||SHE001||LY": "log_54.html"
 }
