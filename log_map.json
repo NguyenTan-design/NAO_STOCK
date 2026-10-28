@@ -147,7 +147,6 @@
     "08/12/26||SERVICE||PART IN||2AHESC000414||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_156.html",
     "08/12/26||SERVICE||PART IN||2EHESC000801||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_157.html",
     "08/18/26||SERVICE||PART IN||USB phục hồi máy in||USB phục hồi máy in||1||NAO-SHE000-000||LY": "log_158.html",
-    "08/19/26||WARRANTY||PART IN||K1HK000407||Board||1||NAO-SHE000-000||LY": "log_161.html",
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge||1||NAO-SHE000-000||LY": "log_162.html",
     "10/02/26||WARRANTY||PART IN||2MHESH000501||AC Servo Motor\tWHRS-010986||1||NAO-SHE000-000||LY": "log_163.html",
     "10/08/26||SERVICE||PART IN||GPX CW printer||control Pcs||2||NAO-SHE000-000||LY": "log_164.html",
@@ -202,5 +201,6 @@
     "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html",
     "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||NAO-SHE000-000||LY": "log_37.html",
     "10/27/26||SERVICE||PART OUT||Bộ hoa thị lỗ chữ L Đầu bi, T8-T40||Xuất xứ: Eight Nhật/ TXBH-S8||1||ANH TÂN CẦM||LY": "log_210.html",
-    "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html"
+    "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
+    "08/19/26||WARRANTY||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html"
 }
