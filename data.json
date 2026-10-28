@@ -2253,5 +2253,16 @@
         "QTY": "1",
         "VỊ TRÍ": "XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284",
         "PIC": "LY"
+    },
+    {
+        "DATE": "09/15/25",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2GHECB000800",
+        "DETAIL": "Backup pin stocker for double conveyor (with 48 hard backup pins)",
+        "QTY": "1",
+        "VỊ TRÍ": "LKN26",
+        "PIC": "LY"
     }
 ]
