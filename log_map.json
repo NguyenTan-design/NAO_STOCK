@@ -23,7 +23,6 @@
     "09/15/25||FMA||PART IN||2AHENC000800||Nozzle, Dia. 5.0 (for RH02 head)||2||NAO-SHE000-000||LY": "log_27.html",
     "09/15/25||FMA||PART IN||2AHENC000900||Nozzle, Dia. 7.0 nozzle (for RH02 head)||2||NAO-SHE000-000||LY": "log_28.html",
     "09/15/25||FMA||PART IN||2AHENC001800||Nozzle Dia. 15.0G (for NXTR RH02 head)||1||NAO-SHE000-000||LY": "log_29.html",
-    "09/15/25||FMA||PART IN||2AHENC001900||Nozzle, dia 20.0G (for NXTR RH02 HEAD)||1||NAO-SHE000-000||LY": "log_30.html",
     "09/15/25||FMA||PART IN||2AHENB002000||Nozzle Dia. 2.5G (for RH08 head)||2||NAO-SHE000-000||LY": "log_22.html",
     "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||NAO-SHE000-000||LY": "log_38.html",
     "09/15/25||FMA||PART IN||2UHEMA000100||Nozzle station for RH20 head (62 sockets) MA1002 [S/N. 1462]||1||NAO-SHE000-000||LY": "log_39.html",
@@ -202,5 +201,6 @@
     "09/15/25||FMA||PART IN||RH21380||Panel conveyance signal cable (SMEMA, 1.5 m)||4||LKN20||LY": "log_51.html",
     "09/15/25||FMA||PART IN||UF02500||W72 Intelligent feeder + 15 inch reel holder||1||SHE007||LY": "log_52.html",
     "09/15/25||FMA||PART IN||UF10900||W44c Intelligent feeder + 15 inch reel holder||1||SHE006||LY": "log_53.html",
-    "09/15/25||FMA||PART IN||UF11100||W56c Intelligent feeder + 15 inch reel holder||2||SHE001||LY": "log_54.html"
+    "09/15/25||FMA||PART IN||UF11100||W56c Intelligent feeder + 15 inch reel holder||2||SHE001||LY": "log_54.html",
+    "09/15/25||FMA||PART IN||2AHENC001900||Nozzle, dia 20.0G (for NXTR RH02 HEAD)||1||LKN14||LY": "log_30.html"
 }
