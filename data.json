@@ -2253,5 +2253,16 @@
         "QTY": "1",
         "VỊ TRÍ": "LKN26",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/28/27",
+        "STATUS": "PART OUT",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2UHEFA011800",
+        "DETAIL": "W08t Intelligent feeder + 7 inch reel holder",
+        "QTY": "1",
+        "VỊ TRÍ": "XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287",
+        "PIC": "LY"
     }
 ]
