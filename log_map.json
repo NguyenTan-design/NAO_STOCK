@@ -13,7 +13,6 @@
     "09/15/25||FMA||PART IN||2AHENA001800||Nozzle, Wide range nozzle S (for RH20 head)||4||NAO-SHE000-000||LY": "log_16.html",
     "09/15/25||FMA||PART IN||2AHENA001900||Nozzle, Wide range nozzle M (for RH20 head)||4||NAO-SHE000-000||LY": "log_17.html",
     "09/15/25||FMA||PART IN||2AHENA002000||Nozzle, Wide range nozzle L (for RH20 head)||4||NAO-SHE000-000||LY": "log_18.html",
-    "09/15/25||FMA||PART IN||2AHENA002800||Nozzle, Dia. 3.7 nozzle (for RH20 head)||20||NAO-SHE000-000||LY": "log_19.html",
     "09/15/25||FMA||PART IN||2AHENB001200||Nozzle, Dia. 3.7 (for RH08 head)||4||NAO-SHE000-000||LY": "log_20.html",
     "09/15/25||FMA||PART IN||2AHENB001300||Nozzle, Dia. 5.0 (for RH08 head)||4||NAO-SHE000-000||LY": "log_21.html",
     "09/15/25||FMA||PART IN||2AHENB003600||Nozzle, Wide range nozzle S (for RH08 head)||2||NAO-SHE000-000||LY": "log_23.html",
@@ -202,5 +201,6 @@
     "09/25/25||FMA||PART IN||2UHEMB000100||Nozzle station MB1001 for RH08 (24 sockets) [S/N. 1157]||1||LKN08||LY": "log_40.html",
     "09/15/25||FMA||PART IN||2UHEMA000100||Nozzle station for RH20 head (62 sockets) MA1002 [S/N. 1462]||1||LKN08||LY": "log_39.html",
     "01/05/26||FMA||PART IN||2UHEHC000100||RH02 head \t\t\nS/NO: 1234||1||Phòng Máy||LY": "log_38.html",
-    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||SHE008||LY": "log_37.html"
+    "09/04/26||FMA||PART IN||2UHEHB010100||RH08 head (with IPS)\t\t\nHB1012 000725\nNo head case||1||SHE008||LY": "log_37.html",
+    "09/15/25||FMA||PART IN||2AHENA002800||Nozzle, Dia. 3.7 nozzle (for RH20 head)||20||bộ chạy APAM||LY": "log_19.html"
 }
