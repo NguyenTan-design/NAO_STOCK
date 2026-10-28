@@ -140,7 +140,6 @@
     "04/03/26||SERVICE||PART IN||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||Đầu đọc thẻ nhớ Cfast-2/ BBb-212-3||1||NAO-SHE000-000||LY": "log_147.html",
     "06/03/26||SERVICE||PART IN||PC BOARD||PC BOARD||1||NAO-SHE000-000||LY": "log_148.html",
     "06/19/25||WARRANTY||PART IN||2AHEGA000809||Cover\nWHRS-009979||4||NAO-SHE000-000||LY": "log_150.html",
-    "06/09/26||WARRANTY||PART IN||K1HEBA125300||CPU BOX\nVGA CABLE\nHARNESS||1||NAO-SHE000-000||LY": "log_152.html",
     "08/06/26||SERVICE||PART IN||2MHBHJ000400||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_153.html",
     "08/06/26||SERVICE||PART IN||2MHBHJ000500||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_154.html",
     "08/06/26||SERVICE||PART IN||2MHBHJ000800||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_155.html",
@@ -201,5 +200,6 @@
     "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
     "08/19/26||WARRANTY||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_156.html",
-    "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_157.html"
+    "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_157.html",
+    "06/09/26||WARRANTY||PART IN||K1HEBA125300||CPU BOX\nVGA CABLE\nHARNESS\n( Hàng Fuji KS gủi FMV , lưu trữ ở NAO )||1||NAO-SHE000-000||LY": "log_152.html"
 }
