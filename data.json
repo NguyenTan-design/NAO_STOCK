@@ -2264,5 +2264,16 @@
         "QTY": "1",
         "VỊ TRÍ": "XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287",
         "PIC": "LY"
+    },
+    {
+        "DATE": "10/29/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "2MGSGZ000302",
+        "DETAIL": "PAM",
+        "QTY": "1",
+        "VỊ TRÍ": "SHE",
+        "PIC": "LY"
     }
 ]
