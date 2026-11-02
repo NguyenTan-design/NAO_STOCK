@@ -195,7 +195,6 @@
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH28||HF1021 5161||1||BNO||LY": "log_216.html",
     "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895\n(Cáp motor X module NXTR 2RV)||1||NAO-SHE000-000||LY": "log_157.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895\n(Flat cable)||1||NAO-SHE000-000||LY": "log_156.html",
-    "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng kho||LY": "log_165.html",
     "10/22/25||SERVICE||PART IN||S40264||Sensor\n(Sensor detect MFU)||1||NAO-SHE000-000||LY": "log_98.html",
     "03/12/26||SERVICE||PART IN||7033-B||Dial gauge Stand\n(Gá đỡ đồng hồ so)||1||NAO-LKN026||LY": "log_185.html",
     "03/12/26||SERVICE||PART IN||K71332||Gauge dial\n(Đồng hồ so)||1||NAO-LKN026||LY": "log_186.html",
@@ -207,5 +206,6 @@
     "11/02/26||VÃNG LAI||PART IN||Camera cable + PC + Camera power cable||hàng KS gửi NAO xử lý lỗi BU4||1||SHE||LY": "log_219.html",
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Jig đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html",
     "10/29/26||SERVICE||PART IN||2MGSGZ000302||JIG CHẠY PAM||1||SHE||LY": "log_214.html",
-    "08/19/26||VÃNG LAI||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html"
+    "08/19/26||VÃNG LAI||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
+    "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors\n(Màn hình KS gửi ở NAO)||1||Phòng kho||LY": "log_165.html"
 }
