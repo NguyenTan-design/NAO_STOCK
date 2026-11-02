@@ -128,7 +128,6 @@
     "09/14/26||SERVICE||PART IN||ĐIỆN THOẠI DI ĐỘNG||CỤC GẠCH||2||NAO-SHE000-000||LY": "log_169.html",
     "03/12/26||SERVICE||PART IN||2AGPCJ000101||Glass Panel Jig||1||NAO-SHE036||LY": "log_170.html",
     "03/12/26||SERVICE||PART IN||2AHBSJ000100||Jig||1||NAO-LKN032||LY": "log_171.html",
-    "03/12/26||SERVICE||PART IN||2MHBHJ001300||Jig||1||NAO-LKN039||LY": "log_172.html",
     "03/12/26||SERVICE||PART IN||2MHBHJ001200||Jig||1||NAO-LKN039||LY": "log_173.html",
     "03/12/26||SERVICE||PART IN||2MHBSJ004600||Jig||1||NAO-LKN039||LY": "log_174.html",
     "03/12/26||SERVICE||PART IN||2MHBSJ0028**||CX origin position jig||1||NAO-LKN032||LY": "log_175.html",
@@ -206,5 +205,6 @@
     "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng kho||LY": "log_165.html",
     "10/22/25||SERVICE||PART IN||S40264||Sensor\n(Sensor detect MFU)||1||NAO-SHE000-000||LY": "log_98.html",
     "03/12/26||SERVICE||PART IN||7033-B||Dial gauge Stand\n(Gá đỡ đồng hồ so)||1||NAO-LKN026||LY": "log_185.html",
-    "03/12/26||SERVICE||PART IN||K71332||Gauge dial\n(Đồng hồ so)||1||NAO-LKN026||LY": "log_186.html"
+    "03/12/26||SERVICE||PART IN||K71332||Gauge dial\n(Đồng hồ so)||1||NAO-LKN026||LY": "log_186.html",
+    "03/12/26||SERVICE||PART IN||2MHBHJ001300||Jig\n(Jig đo lực máy in)||1||NAO-LKN039||LY": "log_172.html"
 }
