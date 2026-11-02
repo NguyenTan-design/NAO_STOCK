@@ -69,7 +69,6 @@
     "10/13/25||SERVICE||PART IN||PAM||PAM||11||NAO-SHE000-000||LY": "log_95.html",
     "10/13/25||SERVICE||PART IN||BĂNG DÍNH 80||BĂNG DÍNH 80||3||NAO-SHE000-000||LY": "log_96.html",
     "10/13/25||SERVICE||PART IN||BĂNG DÍNH 32||BĂNG DÍNH 32||3||NAO-SHE000-000||LY": "log_97.html",
-    "10/22/25||SERVICE||PART IN||S40264||Sensor||1||NAO-SHE000-000||LY": "log_98.html",
     "10/22/25||SERVICE||PART IN||S67039||Sensor||4||NAO-SHE000-000||LY": "log_99.html",
     "11/13/25||SERVICE||PART IN||Gậy bẫy máy||Gậy bẫy máy||2||NAO-SHE000-000||LY": "log_103.html",
     "11/13/25||SERVICE||PART IN||Cờ lê 55||( 2 dài, 1 ngắn)||3||NAO-SHE000-000||LY": "log_104.html",
@@ -206,5 +205,6 @@
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html",
     "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895\n(Cáp motor X module NXTR 2RV)||1||NAO-SHE000-000||LY": "log_157.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895\n(Flat cable)||1||NAO-SHE000-000||LY": "log_156.html",
-    "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng kho||LY": "log_165.html"
+    "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng kho||LY": "log_165.html",
+    "10/22/25||SERVICE||PART IN||S40264||Sensor\n(Sensor detect MFU)||1||NAO-SHE000-000||LY": "log_98.html"
 }
