@@ -2320,6 +2320,8 @@ const EXPORT_IMG_HEIGHT = 150;      // chiều cao ảnh hiển thị trong Exce
 const EXPORT_IMG_MAX_WIDTH = 400;   // chiều rộng tối đa của 1 ảnh (px)
 const EXPORT_FETCH_CONCURRENCY = 5; // số log tải song song
 const EXPORT_BASE_COLS = 9;         // DATE ... LOG
+const EXPORT_EMBED_MAX_SIDE = 3000; // cạnh dài tối đa khi phải vẽ lại ảnh (px)
+const EXPORT_JPEG_QUALITY = 0.95;   // chất lượng JPEG khi phải vẽ lại ảnh
 
 let exportingExcel = false;
 
@@ -2345,15 +2347,35 @@ function loadImageForExcel(src) {
                 const natH = img.naturalHeight;
                 if (!natW || !natH) return finish(null);
 
-                // Kích thước hiển thị
+                // Kích thước hiển thị trong Excel (không ảnh hưởng độ phân giải thật của ảnh)
                 const scale = Math.min(EXPORT_IMG_HEIGHT / natH, EXPORT_IMG_MAX_WIDTH / natW, 1);
                 const dispW = Math.max(1, Math.round(natW * scale));
                 const dispH = Math.max(1, Math.round(natH * scale));
 
-                // Kích thước nhúng (gấp đôi để vẫn nét khi phóng to, nhưng không vượt ảnh gốc)
-                const embedScale = Math.min(2 * scale, 1);
-                const cw = Math.max(1, Math.round(natW * embedScale));
-                const ch = Math.max(1, Math.round(natH * embedScale));
+                // Ảnh nhúng dạng data URI JPEG/PNG/GIF: nhúng nguyên bản, không nén lại → giữ 100% chất lượng
+                const m = /^data:image\/(png|jpe?g|gif);base64,(.+)$/i.exec(src);
+
+                if (m) {
+                    const type = m[1].toLowerCase();
+
+                    return finish({
+                        base64: m[2],
+                        extension: type === "png" ? "png" : (type === "gif" ? "gif" : "jpeg"),
+                        width: dispW,
+                        height: dispH
+                    });
+                }
+
+                // Các trường hợp còn lại (link https, webp, bmp): vẽ lại ở kích thước gốc
+                let cw = natW;
+                let ch = natH;
+                const longest = Math.max(cw, ch);
+
+                if (longest > EXPORT_EMBED_MAX_SIDE) {
+                    const k = EXPORT_EMBED_MAX_SIDE / longest;
+                    cw = Math.max(1, Math.round(cw * k));
+                    ch = Math.max(1, Math.round(ch * k));
+                }
 
                 const canvas = document.createElement("canvas");
                 canvas.width = cw;
@@ -2364,10 +2386,11 @@ function loadImageForExcel(src) {
                 ctx.fillRect(0, 0, cw, ch);
                 ctx.drawImage(img, 0, 0, cw, ch);
 
-                const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                const dataUrl = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
 
                 finish({
                     base64: dataUrl.split(",")[1],
+                    extension: "jpeg",
                     width: dispW,
                     height: dispH
                 });
@@ -2566,7 +2589,7 @@ async function exportToExcel() {
             let rowMaxH = 0;
 
             list.forEach(function(img, k) {
-                const imageId = workbook.addImage({ base64: img.base64, extension: "jpeg" });
+                const imageId = workbook.addImage({ base64: img.base64, extension: img.extension || "jpeg" });
 
                 sheet.addImage(imageId, {
                     tl: { col: EXPORT_BASE_COLS + k, row: row.number - 1 },
@@ -4074,9 +4097,9 @@ function insertImageFile(file) {
         const img = new Image();
 
         img.onload = function() {
-            const MAX_WIDTH = 900;
-            const MAX_HEIGHT = 900;
-            const QUALITY = 0.75;
+            const MAX_WIDTH = 1600;
+            const MAX_HEIGHT = 1600;
+            const QUALITY = 0.85;
 
             let width = img.width;
             let height = img.height;
