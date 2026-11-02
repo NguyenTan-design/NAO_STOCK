@@ -121,7 +121,6 @@
     "08/06/26||SERVICE||PART IN||2MHBHJ000500||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_154.html",
     "08/06/26||SERVICE||PART IN||2MHBHJ000800||Giá đỡ đồng hồ đo lực||1||NAO-SHE000-000||LY": "log_155.html",
     "08/18/26||SERVICE||PART IN||USB phục hồi máy in||USB phục hồi máy in||1||NAO-SHE000-000||LY": "log_158.html",
-    "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge||1||NAO-SHE000-000||LY": "log_162.html",
     "10/02/26||WARRANTY||PART IN||2MHESH000501||AC Servo Motor\tWHRS-010986||1||NAO-SHE000-000||LY": "log_163.html",
     "10/08/26||SERVICE||PART IN||GPX CW printer||control Pcs||2||NAO-SHE000-000||LY": "log_164.html",
     "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng Máy||LY": "log_165.html",
@@ -206,5 +205,6 @@
     "10/28/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287||LY": "log_213.html",
     "10/29/26||SERVICE||PART IN||2MGSGZ000302||BỘ CHẠY PAM||1||SHE||LY": "log_214.html",
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH08||HB1012 3049||1||BNO||LY": "log_215.html",
-    "11/02/26||VÃNG LAI||PART OUT||HEAD RH28||HF1021 5161||1||BNO||LY": "log_216.html"
+    "11/02/26||VÃNG LAI||PART OUT||HEAD RH28||HF1021 5161||1||BNO||LY": "log_216.html",
+    "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\nĐo khí cho placing head||1||NAO-SHE000-000||LY": "log_162.html"
 }
