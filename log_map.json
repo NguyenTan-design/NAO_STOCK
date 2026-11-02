@@ -141,7 +141,6 @@
     "03/12/26||SERVICE||PART IN||K5HK000427||AMCAP-PLCCAMERA\nElectronics Camera||1||NAO-LKN032||LY": "log_182.html",
     "03/12/26||SERVICE||PART IN||2MHBHJ000900||PRESSURE MEASUREING JIG||1||NAO-LKN032||LY": "log_183.html",
     "03/12/26||SERVICE||PART IN||2AHBYJ000100A||CPK MASK JIG||1||NAO-SHE000||LY": "log_184.html",
-    "03/12/26||SERVICE||PART IN||K71332||Gauge dial||1||NAO-LKN026||LY": "log_186.html",
     "03/12/26||SERVICE||PART IN||H5116A||Biral T&D (500ml)||1||NAO-LKN033||LY": "log_187.html",
     "03/12/26||SERVICE||PART IN||K73456||Grease||1||NAO-LKN038||LY": "log_188.html",
     "03/12/26||SERVICE||PART IN||K3032H||Grease||1||NAO-LKN033||LY": "log_189.html",
@@ -206,5 +205,6 @@
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895\n(Flat cable)||1||NAO-SHE000-000||LY": "log_156.html",
     "08/10/26||SERVICE||PART IN||GPX CW printer||Monitors||1||Phòng kho||LY": "log_165.html",
     "10/22/25||SERVICE||PART IN||S40264||Sensor\n(Sensor detect MFU)||1||NAO-SHE000-000||LY": "log_98.html",
-    "03/12/26||SERVICE||PART IN||7033-B||Dial gauge Stand\n(Gá đỡ đồng hồ so)||1||NAO-LKN026||LY": "log_185.html"
+    "03/12/26||SERVICE||PART IN||7033-B||Dial gauge Stand\n(Gá đỡ đồng hồ so)||1||NAO-LKN026||LY": "log_185.html",
+    "03/12/26||SERVICE||PART IN||K71332||Gauge dial\n(Đồng hồ so)||1||NAO-LKN026||LY": "log_186.html"
 }
