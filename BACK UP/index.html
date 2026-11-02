@@ -512,7 +512,8 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
 }
 
 .add-primary-btn,
-.add-secondary-btn {
+.add-secondary-btn,
+.add-quick-btn {
     border: none;
     border-radius: 5px;
     padding: 8px 16px;
@@ -917,6 +918,7 @@ tbody tr.part-out-row:hover { background: #f1bfc3 !important; }
 
 /* Ẩn nút thao tác khi không phải MASTER */
 body.role-user .row-action-btn.edit-btn,
+body.role-user .row-action-btn.export-btn,
 body.role-user .row-action-btn.delete-btn,
 body.role-user .add-btn {
     display: none !important;
@@ -1099,7 +1101,8 @@ body.role-user .add-btn {
     #statusChart { height: 300px; }
 
     .add-primary-btn,
-    .add-secondary-btn {
+    .add-secondary-btn,
+    .add-quick-btn {
         padding: 7px 12px;
         font-size: 11px;
     }
@@ -1155,6 +1158,20 @@ td.date-cell { vertical-align: top; }
     background: rgba(220, 38, 38, 0.12);
 }
 
+.row-action-btn.export-btn:hover,
+.row-action-btn.export-btn:focus-visible {
+    background: rgba(25, 118, 210, 0.14);
+}
+
+.add-quick-btn {
+    background: #2e7d32;
+    color: white;
+    margin-right: auto;
+}
+
+.add-quick-btn:hover { background: #1b5e20; }
+.add-quick-btn:disabled { opacity: 0.55; cursor: wait; }
+
 .hold-indicator {
     position: fixed;
     z-index: 6000;
@@ -1187,7 +1204,7 @@ td.date-cell { vertical-align: top; }
 }
 
 .hold-indicator.show .hold-bar > span {
-    animation: holdFill var(--hold-ms, 5000ms) linear forwards;
+    animation: holdFill var(--hold-ms, 3000ms) linear forwards;
 }
 
 @keyframes holdFill {
@@ -1429,6 +1446,7 @@ td.date-cell { vertical-align: top; }
         </div>
         <div class="add-step" id="addStepContent"></div>
         <div class="add-modal-footer">
+            <button id="addQuickSaveBtn" class="add-quick-btn" style="display:none;" onclick="quickSaveFromStep()">💾 Lưu</button>
             <button id="addBackBtn" class="add-secondary-btn" onclick="addPreviousStep()">Back</button>
             <button id="addNextBtn" class="add-primary-btn" onclick="addNextStep()">Next</button>
         </div>
@@ -1469,7 +1487,7 @@ td.date-cell { vertical-align: top; }
 <div id="toast" class="toast"></div>
 
 <div id="holdIndicator" class="hold-indicator">
-    <div id="holdText">Đợi 5 giây để sửa record...</div>
+    <div id="holdText">Đợi 3 giây để sửa record...</div>
     <div class="hold-bar"><span></span></div>
 </div>
 
@@ -2172,6 +2190,17 @@ function renderTable() {
             const pic = escapeHTML(item["PIC"] || "");
             const logButton = createLogButton(startIndex + i);
 
+            const exportButton = normalizedStatus === "PART IN"
+                ? `<button
+                                    type="button"
+                                    class="row-action-btn export-btn"
+                                    title="Xuất PART OUT"
+                                    aria-label="Xuất PART OUT"
+                                    onclick="handleExportButtonClick(event, ${startIndex + i})">
+                                    📤
+                                </button>`
+                : "";
+
             let rowClass = "";
 
             if (normalizedStatus === "PART IN") rowClass = "part-in-row";
@@ -2191,6 +2220,7 @@ function renderTable() {
                                     onclick="handleEditButtonClick(event, ${startIndex + i})">
                                     ✏️
                                 </button>
+                                ${exportButton}
                                 <button
                                     type="button"
                                     class="row-action-btn delete-btn"
@@ -2390,13 +2420,22 @@ function formatDateForExport(value) {
    ========================================================= */
 let addStep = 1;
 let editMode = false;
+let exportMode = false;
 let editTarget = null;
 let editOriginal = null;
 
 const TOTAL_ADD_STEPS = 8;
 
 function addTitlePrefix() {
+    if (exportMode) return "Part Out Record";
     return editMode ? "Edit Record" : "Add New Record";
+}
+
+function updateQuickSaveButton(visible) {
+    const btn = document.getElementById("addQuickSaveBtn");
+    if (!btn) return;
+    btn.style.display = (visible && (editMode || exportMode)) ? "inline-block" : "none";
+    btn.disabled = false;
 }
 
 let newRecord = {
@@ -2412,6 +2451,7 @@ let newRecord = {
 
 function openAddDialog() {
     editMode = false;
+    exportMode = false;
     editTarget = null;
     editOriginal = null;
     addStep = 1;
@@ -2433,6 +2473,8 @@ function openAddDialog() {
 
 function closeAddDialog() {
     editMode = false;
+    exportMode = false;
+    updateQuickSaveButton(false);
     document.getElementById("addModal").classList.remove("show");
 
     const nextBtn = document.getElementById("addNextBtn");
@@ -2454,6 +2496,8 @@ function renderAddStep() {
     nextBtn.onclick = addNextStep;
     nextBtn.disabled = false;
     backBtn.disabled = false;
+
+    updateQuickSaveButton(true);
 
     backBtn.style.display = addStep === 1 ? "none" : "inline-block";
 
@@ -2726,6 +2770,76 @@ function addNextStep() {
     renderAddStep();
 }
 
+/* =========================================================
+   QUICK SAVE (edit / export mode)
+   ========================================================= */
+const ADD_STEP_FIELDS = [
+    { step: 1, key: "DATE",        label: "Date" },
+    { step: 2, key: "KHO",         label: "KHO" },
+    { step: 3, key: "STATUS",      label: "Status" },
+    { step: 4, key: "PART NUMBER", label: "Part Number" },
+    { step: 5, key: "DETAIL",      label: "Detail" },
+    { step: 6, key: "QTY",         label: "QTY" },
+    { step: 7, key: "VỊ TRÍ",      label: "Vị Trí" },
+    { step: 8, key: "PIC",         label: "PIC" }
+];
+
+function readCurrentStepIntoRecord() {
+    const ids = {
+        2: ["addKho", "KHO"],
+        3: ["addStatus", "STATUS"],
+        4: ["addPartNumber", "PART NUMBER"],
+        5: ["addDetail", "DETAIL"],
+        6: ["addQty", "QTY"],
+        7: ["addViTri", "VỊ TRÍ"],
+        8: ["addPic", "PIC"]
+    };
+
+    if (addStep === 1) {
+        const input = document.getElementById("addDate");
+        if (!input) return;
+        const value = convertISOToMMDDYY(input.value.trim());
+        if (!value || !validateDateMMDDYY(value)) {
+            newRecord.DATE = "";
+            return;
+        }
+        newRecord.DATE = value;
+        return;
+    }
+
+    const pair = ids[addStep];
+    if (!pair) return;
+
+    const el = document.getElementById(pair[0]);
+    if (!el) return;
+
+    newRecord[pair[1]] = String(el.value || "").trim();
+}
+
+async function quickSaveFromStep() {
+    readCurrentStepIntoRecord();
+
+    // Kiểm tra toàn bộ các trường; nếu thiếu thì nhảy tới step đó
+    for (let i = 0; i < ADD_STEP_FIELDS.length; i++) {
+        const f = ADD_STEP_FIELDS[i];
+
+        if (!String(newRecord[f.key] || "").trim()) {
+            addStep = f.step;
+            renderAddStep();
+
+            const error = document.getElementById("addError");
+            if (error) error.textContent = "Vui lòng nhập " + f.label + " trước khi lưu.";
+            return;
+        }
+    }
+
+    const quickBtn = document.getElementById("addQuickSaveBtn");
+    if (quickBtn) quickBtn.disabled = true;
+
+    if (editMode) await saveEditedRecord();
+    else await saveNewRecord();
+}
+
 function addPreviousStep() {
     if (addStep <= 1) return;
     addStep--;
@@ -2740,6 +2854,8 @@ function showAddConfirmation() {
     const content = document.getElementById("addStepContent");
     const nextBtn = document.getElementById("addNextBtn");
     const backBtn = document.getElementById("addBackBtn");
+
+    updateQuickSaveButton(false);
 
     title.textContent = editMode ? "Confirm Edited Record" : "Confirm New Record";
 
@@ -2881,7 +2997,7 @@ async function saveNewRecord() {
 /* =========================================================
    EDIT RECORD
    ========================================================= */
-const EDIT_HOLD_MS = 5000;
+const EDIT_HOLD_MS = 3000;
 
 const EDIT_FIELDS = [
     "DATE",
@@ -2951,6 +3067,44 @@ function openEditDialog(record) {
         "PART NUMBER": String(record["PART NUMBER"] || ""),
         DETAIL: String(record["DETAIL"] || ""),
         QTY: String(record["QTY"] || ""),
+        "VỊ TRÍ": String(record["VỊ TRÍ"] || ""),
+        PIC: String(record["PIC"] || "")
+    };
+
+    document.getElementById("addModal").classList.add("show");
+    renderAddStep();
+}
+
+function getTodayMMDDYY() {
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const yy = String(now.getFullYear()).slice(-2);
+    return mm + "/" + dd + "/" + yy;
+}
+
+function openExportDialog(record) {
+    if (!record) return;
+
+    if (record._pendingId || record._pendingEdit || record._pendingDelete) {
+        showToast("Record đang được xử lý, vui lòng thử lại sau.", "info");
+        return;
+    }
+
+    editMode = false;
+    exportMode = true;
+    editTarget = null;
+    editOriginal = null;
+
+    addStep = 1;
+
+    newRecord = {
+        DATE: getTodayMMDDYY(),
+        KHO: String(record["KHO"] || ""),
+        STATUS: "PART OUT",
+        "PART NUMBER": String(record["PART NUMBER"] || ""),
+        DETAIL: String(record["DETAIL"] || ""),
+        QTY: "1",
         "VỊ TRÍ": String(record["VỊ TRÍ"] || ""),
         PIC: String(record["PIC"] || "")
     };
@@ -3055,10 +3209,11 @@ function refreshAfterEdit() {
     updateStatusChart();
 }
 
-/* ---------- EDIT BUTTON: CLICK -> 5s HOLD CONFIRM ---------- */
+/* ---------- EDIT / EXPORT BUTTON: CLICK -> 3s HOLD CONFIRM ---------- */
 const indicator = document.getElementById("holdIndicator");
 let holdTimer = null;
 let holdRecord = null;
+let holdMode = "edit";
 
 function cancelHold() {
     if (holdTimer) {
@@ -3075,7 +3230,7 @@ function cancelHold() {
 }
 
 function onOutsidePointerDown(event) {
-    if (event.target.closest(".edit-btn")) return;
+    if (event.target.closest(".edit-btn, .export-btn")) return;
     cancelHold();
 }
 
@@ -3090,7 +3245,11 @@ function placeIndicator(x, y) {
     indicator.style.top = top + "px";
 }
 
-function handleEditButtonClick(event, idx) {
+function handleExportButtonClick(event, idx) {
+    handleEditButtonClick(event, idx, "export");
+}
+
+function handleEditButtonClick(event, idx, mode) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -3100,6 +3259,7 @@ function handleEditButtonClick(event, idx) {
     cancelHold();
 
     holdRecord = record;
+    holdMode = mode === "export" ? "export" : "edit";
 
     document.body.classList.add("holding-row");
 
@@ -3107,7 +3267,8 @@ function handleEditButtonClick(event, idx) {
         indicator.style.setProperty("--hold-ms", EDIT_HOLD_MS + "ms");
 
         document.getElementById("holdText").textContent =
-            "Đợi " + Math.round(EDIT_HOLD_MS / 1000) + "s để sửa record...";
+            "Đợi " + Math.round(EDIT_HOLD_MS / 1000) + "s để " +
+            (holdMode === "export" ? "xuất PART OUT" : "sửa record") + "...";
 
         const rect = event.currentTarget.getBoundingClientRect();
 
@@ -3122,9 +3283,13 @@ function handleEditButtonClick(event, idx) {
         holdTimer = null;
 
         const record = holdRecord;
+        const mode = holdMode;
         cancelHold();
 
-        if (record) openEditDialog(record);
+        if (!record) return;
+
+        if (mode === "export") openExportDialog(record);
+        else openEditDialog(record);
     }
 
     document.addEventListener("pointerdown", onOutsidePointerDown, true);

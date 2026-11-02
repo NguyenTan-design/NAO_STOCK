@@ -1604,6 +1604,7 @@ function handleSessionExpired() {
 /* ---------- Tải thư viện nặng khi cần ---------- */
 const PLOTLY_URL = "https://cdn.plot.ly/plotly-2.35.2.min.js";
 const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+const EXCELJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
 const libPromises = {};
 
 function ensureLib(globalName, url) {
@@ -1984,7 +1985,7 @@ async function loadData() {
 
         // Tải sẵn thư viện Excel khi rảnh để nút Export phản hồi ngay
         setTimeout(function() {
-            ensureLib("XLSX", XLSX_URL).catch(function() {});
+            ensureLib("ExcelJS", EXCELJS_URL).catch(function() {});
         }, 2000);
     }
     catch (error) {
@@ -2314,12 +2315,108 @@ function escapeAttribute(value) {
 /* =========================================================
    EXPORT
    ========================================================= */
-async function exportToExcel() {
-    try {
-        await ensureLib("XLSX", XLSX_URL);
+/* ---------- EXPORT EXCEL (kèm ảnh trong file log) ---------- */
+const EXPORT_IMG_HEIGHT = 150;      // chiều cao ảnh hiển thị trong Excel (px)
+const EXPORT_IMG_MAX_WIDTH = 400;   // chiều rộng tối đa của 1 ảnh (px)
+const EXPORT_FETCH_CONCURRENCY = 5; // số log tải song song
+const EXPORT_BASE_COLS = 9;         // DATE ... LOG
+
+let exportingExcel = false;
+
+function loadImageForExcel(src) {
+    return new Promise(function(resolve) {
+        const img = new Image();
+        let done = false;
+
+        function finish(value) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            resolve(value);
+        }
+
+        const timer = setTimeout(function() { finish(null); }, 15000);
+
+        if (/^https?:/i.test(src)) img.crossOrigin = "anonymous";
+
+        img.onload = function() {
+            try {
+                const natW = img.naturalWidth;
+                const natH = img.naturalHeight;
+                if (!natW || !natH) return finish(null);
+
+                // Kích thước hiển thị
+                const scale = Math.min(EXPORT_IMG_HEIGHT / natH, EXPORT_IMG_MAX_WIDTH / natW, 1);
+                const dispW = Math.max(1, Math.round(natW * scale));
+                const dispH = Math.max(1, Math.round(natH * scale));
+
+                // Kích thước nhúng (gấp đôi để vẫn nét khi phóng to, nhưng không vượt ảnh gốc)
+                const embedScale = Math.min(2 * scale, 1);
+                const cw = Math.max(1, Math.round(natW * embedScale));
+                const ch = Math.max(1, Math.round(natH * embedScale));
+
+                const canvas = document.createElement("canvas");
+                canvas.width = cw;
+                canvas.height = ch;
+
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, cw, ch);
+                ctx.drawImage(img, 0, 0, cw, ch);
+
+                const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+                finish({
+                    base64: dataUrl.split(",")[1],
+                    width: dispW,
+                    height: dispH
+                });
+            }
+            catch (err) {
+                // Canvas bị chặn (CORS) hoặc ảnh lỗi
+                finish(null);
+            }
+        };
+
+        img.onerror = function() { finish(null); };
+        img.src = src;
+    });
+}
+
+async function fetchLogImagesForRecord(record) {
+    const { result: data, ok } = await apiPost("/get-log", {
+        record: buildRecordPayloadForBackend(record)
+    });
+
+    if (!ok || !data) throw new Error((data && data.message) || "Cannot load log.");
+
+    const fileName = String(data.fileName || "");
+    const content = data.content && data.content.length ? data.content : "";
+
+    if (!content || /\.txt$/i.test(fileName)) return { images: [], failed: 0 };
+
+    const doc = new DOMParser().parseFromString("<!DOCTYPE html><body>" + content, "text/html");
+    const SAFE_IMAGE = /^(https?:|data:image\/(png|jpe?g|gif|webp|bmp);)/i;
+
+    const sources = Array.from(doc.body.querySelectorAll("img"))
+        .map(function(img) { return (img.getAttribute("src") || "").trim(); })
+        .filter(function(src) { return SAFE_IMAGE.test(src); });
+
+    const images = [];
+    let failed = 0;
+
+    for (let i = 0; i < sources.length; i++) {
+        const info = await loadImageForExcel(sources[i]);
+        if (info) images.push(info);
+        else failed++;
     }
-    catch (error) {
-        alert("Excel export library failed to load. Please check your internet connection and try again.");
+
+    return { images: images, failed: failed };
+}
+
+async function exportToExcel() {
+    if (exportingExcel) {
+        showToast("Đang export, vui lòng đợi...", "info");
         return;
     }
 
@@ -2328,36 +2425,13 @@ async function exportToExcel() {
         return;
     }
 
-    const rows = filteredData.map(function(item) {
-        return {
-            "DATE": formatDateForExport(item["DATE"]),
-            "KHO": item["KHO"] || "",
-            "STATUS": item["STATUS"] || "",
-            "PART NUMBER": item["PART NUMBER"] || "",
-            "DETAIL": item["DETAIL"] || "",
-            "QTY": item["QTY"] || "",
-            "VỊ TRÍ": item["VỊ TRÍ"] || "",
-            "PIC": item["PIC"] || "",
-            "LOG": ""
-        };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-
-    worksheet["!cols"] = [
-        { wch: 10 },
-        { wch: 12 },
-        { wch: 10 },
-        { wch: 18 },
-        { wch: 50 },
-        { wch: 8 },
-        { wch: 12 },
-        { wch: 18 },
-        { wch: 15 }
-    ];
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "NAO Stock");
+    try {
+        await ensureLib("ExcelJS", EXCELJS_URL);
+    }
+    catch (error) {
+        alert("Excel export library failed to load. Please check your internet connection and try again.");
+        return;
+    }
 
     const now = new Date();
     const stamp =
@@ -2370,9 +2444,12 @@ async function exportToExcel() {
 
     const suggestedName = `NAO_Stock_${stamp}.xlsx`;
 
+    // Hộp thoại chọn nơi lưu phải mở ngay khi người dùng vừa bấm (trước khi tải ảnh)
+    let fileHandle = null;
+
     if (window.showSaveFilePicker) {
         try {
-            const handle = await window.showSaveFilePicker({
+            fileHandle = await window.showSaveFilePicker({
                 suggestedName: suggestedName,
                 types: [{
                     description: "Excel Workbook",
@@ -2381,22 +2458,166 @@ async function exportToExcel() {
                     }
                 }]
             });
-
-            const arrayBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-            const writable = await handle.createWritable();
-
-            await writable.write(arrayBuffer);
-            await writable.close();
-
-            return;
         }
         catch (error) {
             if (error && error.name === "AbortError") return;
             console.error("Save dialog failed:", error);
+            fileHandle = null;
         }
     }
 
-    XLSX.writeFile(workbook, suggestedName);
+    exportingExcel = true;
+
+    try {
+        const records = filteredData.slice();
+        const imagesByRecord = new Array(records.length);
+        let doneCount = 0;
+        let failedImages = 0;
+        let failedLogs = 0;
+        let cursor = 0;
+
+        showToast("Đang lấy ảnh log 0/" + records.length + "...", "info", 600000);
+
+        async function worker() {
+            while (true) {
+                const i = cursor++;
+                if (i >= records.length) return;
+
+                const record = records[i];
+                imagesByRecord[i] = [];
+
+                if (!record._pendingId) {
+                    try {
+                        const r = await fetchLogImagesForRecord(record);
+                        imagesByRecord[i] = r.images;
+                        failedImages += r.failed;
+                    }
+                    catch (err) {
+                        console.error("Export log error:", err);
+                        failedLogs++;
+                    }
+                }
+
+                doneCount++;
+                showToast("Đang lấy ảnh log " + doneCount + "/" + records.length + "...", "info", 600000);
+            }
+        }
+
+        const workers = [];
+        for (let w = 0; w < Math.min(EXPORT_FETCH_CONCURRENCY, records.length); w++) {
+            workers.push(worker());
+        }
+        await Promise.all(workers);
+
+        showToast("Đang tạo file Excel...", "info", 600000);
+
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("NAO Stock");
+
+        const baseWidths = [10, 12, 10, 18, 50, 8, 12, 18, 15];
+        const headers = ["DATE", "KHO", "STATUS", "PART NUMBER", "DETAIL", "QTY", "VỊ TRÍ", "PIC", "LOG"];
+
+        let maxImages = 0;
+        imagesByRecord.forEach(function(list) {
+            if (list && list.length > maxImages) maxImages = list.length;
+        });
+
+        // Chiều rộng mỗi cột ảnh = ảnh rộng nhất trong cột đó
+        const imageColPx = [];
+        for (let k = 0; k < maxImages; k++) imageColPx.push(0);
+
+        imagesByRecord.forEach(function(list) {
+            (list || []).forEach(function(img, k) {
+                if (img.width > imageColPx[k]) imageColPx[k] = img.width;
+            });
+        });
+
+        const headerRow = headers.slice();
+        for (let k = 0; k < maxImages; k++) headerRow.push("ẢNH " + (k + 1));
+
+        sheet.addRow(headerRow);
+
+        sheet.columns = baseWidths
+            .map(function(w) { return { width: w }; })
+            .concat(imageColPx.map(function(px) { return { width: Math.max(8, (px + 8) / 7) }; }));
+
+        const header = sheet.getRow(1);
+        header.font = { bold: true };
+        header.alignment = { vertical: "middle", horizontal: "center" };
+
+        records.forEach(function(item, i) {
+            const row = sheet.addRow([
+                formatDateForExport(item["DATE"]),
+                item["KHO"] || "",
+                item["STATUS"] || "",
+                item["PART NUMBER"] || "",
+                item["DETAIL"] || "",
+                item["QTY"] || "",
+                item["VỊ TRÍ"] || "",
+                item["PIC"] || "",
+                ""
+            ]);
+
+            row.alignment = { vertical: "middle", wrapText: true };
+
+            const list = imagesByRecord[i] || [];
+            if (list.length === 0) return;
+
+            let rowMaxH = 0;
+
+            list.forEach(function(img, k) {
+                const imageId = workbook.addImage({ base64: img.base64, extension: "jpeg" });
+
+                sheet.addImage(imageId, {
+                    tl: { col: EXPORT_BASE_COLS + k, row: row.number - 1 },
+                    ext: { width: img.width, height: img.height },
+                    editAs: "oneCell"
+                });
+
+                if (img.height > rowMaxH) rowMaxH = img.height;
+            });
+
+            // 1px = 0.75pt
+            row.height = Math.max(15, (rowMaxH + 6) * 0.75);
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        if (fileHandle) {
+            const writable = await fileHandle.createWritable();
+            await writable.write(buffer);
+            await writable.close();
+        }
+        else {
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+
+            a.href = url;
+            a.download = suggestedName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+        }
+
+        let msg = "Export Excel thành công.";
+        if (failedImages > 0 || failedLogs > 0) {
+            msg += " (Bỏ qua " + failedImages + " ảnh và " + failedLogs + " log không tải được)";
+        }
+
+        showToast(msg, failedImages > 0 || failedLogs > 0 ? "info" : "success", 5000);
+    }
+    catch (error) {
+        console.error("Export error:", error);
+        showToast("Export thất bại: " + error.message, "error", 5000);
+    }
+    finally {
+        exportingExcel = false;
+    }
 }
 
 function formatDateForExport(value) {
