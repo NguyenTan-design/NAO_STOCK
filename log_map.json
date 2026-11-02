@@ -166,7 +166,6 @@
     "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html",
     "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html",
     "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
-    "08/19/26||WARRANTY||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
     "09/15/25||FMA||PART IN||2AGKNX000400||Nozzle Jig for Auto-Calibration (RH28/H24) (J34)||28||Phòng Máy||LY": "log_5.html",
     "09/15/25||FMA||PART IN||2GHECB000800||Backup pin stocker for double conveyor (with 48 hard backup pins)||1||LKN26||LY": "log_212.html",
     "09/15/25||FMA||PART IN||2UDLFA001300||W04f Intelligent feeder + 7 inch reel holder||4||SHE004||LY": "log_33.html",
@@ -207,5 +206,6 @@
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH08||Xưởng BU11\n LINE VS2-05\nHead RH08 HB1012 3049\nNgày lắp đặt: 06/08/2026\nBase SN: SE0211581\nERR code: 3A22 \nZ1 Encoder data.||1||NAO-SHE000-000||LY": "log_218.html",
     "11/02/26||VÃNG LAI||PART IN||Camera cable + PC + Camera power cable||hàng KS gửi NAO xử lý lỗi BU4||1||SHE||LY": "log_219.html",
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Jig đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html",
-    "10/29/26||SERVICE||PART IN||2MGSGZ000302||JIG CHẠY PAM||1||SHE||LY": "log_214.html"
+    "10/29/26||SERVICE||PART IN||2MGSGZ000302||JIG CHẠY PAM||1||SHE||LY": "log_214.html",
+    "08/19/26||VÃNG LAI||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html"
 }
