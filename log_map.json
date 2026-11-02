@@ -175,7 +175,6 @@
     "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
     "08/19/26||WARRANTY||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_156.html",
-    "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895||1||NAO-SHE000-000||LY": "log_157.html",
     "06/09/26||WARRANTY||PART IN||K1HEBA125300||CPU BOX\nVGA CABLE\nHARNESS\n( Hàng Fuji KS gủi FMV , lưu trữ ở NAO )||1||NAO-SHE000-000||LY": "log_152.html",
     "09/15/25||FMA||PART IN||2AGKNX000400||Nozzle Jig for Auto-Calibration (RH28/H24) (J34)||28||Phòng Máy||LY": "log_5.html",
     "09/15/25||FMA||PART IN||2GHECB000800||Backup pin stocker for double conveyor (with 48 hard backup pins)||1||LKN26||LY": "log_212.html",
@@ -206,5 +205,6 @@
     "10/29/26||SERVICE||PART IN||2MGSGZ000302||BỘ CHẠY PAM||1||SHE||LY": "log_214.html",
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH08||HB1012 3049||1||BNO||LY": "log_215.html",
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH28||HF1021 5161||1||BNO||LY": "log_216.html",
-    "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html"
+    "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html",
+    "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895\n(Cáp motor X module NXTR 2RV)||1||NAO-SHE000-000||LY": "log_157.html"
 }
