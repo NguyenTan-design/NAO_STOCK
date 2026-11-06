@@ -2517,5 +2517,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/06/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "M60805",
+        "DETAIL": "Magnet switch",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
