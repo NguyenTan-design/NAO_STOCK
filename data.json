@@ -2407,5 +2407,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/06/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2MHBSL020702",
+        "DETAIL": "Bolt",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
