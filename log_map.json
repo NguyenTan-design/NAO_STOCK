@@ -165,7 +165,6 @@
     "08/19/26||FMA||PART IN||2UHEHF000100||Head RH28 \nHF1021 \n000342||1||NAO-SHE000-000||LY": "log_159.html",
     "10/27/26||SERVICE||PART IN||THƯỚC MỰC||THƯỚC MỰC||1||LKN37||LY": "log_209.html",
     "06/06/25||SERVICE||PART OUT||H60345||DIGITAL OPERATOR||1||ANH TÂN CẦM||LY": "log_149.html",
-    "10/27/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html",
     "09/15/25||FMA||PART IN||2AGKNX000400||Nozzle Jig for Auto-Calibration (RH28/H24) (J34)||28||Phòng Máy||LY": "log_5.html",
     "09/15/25||FMA||PART IN||2GHECB000800||Backup pin stocker for double conveyor (with 48 hard backup pins)||1||LKN26||LY": "log_212.html",
     "09/15/25||FMA||PART IN||2UDLFA001300||W04f Intelligent feeder + 7 inch reel holder||4||SHE004||LY": "log_33.html",
@@ -237,5 +236,6 @@
     "11/06/26||FMV FOR SALE||PART IN||2AHBBA010200||Sensor (Cylinder, Air )||1||Temp||LY": "log_247.html",
     "11/06/26||FMV FOR SALE||PART IN||K1HK001737||Belt, Timing||1||Temp||LY": "log_248.html",
     "11/06/26||FMV FOR SALE||PART IN||2MHBSL016001||Belt, Timing, GBN1446-3GT-90||1||Temp||LY": "log_249.html",
-    "10/28/26||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287||LY": "log_213.html"
+    "10/28/26||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287||LY": "log_213.html",
+    "10/27/26||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUÁT CHO VENDOR SỬA CHỮA Ở HÀ NỘI PR26-284||LY": "log_211.html"
 }
