@@ -208,7 +208,6 @@
     "10/29/26||SERVICE||PART IN||2MGSGZ000302||JIG CHẠY PAM||1||SHE||LY": "log_214.html",
     "08/19/26||VÃNG LAI||PART IN||K1HK000407||Board\n(Board cổng LAN máy in GPX)||1||NAO-SHE000-000||LY": "log_161.html",
     "08/10/26||VÃNG LAI||PART IN||GPX CW printer||Monitors\n(Màn hình KS gửi ở NAO)||1||Phòng kho||LY": "log_165.html",
-    "11/06/26||FMA||PART IN||K1HRBA116001||Relay Board||1||temp||LY": "log_220.html",
     "11/06/26||FMA||PART IN||K1HK000145||Cylinder||1||Temp||LY": "log_221.html",
     "11/06/26||FMA||PART IN||K1HEBA100300||Board, Print\nHãng Leadshine||1||Temp||LY": "log_222.html",
     "11/06/26||FMA||PART IN||K1HEBA100600||Cable||1||Temp||LY": "log_223.html",
@@ -219,5 +218,6 @@
     "11/06/26||FMA||PART IN||K1HSYS101700||Timing Belt||1||Temp||LY": "log_228.html",
     "11/06/26||FMA||PART IN||2MHBSL020702||Bolt||2||Temp||LY": "log_229.html",
     "11/06/26||FMA||PART IN||K1HSYS107600||Connector||1||Temp||LY": "log_230.html",
-    "11/06/26||FMV FOR SALE||PART IN||2MHBSL032603||Belt||2||Temp||LY": "log_231.html"
+    "11/06/26||FMV FOR SALE||PART IN||2MHBSL032603||Belt||2||Temp||LY": "log_231.html",
+    "11/06/26||FMV FOR SALE||PART IN||K1HRBA116001||Relay Board||1||temp||LY": "log_220.html"
 }
