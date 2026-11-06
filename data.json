@@ -2495,5 +2495,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/06/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "R62002",
+        "DETAIL": "Lens",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
