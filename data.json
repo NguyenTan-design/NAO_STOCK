@@ -2638,5 +2638,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/06/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2MHBSL016001",
+        "DETAIL": "Belt, Timing, GBN1446-3GT-90",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
