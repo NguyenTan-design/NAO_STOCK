@@ -191,7 +191,6 @@
     "09/15/25||FMA||PART IN||2AHENB001200||Nozzle, Dia. 3.7 (for RH08 head)||4||Bộ chạy APAM||LY": "log_20.html",
     "09/15/25||FMA||PART IN||2AHENB001300||Nozzle, Dia. 5.0 (for RH08 head)||4||Bộ chạy APAM||LY": "log_21.html",
     "09/15/25||FMA||PART IN||2AHENB002000||Nozzle Dia. 2.5G (for RH08 head)||2||LKN14||LY": "log_22.html",
-    "10/28/27||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287||LY": "log_213.html",
     "11/02/26||VÃNG LAI||PART OUT||HEAD RH28||HF1021 5161||1||BNO||LY": "log_216.html",
     "08/12/26||WARRANTY||PART IN||2EHESC000801||Harness\nWHRS-010895\n(Cáp motor X module NXTR 2RV)||1||NAO-SHE000-000||LY": "log_157.html",
     "08/12/26||WARRANTY||PART IN||2AHESC000414||Harness\nWHRS-010895\n(Flat cable)||1||NAO-SHE000-000||LY": "log_156.html",
@@ -237,5 +236,6 @@
     "11/06/26||FMV FOR SALE||PART IN||K1HK000215||Air Filter||1||Temp||LY": "log_246.html",
     "11/06/26||FMV FOR SALE||PART IN||2AHBBA010200||Sensor (Cylinder, Air )||1||Temp||LY": "log_247.html",
     "11/06/26||FMV FOR SALE||PART IN||K1HK001737||Belt, Timing||1||Temp||LY": "log_248.html",
-    "11/06/26||FMV FOR SALE||PART IN||2MHBSL016001||Belt, Timing, GBN1446-3GT-90||1||Temp||LY": "log_249.html"
+    "11/06/26||FMV FOR SALE||PART IN||2MHBSL016001||Belt, Timing, GBN1446-3GT-90||1||Temp||LY": "log_249.html",
+    "10/28/26||FMA||PART OUT||2UHEFA011800||W08t Intelligent feeder + 7 inch reel holder||1||XUẤT CHO VENDOR SỬA CHỮA Ở BĂC NINH PR26-287||LY": "log_213.html"
 }
