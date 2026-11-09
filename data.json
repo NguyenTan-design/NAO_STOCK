@@ -2649,5 +2649,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/09/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "VÃNG LAI",
+        "PART NUMBER": "Head RH28",
+        "DETAIL": "- Line: LINE2\n- Base: SE0213590\n- Module: M3-R\n- Head: RH28\n- SN: HF 1021  0009192\n- Error: 1930 – Part Remain on Nozzle Error.\n- Xưởng E5",
+        "QTY": "1",
+        "VỊ TRÍ": "SHE",
+        "PIC": "THỜI"
     }
 ]
