@@ -2660,5 +2660,16 @@
         "QTY": "1",
         "VỊ TRÍ": "SHE",
         "PIC": "THỜI"
+    },
+    {
+        "DATE": "11/09/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "VÃNG LAI",
+        "PART NUMBER": "TRAY",
+        "DETAIL": "TRAY",
+        "QTY": "3",
+        "VỊ TRÍ": "SHE",
+        "PIC": "THỜI"
     }
 ]
