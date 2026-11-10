@@ -2671,5 +2671,16 @@
         "QTY": "3",
         "VỊ TRÍ": "SHE",
         "PIC": "THỜI"
+    },
+    {
+        "DATE": "11/10/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "SERVICE",
+        "PART NUMBER": "2ADLFA011801",
+        "DETAIL": "Magnet sub",
+        "QTY": "10",
+        "VỊ TRÍ": "SHE",
+        "PIC": "LY"
     }
 ]
