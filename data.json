@@ -2726,16 +2726,5 @@
         "QTY": "78",
         "VỊ TRÍ": "TEMP",
         "PIC": "KHA"
-    },
-    {
-        "DATE": "11/12/26",
-        "STATUS": "PART OUT",
-        "LOG": "",
-        "KHO": "FMA",
-        "PART NUMBER": "TEST",
-        "DETAIL": "TEST",
-        "QTY": "1",
-        "VỊ TRÍ": "TEMP",
-        "PIC": "KHA"
     }
 ]
