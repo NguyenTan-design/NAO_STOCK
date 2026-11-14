@@ -2891,5 +2891,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K1HEBA113803",
+        "DETAIL": "CPU BOX with Image Board",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
