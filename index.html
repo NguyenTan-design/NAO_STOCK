@@ -160,6 +160,9 @@ body { min-height: 100vh; }
 
 .filter-btn:active { transform: translateY(0); }
 
+/* =========================
+   ACTIVE
+   ========================= */
 .filter-btn.active {
     border: 2px solid #ff3b3b;
     box-shadow:
@@ -168,6 +171,9 @@ body { min-height: 100vh; }
     transform: translateY(-2px);
 }
 
+/* =========================
+   STATUS FILTER BUTTONS
+   ========================= */
 .part-in-btn {
     background: linear-gradient(180deg, #10b981 0%, #059669 100%);
     color: white;
@@ -179,6 +185,9 @@ body { min-height: 100vh; }
     box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3);
 }
 
+/* =========================
+   ADD
+   ========================= */
 .add-btn {
     background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
     color: white;
@@ -186,6 +195,9 @@ body { min-height: 100vh; }
 }
 .add-btn:hover { background: linear-gradient(180deg, #6d28d9 0%, #5b21b6 100%); }
 
+/* =========================
+   EXPORT
+   ========================= */
 .export-btn {
     background: linear-gradient(180deg, #10b981 0%, #047857 100%);
     color: white;
@@ -193,12 +205,18 @@ body { min-height: 100vh; }
 }
 .export-btn:hover { background: linear-gradient(180deg, #059669 0%, #065f46 100%); }
 
+/* =========================
+   CLEAR
+   ========================= */
 .clear-btn {
     background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
     color: white;
     box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3);
 }
 
+/* =========================
+   LOGOUT BUTTON
+   ========================= */
 .logout-btn {
     background: linear-gradient(180deg, #475569 0%, #334155 100%);
     color: white;
@@ -219,7 +237,9 @@ body { min-height: 100vh; }
     height: 45px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
-    transition: height 0.25s ease, padding 0.25s ease;
+    transition:
+        height 0.25s ease,
+        padding 0.25s ease;
 }
 
 .chart-container.show-chart {
@@ -269,7 +289,10 @@ body { min-height: 100vh; }
 .chart-container:not(.show-chart) .chart-header { min-height: 33px; }
 .chart-container:not(.show-chart) .chart-toggle-btn { position: static; }
 
-#statusChart { width: 100%; height: 320px; }
+#statusChart {
+    width: 100%;
+    height: 320px;
+}
 
 /* =========================
    PAGINATION
@@ -311,6 +334,9 @@ body { min-height: 100vh; }
     color: var(--dark);
 }
 
+/* =========================
+   RECORD COUNT
+   ========================= */
 .record-info {
     margin: 10px 20px 0 20px;
     font-size: 13px;
@@ -318,6 +344,9 @@ body { min-height: 100vh; }
     font-weight: 500;
 }
 
+/* =========================
+   TABLE
+   ========================= */
 .table-container {
     margin: 10px 20px 0 20px;
     background: var(--card);
@@ -335,6 +364,9 @@ table {
     border-collapse: collapse;
 }
 
+/* =========================
+   TABLE HEADER
+   ========================= */
 thead th {
     position: sticky;
     top: 0;
@@ -351,6 +383,9 @@ thead th {
     word-break: break-word;
 }
 
+/* =========================
+   TABLE BODY
+   ========================= */
 tbody td {
     border: 1px solid var(--border);
     padding: 8px 4px;
@@ -364,21 +399,30 @@ tbody td {
 tbody tr:nth-child(even) { background: #fafbfc; }
 tbody tr:hover { filter: brightness(0.97); }
 
-th:nth-child(1), td:nth-child(1) { width: 10%; text-align: center; }
-th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; }
-th:nth-child(3), td:nth-child(3) { width: 13%; text-align: center; }
-th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; }
-th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }
-th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; }
-th:nth-child(7), td:nth-child(7) { width: 13%; text-align: center; }
-th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; }
-th:nth-child(9), td:nth-child(9) { width: 10%; text-align: center; }
+/* =========================================================
+   COLUMN WIDTHS — DESKTOP
+   ========================================================= */
+th:nth-child(1), td:nth-child(1) { width: 10%; text-align: center; } /* DATE */
+th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; } /* KHO */
+th:nth-child(3), td:nth-child(3) { width: 13%; text-align: center; } /* STATUS */
+th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; } /* PART NUMBER */
+th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }   /* DETAIL */
+th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; } /* QTY */
+th:nth-child(7), td:nth-child(7) { width: 13%; text-align: center; } /* VỊ TRÍ */
+th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; } /* PIC */
+th:nth-child(9), td:nth-child(9) { width: 10%; text-align: center; } /* LOG */
 
+/* =========================
+   STATUS ROW COLORS
+   ========================= */
 tbody tr.part-in-row { background: #ecfdf5 !important; }
 tbody tr.part-in-row:hover { background: #d1fae5 !important; }
 tbody tr.part-out-row { background: #fef2f2 !important; }
 tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 
+/* =========================
+   STATUS BADGE
+   ========================= */
 .status {
     display: inline-block;
     padding: 5px 8px;
@@ -402,6 +446,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 }
 .status-default { background: #e2e8f0; color: #334155; }
 
+/* =========================
+   LOG BUTTON
+   ========================= */
 .log-btn {
     display: inline-block;
     padding: 6px 8px;
@@ -423,6 +470,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4);
 }
 
+/* =========================
+   MESSAGE
+   ========================= */
 .message {
     text-align: center;
     padding: 30px;
@@ -430,7 +480,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     font-size: 14px;
 }
 
-/* ADD MODAL */
+/* =========================================================
+   ADD MODAL
+   ========================================================= */
 .add-modal {
     display: none;
     position: fixed;
@@ -499,7 +551,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     letter-spacing: -0.01em;
 }
 
-.add-input, .add-select, .add-textarea {
+.add-input,
+.add-select,
+.add-textarea {
     width: 100%;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
@@ -511,7 +565,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.add-input:focus, .add-select:focus, .add-textarea:focus {
+.add-input:focus,
+.add-select:focus,
+.add-textarea:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
@@ -538,7 +594,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     background: #f8fafc;
 }
 
-.add-primary-btn, .add-secondary-btn, .add-quick-btn {
+.add-primary-btn,
+.add-secondary-btn,
+.add-quick-btn {
     border: none;
     border-radius: var(--radius-sm);
     padding: 9px 18px;
@@ -563,16 +621,22 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 .add-primary-btn:hover { background: linear-gradient(180deg, #4338ca 0%, #3730a3 100%); box-shadow: var(--shadow-md); }
 .add-secondary-btn:hover { background: linear-gradient(180deg, #475569 0%, #334155 100%); }
 
-.add-primary-btn:disabled, .add-secondary-btn:disabled { opacity: 0.55; cursor: wait; }
+.add-primary-btn:disabled,
+.add-secondary-btn:disabled { opacity: 0.55; cursor: wait; }
 
-/* PART NUMBER ROW + OCR */
+/* =========================
+   PART NUMBER ROW + OCR
+   ========================= */
 .part-number-input-row {
     display: flex;
     gap: 8px;
     align-items: stretch;
 }
 
-.part-number-input-row .add-input { flex: 1; min-width: 0; }
+.part-number-input-row .add-input {
+    flex: 1;
+    min-width: 0;
+}
 
 .ocr-btn {
     flex: 0 0 auto;
@@ -598,9 +662,16 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     box-shadow: 0 4px 10px rgba(15, 118, 110, 0.35);
 }
 
-.ocr-btn:active:not(:disabled) { transform: translateY(0); }
-.ocr-btn:disabled { opacity: 0.6; cursor: wait; }
+.ocr-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
 
+.ocr-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Small OCR Button for Detail step */
 .ocr-btn-small {
     border: none;
     border-radius: var(--radius-sm);
@@ -653,7 +724,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     border: 1px solid #fecaca;
 }
 
-/* CROP OVERLAY */
+/* =========================
+   CROP OVERLAY
+   ========================= */
 .crop-overlay {
     display: none;
     position: fixed;
@@ -710,7 +783,7 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     justify-content: center;
     align-items: center;
     background: #0f172a;
-    touch-action: none;
+    touch-action: none; /* Prevent scrolling on touch devices */
     user-select: none;
     min-height: 300px;
 }
@@ -719,7 +792,7 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     max-width: 100%;
     max-height: 65vh;
     display: block;
-    pointer-events: none;
+    pointer-events: none; /* Let the wrapper handle pointer events */
 }
 
 .crop-box {
@@ -728,7 +801,7 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     background: rgba(59, 130, 246, 0.15);
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
     display: none;
-    pointer-events: none;
+    pointer-events: none; /* Let clicks pass through to start new selection */
 }
 
 .crop-footer {
@@ -775,7 +848,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 .btn-ocr:hover:not(:disabled) { background: linear-gradient(180deg, #059669 0%, #047857 100%); }
 .btn-ocr:disabled { opacity: 0.5; cursor: wait; }
 
-/* CONFIRM */
+/* =========================
+   CONFIRM
+   ========================= */
 .add-confirm-row { margin-bottom: 12px; }
 
 .add-confirm-label {
@@ -797,6 +872,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     color: var(--text);
 }
 
+/* =========================
+   BACKEND NOTE
+   ========================= */
 .backend-note {
     margin-top: 18px;
     padding: 10px 12px;
@@ -809,7 +887,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     font-weight: 500;
 }
 
-/* TOAST */
+/* =========================
+   TOAST
+   ========================= */
 .toast {
     position: fixed;
     left: 50%;
@@ -839,7 +919,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 .toast.success { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
 .toast.error { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
 
-/* LOG MODAL */
+/* =========================================================
+   LOG MODAL
+   ========================================================= */
 .log-modal {
     display: none;
     position: fixed;
@@ -895,7 +977,11 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     flex-wrap: wrap;
 }
 
-.log-zoom-btn, .log-mode-btn, .log-save-btn, .log-close-btn, .log-camera-btn {
+.log-zoom-btn,
+.log-mode-btn,
+.log-save-btn,
+.log-close-btn,
+.log-camera-btn {
     border: none;
     border-radius: var(--radius-sm);
     padding: 6px 11px;
@@ -907,7 +993,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     transition: 0.15s;
 }
 
-.log-zoom-btn:hover, .log-mode-btn:hover, .log-close-btn:hover {
+.log-zoom-btn:hover,
+.log-mode-btn:hover,
+.log-close-btn:hover {
     background: rgba(255, 255, 255, 0.22);
 }
 
@@ -1000,7 +1088,9 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     display: block;
 }
 
-/* LOGIN */
+/* =========================================================
+   LOGIN OVERLAY
+   ========================================================= */
 .login-overlay {
     position: fixed;
     inset: 0;
@@ -1114,7 +1204,10 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     transform: translateY(-1px);
 }
 
-.login-submit-btn:disabled { opacity: 0.6; cursor: wait; }
+.login-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
 
 .login-footer {
     margin-top: 18px;
@@ -1129,8 +1222,11 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     font-weight: 700;
 }
 
-.login-footer a:hover { text-decoration: underline; }
+.login-footer a:hover {
+    text-decoration: underline;
+}
 
+/* User info bar */
 .user-info-bar {
     display: flex;
     align-items: center;
@@ -1161,6 +1257,7 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     color: #92400e;
 }
 
+/* Ẩn nút thao tác khi không phải MASTER */
 body.role-user .row-action-btn.edit-btn,
 body.role-user .row-action-btn.export-btn,
 body.role-user .row-action-btn.delete-btn,
@@ -1168,67 +1265,214 @@ body.role-user .add-btn {
     display: none !important;
 }
 
-/* MOBILE */
+/* =========================================================
+   MOBILE
+   ========================================================= */
 @media (max-width: 768px) {
+
     .header-inner { padding: 10px; }
-    .title { font-size: 20px; margin-bottom: 10px; }
+
+    .title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
     .search-area { flex-direction: column; }
-    .search-area input { width: 100%; min-width: 0; }
+
+    .search-area input {
+        width: 100%;
+        min-width: 0;
+    }
+
     .filter-area { gap: 5px; }
-    .filter-row { gap: 5px; flex-wrap: nowrap; overflow-x: auto; padding: 4px; }
-    .filter-btn { padding: 7px 9px; font-size: 11px; }
-    .chart-container { margin: 10px; height: 40px; padding: 4px; }
-    .chart-container.show-chart { height: 380px; padding: 5px; }
+
+    .filter-row {
+        gap: 5px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 4px;
+    }
+
+    .filter-btn {
+        padding: 7px 9px;
+        font-size: 11px;
+    }
+
+    .chart-container {
+        margin: 10px;
+        height: 40px;
+        padding: 4px;
+    }
+
+    .chart-container.show-chart {
+        height: 380px;
+        padding: 5px;
+    }
+
     .chart-title { font-size: 14px; }
-    .chart-toggle-btn { font-size: 9px; padding: 5px 8px; }
+
+    .chart-toggle-btn {
+        font-size: 9px;
+        padding: 5px 8px;
+    }
+
     #statusChart { height: 335px; }
+
     .pagination-top { padding: 10px 5px; }
-    .table-container { margin: 10px; max-height: calc(100vh - 330px); overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+    .table-container {
+        margin: 10px;
+        max-height: calc(100vh - 330px);
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .record-info { margin: 8px 10px 0 10px; }
-    th:nth-child(1), td:nth-child(1) { width: 13.5%; }
-    th:nth-child(2), td:nth-child(2) { width: 18%;   }
-    th:nth-child(3), td:nth-child(3) { width: 18%;   }
-    th:nth-child(4), td:nth-child(4) { width: 13%;   }
-    th:nth-child(5), td:nth-child(5) { width: 28%;   }
-    th:nth-child(6), td:nth-child(6) { width: 7%;    }
-    th:nth-child(7), td:nth-child(7) { width: 20%;   }
-    th:nth-child(8), td:nth-child(8) { width: 15%;   }
-    th:nth-child(9), td:nth-child(9) { width: 12.5%; }
-    thead th { padding: 8px 2px; font-size: 10px; }
-    tbody td { padding: 7px 2px; font-size: 10px; vertical-align: top; }
-    .status { font-size: 8px; padding: 4px 4px; white-space: normal; }
-    .log-btn { font-size: 9px; padding: 5px 4px; display: block; width: 100%; text-align: center; margin: 2px 0; }
-    .date-value { white-space: normal !important; word-break: break-word !important; }
-    .row-actions { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
+
+    /* COLUMN WIDTHS — MOBILE */
+    th:nth-child(1), td:nth-child(1) { width: 13.5%; } /* DATE */
+    th:nth-child(2), td:nth-child(2) { width: 18%;   } /* KHO */
+    th:nth-child(3), td:nth-child(3) { width: 18%;   } /* STATUS */
+    th:nth-child(4), td:nth-child(4) { width: 13%;   } /* PART NUMBER */
+    th:nth-child(5), td:nth-child(5) { width: 28%;   } /* DETAIL */
+    th:nth-child(6), td:nth-child(6) { width: 7%;    } /* QTY */
+    th:nth-child(7), td:nth-child(7) { width: 20%;   } /* VỊ TRÍ */
+    th:nth-child(8), td:nth-child(8) { width: 15%;   } /* PIC */
+    th:nth-child(9), td:nth-child(9) { width: 12.5%; } /* LOG */
+
+    thead th {
+        padding: 8px 2px;
+        font-size: 10px;
+    }
+
+    tbody td {
+        padding: 7px 2px;
+        font-size: 10px;
+        vertical-align: top;
+    }
+
+    .status {
+        font-size: 8px;
+        padding: 4px 4px;
+        white-space: normal;
+    }
+
+    .log-btn {
+        font-size: 9px;
+        padding: 5px 4px;
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin: 2px 0;
+    }
+
+    .date-value {
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    .row-actions {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+
     .add-modal { padding: 10px; }
     .add-modal-content { max-height: 94vh; }
-    .add-modal-header { padding: 12px 14px; font-size: 15px; }
-    .add-step { padding: 15px; min-height: 170px; }
+
+    .add-modal-header {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+
+    .add-step {
+        padding: 15px;
+        min-height: 170px;
+    }
+
     .add-modal-footer { padding: 10px 15px; }
+
     .log-modal { padding: 8px; }
     .log-modal-content { height: 92vh; }
-    .log-modal-header { padding: 10px 12px; font-size: 13px; }
-    .log-zoom-btn, .log-mode-btn, .log-save-btn, .log-close-btn, .log-camera-btn { font-size: 11px; padding: 5px 8px; }
-    .log-close-btn { font-size: 18px; padding: 1px 8px; }
-    .ocr-btn { font-size: 16px; padding: 0 12px; min-width: 46px; }
-    .ocr-btn-small { font-size: 11px; padding: 5px 8px; }
+
+    .log-modal-header {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .log-zoom-btn,
+    .log-mode-btn,
+    .log-save-btn,
+    .log-close-btn,
+    .log-camera-btn {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+
+    .log-close-btn {
+        font-size: 18px;
+        padding: 1px 8px;
+    }
+
+    .ocr-btn {
+        font-size: 16px;
+        padding: 0 12px;
+        min-width: 46px;
+    }
+
+    .ocr-btn-small {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+
     .crop-hint { font-size: 11px; }
     .btn-rotate, .btn-cancel, .btn-ocr { padding: 6px 12px; font-size: 12px; }
     .btn-rotate { font-size: 14px; }
 }
 
+/* =========================
+   VERY SMALL PHONE
+   ========================= */
 @media (max-width: 400px) {
-    .filter-btn { padding: 6px 7px; font-size: 10px; }
+
+    .filter-btn {
+        padding: 6px 7px;
+        font-size: 10px;
+    }
+
     thead th { font-size: 9px; }
-    tbody td { font-size: 9px; vertical-align: top; }
-    .page-btn { padding: 6px 9px; font-size: 11px; }
+
+    tbody td {
+        font-size: 9px;
+        vertical-align: top;
+    }
+
+    .page-btn {
+        padding: 6px 9px;
+        font-size: 11px;
+    }
+
     .chart-container.show-chart { height: 340px; }
     #statusChart { height: 300px; }
-    .add-primary-btn, .add-secondary-btn, .add-quick-btn { padding: 7px 12px; font-size: 11px; }
-    .ocr-btn { font-size: 14px; padding: 0 10px; min-width: 42px; }
+
+    .add-primary-btn,
+    .add-secondary-btn,
+    .add-quick-btn {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+
+    .ocr-btn {
+        font-size: 14px;
+        padding: 0 10px;
+        min-width: 42px;
+    }
 }
 
-/* ROW ACTIONS */
+/* =========================================================
+   ROW ACTIONS
+   ========================================================= */
 td.date-cell { vertical-align: top; }
 
 .date-cell-inner {
@@ -1265,14 +1509,22 @@ td.date-cell { vertical-align: top; }
     flex-shrink: 0;
 }
 
-.row-action-btn:hover, .row-action-btn:focus-visible {
+.row-action-btn:hover,
+.row-action-btn:focus-visible {
     opacity: 1;
     background: rgba(15, 23, 42, 0.08);
     transform: scale(1.08);
 }
 
-.row-action-btn.delete-btn:hover, .row-action-btn.delete-btn:focus-visible { background: rgba(239, 68, 68, 0.14); }
-.row-action-btn.export-btn:hover, .row-action-btn.export-btn:focus-visible { background: rgba(79, 70, 229, 0.14); }
+.row-action-btn.delete-btn:hover,
+.row-action-btn.delete-btn:focus-visible {
+    background: rgba(239, 68, 68, 0.14);
+}
+
+.row-action-btn.export-btn:hover,
+.row-action-btn.export-btn:focus-visible {
+    background: rgba(79, 70, 229, 0.14);
+}
 
 .add-quick-btn {
     background: linear-gradient(180deg, #10b981 0%, #059669 100%);
@@ -1325,7 +1577,9 @@ td.date-cell { vertical-align: top; }
     to { width: 100%; }
 }
 
-/* DELETE CONFIRM */
+/* =========================================================
+   DELETE CONFIRM MODAL
+   ========================================================= */
 .confirm-overlay {
     position: fixed;
     inset: 0;
@@ -1417,7 +1671,9 @@ td.date-cell { vertical-align: top; }
 
 <body>
 
-<!-- LOGIN OVERLAY -->
+<!-- =========================================================
+     LOGIN OVERLAY
+     ========================================================= -->
 <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
         <h2>Đăng nhập</h2>
@@ -1435,7 +1691,9 @@ td.date-cell { vertical-align: top; }
     </div>
 </div>
 
-<!-- REGISTER MODAL -->
+<!-- =========================================================
+     REGISTER MODAL
+     ========================================================= -->
 <div id="registerOverlay" class="login-overlay" style="display:none;">
     <div class="login-box">
         <h2>Đăng ký tài khoản</h2>
@@ -1456,10 +1714,15 @@ td.date-cell { vertical-align: top; }
     </div>
 </div>
 
-<!-- HEADER -->
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
 <div class="header">
 <div class="header-inner">
-    <div class="title">NAO STOCK Management</div>
+
+    <div class="title">
+        NAO STOCK Management
+    </div>
 
     <div class="user-info-bar">
         <span>Xin chào, <span class="user-name" id="currentUserName">—</span></span>
@@ -1468,8 +1731,18 @@ td.date-cell { vertical-align: top; }
     </div>
 
     <div class="search-area">
-        <input type="text" id="searchPartNumber" placeholder="Search Part Number..." oninput="applyFilterDebounced()">
-        <input type="text" id="searchDetail" placeholder="Search Detail..." oninput="applyFilterDebounced()">
+        <input
+            type="text"
+            id="searchPartNumber"
+            placeholder="Search Part Number..."
+            oninput="applyFilterDebounced()"
+        >
+        <input
+            type="text"
+            id="searchDetail"
+            placeholder="Search Detail..."
+            oninput="applyFilterDebounced()"
+        >
     </div>
 
     <div class="filter-area">
@@ -1482,7 +1755,9 @@ td.date-cell { vertical-align: top; }
 </div>
 </div>
 
-<!-- STATUS CHART -->
+<!-- =========================================================
+     STATUS CHART
+     ========================================================= -->
 <div class="chart-container" id="chartContainer">
     <div class="chart-header">
         <div class="chart-title">Status Overview</div>
@@ -1491,7 +1766,9 @@ td.date-cell { vertical-align: top; }
     <div id="statusChart"></div>
 </div>
 
-<!-- PAGINATION -->
+<!-- =========================================================
+     PAGINATION
+     ========================================================= -->
 <div class="pagination-top">
     <button class="page-btn" id="prevBtn" onclick="previousPage()">Previous</button>
     <span class="page-info" id="pageInfo">Page 1</span>
@@ -1500,10 +1777,14 @@ td.date-cell { vertical-align: top; }
     <button class="filter-btn export-btn" onclick="exportToExcel()">Export Excel</button>
 </div>
 
-<!-- RECORD INFO -->
+<!-- =========================================================
+     RECORD INFO
+     ========================================================= -->
 <div class="record-info" id="recordInfo">Loading...</div>
 
-<!-- TABLE -->
+<!-- =========================================================
+     TABLE
+     ========================================================= -->
 <div class="table-container">
     <table>
         <thead>
@@ -1523,7 +1804,9 @@ td.date-cell { vertical-align: top; }
     </table>
 </div>
 
-<!-- ADD MODAL -->
+<!-- =========================================================
+     ADD MODAL
+     ========================================================= -->
 <div class="add-modal" id="addModal">
     <div class="add-modal-content">
         <div class="add-modal-header">
@@ -1539,7 +1822,9 @@ td.date-cell { vertical-align: top; }
     </div>
 </div>
 
-<!-- LOG MODAL -->
+<!-- =========================================================
+     LOG MODAL
+     ========================================================= -->
 <div class="log-modal" id="logModal">
     <div class="log-modal-content">
         <div class="log-modal-header">
@@ -1563,7 +1848,9 @@ td.date-cell { vertical-align: top; }
     </div>
 </div>
 
-<!-- CROP OVERLAY FOR OCR -->
+<!-- =========================================================
+     CROP OVERLAY FOR OCR
+     ========================================================= -->
 <div id="cropOverlay" class="crop-overlay">
     <div class="crop-container">
         <div class="crop-header">
@@ -1587,9 +1874,12 @@ td.date-cell { vertical-align: top; }
 </div>
 
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraCapture(event)">
+<!-- Generic OCR camera input -->
 <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleOCRImageSelect(event)">
 
-<!-- TOAST -->
+<!-- =========================================================
+     TOAST
+     ========================================================= -->
 <div id="toast" class="toast"></div>
 
 <div id="holdIndicator" class="hold-indicator">
@@ -1681,7 +1971,10 @@ function trackVisit() {
     fetch(API_BASE + "/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: location.pathname, referrer: document.referrer || "" })
+        body: JSON.stringify({
+            path: location.pathname,
+            referrer: document.referrer || ""
+        })
     }).catch(function (err) { console.warn("Track failed:", err); });
 }
 
@@ -1756,6 +2049,7 @@ function clearSession() {
 
 function applyRoleUI() {
     if (!currentUser) return;
+
     const isMaster = String(currentUser.role || "").toLowerCase() === "master";
 
     const nameEl = document.getElementById("currentUserName");
@@ -1805,7 +2099,12 @@ async function handleLoginSubmit() {
     btn.textContent = "Đang kiểm tra...";
 
     try {
-        const { result, ok } = await apiPost("/login", { username, password }, { auth: false });
+        const { result, ok } = await apiPost(
+            "/login",
+            { username: username, password: password },
+            { auth: false }
+        );
+
         if (!ok) throw new Error(result.message || "Đăng nhập thất bại.");
 
         sessionExpiredHandled = false;
@@ -1859,7 +2158,7 @@ async function handleRegisterSubmit() {
     btn.textContent = "Đang đăng ký...";
 
     try {
-        const { result, ok } = await apiPost("/register", { email }, { auth: false });
+        const { result, ok } = await apiPost("/register", { email: email }, { auth: false });
         if (!ok) throw new Error(result.message || "Đăng ký thất bại.");
         successBox.textContent = result.message;
         successBox.style.display = "block";
@@ -2044,7 +2343,7 @@ function sortData() {
 }
 
 /* =========================================================
-   SELECT STATUS / FILTER
+   SELECT STATUS
    ========================================================= */
 function selectStatus(status) {
     if (selectedStatus === status) selectedStatus = null;
@@ -2060,6 +2359,9 @@ function updateStatusButtons() {
     if (selectedStatus && buttons[selectedStatus]) buttons[selectedStatus].classList.add("active");
 }
 
+/* =========================================================
+   FILTER
+   ========================================================= */
 function applyFilter() {
     const partNumberText = document.getElementById("searchPartNumber").value.trim().toLowerCase();
     const detailText = document.getElementById("searchDetail").value.trim().toLowerCase();
@@ -2279,7 +2581,7 @@ async function fetchLogImagesForRecord(record) {
         if (info) images.push(info);
         else failed++;
     }
-    return { images, failed };
+    return { images: images, failed: failed };
 }
 
 async function exportToExcel() {
@@ -2296,7 +2598,7 @@ async function exportToExcel() {
 
     if (window.showSaveFilePicker) {
         try {
-            fileHandle = await window.showSaveFilePicker({ suggestedName, types: [{ description: "Excel Workbook", accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] } }] });
+            fileHandle = await window.showSaveFilePicker({ suggestedName: suggestedName, types: [{ description: "Excel Workbook", accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] } }] });
         } catch (error) {
             if (error && error.name === "AbortError") return;
             console.error("Save dialog failed:", error);
@@ -2547,14 +2849,15 @@ function buildOptionsHtml(options, selected) {
 }
 
 /* =========================================================
-   OCR & CROP GENERALIZED (ĐÃ TỐI ƯU)
+   OCR & CROP GENERALIZED
    ========================================================= */
-let ocrContext = 'partNumber';
+let ocrContext = 'partNumber'; // 'partNumber' or 'detail'
 let partNumberOCRInProgress = false;
 let tesseractWorker = null;
 let tesseractWorkerPromise = null;
 let currentOCRProgressCallback = null;
 
+// State for crop tool
 let cropData = { img: null, rect: { x: 0, y: 0, w: 0, h: 0 }, naturalW: 0, naturalH: 0 };
 let isDrawing = false;
 let startX = 0, startY = 0;
@@ -2581,7 +2884,7 @@ function setOCRStatus(text, type) {
 
 function handleOCRImageSelect(event) {
     const file = event.target.files && event.target.files[0];
-    event.target.value = "";
+    event.target.value = ""; // Reset
 
     if (!file) return;
     if (!file.type || file.type.indexOf("image") !== 0) {
@@ -2589,15 +2892,16 @@ function handleOCRImageSelect(event) {
         return;
     }
 
+    // Mở giao diện Crop
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = document.getElementById('cropImage');
         img.src = e.target.result;
-
+        
         img.onload = function() {
             document.getElementById('cropOverlay').classList.add('show');
             document.getElementById('cropTitle').textContent = ocrContext === 'partNumber' ? 'Khoanh vùng Part Number' : 'Khoanh vùng Detail';
-
+            
             const box = document.getElementById('cropBox');
             box.style.display = 'none';
             cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
@@ -2615,191 +2919,28 @@ function closeCropOverlay() {
     cropData.img = null;
 }
 
-/* ---------- XOAY ẢNH (PNG lossless + cap 3000px) ---------- */
 function rotateCropImage(degrees) {
     const img = document.getElementById('cropImage');
     if (!img || !img.src) return;
 
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
     const w = img.naturalWidth;
     const h = img.naturalHeight;
+    
     const isRotate90 = Math.abs(degrees) === 90 || Math.abs(degrees) === 270;
-
-    let newW = isRotate90 ? h : w;
-    let newH = isRotate90 ? w : h;
-
-    const MAX_DIM = 3000;
-    let scale = 1;
-    if (newW > MAX_DIM || newH > MAX_DIM) {
-        scale = Math.min(MAX_DIM / newW, MAX_DIM / newH);
-        newW = Math.max(1, Math.round(newW * scale));
-        newH = Math.max(1, Math.round(newH * scale));
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = newW;
-    canvas.height = newH;
-    const ctx = canvas.getContext('2d');
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.translate(newW / 2, newH / 2);
+    
+    canvas.width = isRotate90 ? h : w;
+    canvas.height = isRotate90 ? w : h;
+    
+    ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate((degrees * Math.PI) / 180);
-    ctx.scale(scale, scale);
+    
     ctx.drawImage(img, -w / 2, -h / 2);
-
-    img.src = canvas.toDataURL('image/png');
-}
-
-/* ---------- OTSU THRESHOLD ---------- */
-function otsuThreshold(gray) {
-    const hist = new Array(256).fill(0);
-    for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
-
-    const total = gray.length;
-    let sum = 0;
-    for (let i = 0; i < 256; i++) sum += i * hist[i];
-
-    let sumB = 0, wB = 0, maxVariance = 0, bestThreshold = 128;
-
-    for (let t = 0; t < 256; t++) {
-        wB += hist[t];
-        if (wB === 0) continue;
-        const wF = total - wB;
-        if (wF === 0) break;
-        sumB += t * hist[t];
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-        const between = wB * wF * (mB - mF) * (mB - mF);
-        if (between > maxVariance) {
-            maxVariance = between;
-            bestThreshold = t;
-        }
-    }
-    return bestThreshold;
-}
-
-/* ---------- MEDIAN FILTER 3x3 ---------- */
-function medianFilter3x3(gray, w, h) {
-    const copy = new Uint8ClampedArray(gray);
-    const values = new Uint8ClampedArray(9);
-
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            let k = 0;
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    values[k++] = copy[(y + dy) * w + (x + dx)];
-                }
-            }
-            for (let i = 0; i < 8; i++) {
-                for (let j = i + 1; j < 9; j++) {
-                    if (values[i] > values[j]) {
-                        const tmp = values[i];
-                        values[i] = values[j];
-                        values[j] = tmp;
-                    }
-                }
-            }
-            gray[y * w + x] = values[4];
-        }
-    }
-}
-
-/* ---------- PREPROCESS IMAGE FOR OCR ---------- */
-async function preprocessImageForOCR(img, cropX, cropY, cropW, cropH, mode) {
-    const targetHeight = (mode === 'partNumber') ? 200 : 800;
-    let upscale = Math.max(1, Math.min(4, targetHeight / cropH));
-
-    const MAX_DIM = 4000;
-    let outW = Math.round(cropW * upscale);
-    let outH = Math.round(cropH * upscale);
-    if (outW > MAX_DIM || outH > MAX_DIM) {
-        const cap = Math.min(MAX_DIM / outW, MAX_DIM / outH);
-        outW = Math.round(outW * cap);
-        outH = Math.round(outH * cap);
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = outW;
-    canvas.height = outH;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
-
-    const imageData = ctx.getImageData(0, 0, outW, outH);
-    const data = imageData.data;
-    const pixelCount = outW * outH;
-
-    // 1) Grayscale
-    const gray = new Uint8ClampedArray(pixelCount);
-    for (let i = 0; i < pixelCount; i++) {
-        const idx = i * 4;
-        gray[i] = Math.round(0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
-    }
-
-    // 2) Contrast stretching
-    let minV = 255, maxV = 0;
-    for (let i = 0; i < pixelCount; i++) {
-        if (gray[i] < minV) minV = gray[i];
-        if (gray[i] > maxV) maxV = gray[i];
-    }
-    const range = maxV - minV;
-    if (range > 10) {
-        const s = 255 / range;
-        for (let i = 0; i < pixelCount; i++) {
-            gray[i] = Math.round((gray[i] - minV) * s);
-        }
-    }
-
-    // 3) Auto-detect inversion
-    let blackCount = 0;
-    for (let i = 0; i < pixelCount; i++) if (gray[i] < 128) blackCount++;
-    const inverted = (blackCount / pixelCount) > 0.5;
-
-    // 4) Otsu binarization + sanity check
-    let threshold = otsuThreshold(gray);
-    let testBlack = 0;
-    for (let i = 0; i < pixelCount; i++) if (gray[i] < threshold) testBlack++;
-    if (testBlack / pixelCount < 0.005 && threshold > 100) {
-        threshold = Math.min(240, threshold + 50);
-    }
-
-    for (let i = 0; i < pixelCount; i++) {
-        let v = gray[i] <= threshold ? 0 : 255;
-        if (inverted) v = 255 - v;
-        gray[i] = v;
-    }
-
-    // 5) Median filter cho Detail
-    if (mode === 'detail' && pixelCount > 100000) {
-        medianFilter3x3(gray, outW, outH);
-    }
-
-    // 6) Ghi lại imageData
-    for (let i = 0; i < pixelCount; i++) {
-        const idx = i * 4;
-        data[idx] = gray[i];
-        data[idx + 1] = gray[i];
-        data[idx + 2] = gray[i];
-        data[idx + 3] = 255;
-    }
-    ctx.putImageData(imageData, 0, 0);
-
-    // 7) Padding trắng
-    const padding = Math.max(20, Math.round(Math.min(outW, outH) * 0.04));
-    const paddedCanvas = document.createElement('canvas');
-    paddedCanvas.width = outW + padding * 2;
-    paddedCanvas.height = outH + padding * 2;
-    const pctx = paddedCanvas.getContext('2d');
-
-    pctx.fillStyle = '#ffffff';
-    pctx.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
-    pctx.drawImage(canvas, padding, padding);
-
-    return paddedCanvas.toDataURL('image/png');
+    
+    // Cập nhật src mới, thao tác này sẽ kích hoạt lại img.onload để reset vùng chọn
+    img.src = canvas.toDataURL('image/jpeg', 0.95);
 }
 
 async function getTesseractWorker() {
@@ -2808,7 +2949,7 @@ async function getTesseractWorker() {
 
     tesseractWorkerPromise = (async () => {
         await ensureLib("Tesseract", TESSERACT_URL);
-
+        
         const worker = await Tesseract.createWorker('eng', 1, {
             workerPath: TESSERACT_WORKER_PATH,
             corePath: TESSERACT_CORE_PATH,
@@ -2825,123 +2966,103 @@ async function getTesseractWorker() {
     return tesseractWorkerPromise;
 }
 
-/* ---------- EXECUTE CROP + OCR (ĐÃ TỐI ƯU) ---------- */
 async function executeCropOCR() {
     if (cropData.rect.w < 10 || cropData.rect.h < 10) {
         showToast("Vui lòng khoanh vùng ký tự trước khi nhận diện.", "info");
         return;
     }
-
+    
     const btn = document.getElementById('btnCropOCR');
     btn.disabled = true;
     btn.textContent = "Đang xử lý...";
-
+    
     setOCRStatus("Đang chuẩn bị ảnh...", "loading");
-
+    
     try {
         const img = document.getElementById('cropImage');
-
+        
+        // Tính tỷ lệ scale từ ảnh hiển thị sang ảnh gốc
         const scaleX = img.naturalWidth / img.clientWidth;
         const scaleY = img.naturalHeight / img.clientHeight;
-
+        
         const cropX = cropData.rect.x * scaleX;
         const cropY = cropData.rect.y * scaleY;
         const cropW = cropData.rect.w * scaleX;
         const cropH = cropData.rect.h * scaleY;
-
-        // === TIỀN XỬ LÝ ẢNH ===
-        const dataUrl = await preprocessImageForOCR(img, cropX, cropY, cropW, cropH, ocrContext);
-
+        
+        // Tạo canvas để cắt & tiền xử lý ảnh
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Phóng to ảnh nếu chiều cao quá nhỏ để Tesseract đọc tốt hơn (mục tiêu ~100px)
+        const targetHeight = 100;
+        const upscale = Math.max(1, targetHeight / cropH);
+        
+        canvas.width = cropW * upscale;
+        canvas.height = cropH * upscale;
+        
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Vẽ vùng đã chọn lên canvas
+        ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+        
+        // Chuyển sang ảnh xám (Grayscale) để tăng độ tương phản
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            data[i] = gray; data[i+1] = gray; data[i+2] = gray;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        
+        setOCRStatus("Đang tải thư viện OCR...", "loading");
+        
         currentOCRProgressCallback = function(m) {
             if (m && m.status === "recognizing text") {
                 const pct = Math.round((m.progress || 0) * 100);
                 setOCRStatus("Đang nhận diện: " + pct + "%", "loading");
             }
         };
-
+        
         const worker = await getTesseractWorker();
-
+        
+        setOCRStatus("Đang nhận diện ký tự...", "loading");
+        
+        // Điều chỉnh tham số theo ngữ cảnh
         if (ocrContext === 'partNumber') {
-            // === NHẬN DIỆN ĐA CHẾ ĐỘ CHO PART NUMBER ===
-            const attempts = [
-                { psm: '7',  whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' },
-                { psm: '13', whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' }
-            ];
-
-            let best = null;
-
-            for (const attempt of attempts) {
-                setOCRStatus("Đang nhận diện (mode " + attempt.psm + ")...", "loading");
-
-                await worker.setParameters({
-                    tessedit_pageseg_mode: attempt.psm,
-                    tessedit_char_whitelist: attempt.whitelist
-                });
-
-                const { data } = await worker.recognize(dataUrl);
-                const text = String(data.text || '').replace(/\s+/g, '').trim();
-                const confidence = data.confidence || 0;
-
-                if (!best || confidence > best.confidence || (!best.text && text)) {
-                    best = { text, confidence };
-                }
-            }
-
-            let cleaned = best.text.toUpperCase().replace(/[^A-Z0-9\-./_]/g, '');
-            if (!cleaned) cleaned = best.text.toUpperCase();
-
-            if (!cleaned) {
-                throw new Error("Không nhận diện được ký tự. Thử khoanh vùng rõ hơn hoặc chụp lại ảnh nét hơn.");
-            }
-
+            await worker.setParameters({
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./', 
+                tessedit_pageseg_mode: '7', // Đọc 1 dòng
+            });
+        } else {
+            await worker.setParameters({
+                tessedit_char_whitelist: '', 
+                tessedit_pageseg_mode: '6', // Đọc khối văn bản (block of text)
+            });
+        }
+        
+        const { data: { text } } = await worker.recognize(dataUrl);
+        
+        if (ocrContext === 'partNumber') {
+            const cleaned = String(text || '').replace(/\s+/g, '').trim();
+            if (!cleaned) throw new Error("Không nhận diện được ký tự.");
+            
             const inputEl = document.getElementById("addPartNumber");
             if (inputEl && inputEl.isConnected) {
                 inputEl.value = cleaned;
                 inputEl.focus();
             }
-            setOCRStatus("Đã nhận diện: " + cleaned + " (độ tin cậy: " + Math.round(best.confidence) + "%)", "success");
+            setOCRStatus("Đã nhận diện: " + cleaned, "success");
             showToast("Đã nhận diện: " + cleaned, "success");
-        }
-        else {
-            // === NHẬN DIỆN ĐA CHẾ ĐỘ CHO DETAIL ===
-            const attempts = [
-                { psm: '6' },
-                { psm: '3' }
-            ];
-
-            let best = null;
-
-            for (const attempt of attempts) {
-                setOCRStatus("Đang nhận diện (mode " + attempt.psm + ")...", "loading");
-
-                await worker.setParameters({
-                    tessedit_pageseg_mode: attempt.psm,
-                    tessedit_char_whitelist: '',
-                    preserve_interword_spaces: '1'
-                });
-
-                const { data } = await worker.recognize(dataUrl);
-                const text = String(data.text || '').trim();
-                const confidence = data.confidence || 0;
-
-                if (!best || confidence > best.confidence) {
-                    best = { text, confidence };
-                }
-
-                if (confidence > 80) break;
-            }
-
-            if (!best.text) {
-                throw new Error("Không nhận diện được ký tự.");
-            }
-
-            const cleaned = best.text
-                .split('\n')
-                .map(function(line) { return line.replace(/\s+$/, ''); })
-                .join('\n')
-                .replace(/\n{3,}/g, '\n\n')
-                .trim();
-
+        } else {
+            // Detail mode: giữ khoảng trắng, xuống dòng. Nối chuỗi nếu có sẵn.
+            const cleaned = String(text || '').trim();
+            if (!cleaned) throw new Error("Không nhận diện được ký tự.");
+            
             const inputEl = document.getElementById("addDetail");
             if (inputEl && inputEl.isConnected) {
                 const existing = inputEl.value;
@@ -2949,73 +3070,74 @@ async function executeCropOCR() {
                 inputEl.value = existing + separator + cleaned;
                 inputEl.focus();
             }
-            setOCRStatus("Đã nhận diện và thêm vào Detail (độ tin cậy: " + Math.round(best.confidence) + "%)", "success");
+            setOCRStatus("Đã nhận diện và thêm vào Detail.", "success");
             showToast("Đã thêm nội dung vào Detail.", "success");
         }
-
+        
         closeCropOverlay();
-    }
-    catch (err) {
+        
+    } catch (err) {
         console.error("OCR Error:", err);
         setOCRStatus("Lỗi: " + err.message, "error");
         showToast("Lỗi OCR: " + err.message, "error");
-    }
-    finally {
+    } finally {
         currentOCRProgressCallback = null;
         btn.disabled = false;
         btn.textContent = "Cắt & Nhận diện";
     }
 }
 
-/* Pointer events cho crop */
+// Các sự kiện kéo chuột/chạm để crop
 document.getElementById('cropImageWrapper').addEventListener('pointerdown', (e) => {
     const img = document.getElementById('cropImage');
     if (!img.src) return;
-
+    
     const imgRect = img.getBoundingClientRect();
+    
+    // Chỉ bắt đầu kéo nếu click nằm trong vùng ảnh
     if (e.clientX < imgRect.left || e.clientX > imgRect.right || e.clientY < imgRect.top || e.clientY > imgRect.bottom) return;
 
     isDrawing = true;
     startX = e.clientX - imgRect.left;
     startY = e.clientY - imgRect.top;
-
+    
     const box = document.getElementById('cropBox');
     box.style.left = startX + 'px';
     box.style.top = startY + 'px';
     box.style.width = '0px';
     box.style.height = '0px';
     box.style.display = 'block';
-
+    
     e.currentTarget.setPointerCapture(e.pointerId);
 });
 
 document.getElementById('cropImageWrapper').addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
-
+    
     const img = document.getElementById('cropImage');
     const imgRect = img.getBoundingClientRect();
     const box = document.getElementById('cropBox');
-
+    
     let currentX = e.clientX - imgRect.left;
     let currentY = e.clientY - imgRect.top;
-
+    
     currentX = Math.max(0, Math.min(currentX, img.clientWidth));
     currentY = Math.max(0, Math.min(currentY, img.clientHeight));
-
+    
     const x = Math.min(startX, currentX);
     const y = Math.min(startY, currentY);
     const w = Math.abs(currentX - startX);
     const h = Math.abs(currentY - startY);
-
+    
     box.style.left = x + 'px';
     box.style.top = y + 'px';
     box.style.width = w + 'px';
     box.style.height = h + 'px';
-
+    
     cropData.rect = { x, y, w, h };
 });
 
-document.getElementById('cropImageWrapper').addEventListener('pointerup', () => {
+document.getElementById('cropImageWrapper').addEventListener('pointerup', (e) => {
     isDrawing = false;
     if (cropData.rect.w < 10 || cropData.rect.h < 10) {
         document.getElementById('cropBox').style.display = 'none';
@@ -3053,7 +3175,7 @@ function validateDateMMDDYY(value) {
 }
 
 /* =========================================================
-   ADD NEXT STEP / PREV STEP
+   ADD NEXT STEP
    ========================================================= */
 function addNextStep() {
     const error = document.getElementById("addError");
@@ -3108,6 +3230,9 @@ function addNextStep() {
     renderAddStep();
 }
 
+/* =========================================================
+   QUICK SAVE (edit / export mode)
+   ========================================================= */
 const ADD_STEP_FIELDS = [
     { step: 1, key: "DATE",        label: "Date" },
     { step: 2, key: "KHO",         label: "KHO" },
@@ -3341,7 +3466,7 @@ async function saveEditedRecord() {
     showToast("Đang lưu...", "info");
 
     try {
-        const { result, ok } = await apiPost("/update-issue", { original, updated });
+        const { result, ok } = await apiPost("/update-issue", { original: original, updated: updated });
         if (!ok) throw new Error(result.message || "Failed to update record.");
         delete target._pendingEdit;
         if (result.record && typeof result.record === "object") Object.assign(target, result.record);
@@ -3514,7 +3639,7 @@ async function performDeleteRecord(password) {
 
     let response, result;
     try {
-        ({ response, result } = await apiPost("/delete-issue", { record: payload, password }));
+        ({ response, result } = await apiPost("/delete-issue", { record: payload, password: password }));
     }
     catch (error) {
         console.error("Backend delete error:", error);
@@ -3601,21 +3726,21 @@ function openLogModal(record) {
     if (!record) return;
     logCurrentRecord = record; logCurrentFileName = null; logCurrentContent = ""; logZoomLevel = 1; logEditMode = false;
     document.getElementById("logModalTitle").textContent = "Log — " + (record["PART NUMBER"] || "") + " — " + formatDateForExport(record.DATE);
-
+    
     const viewer = document.getElementById("logViewer");
     viewer.srcdoc = "<!DOCTYPE html><html><body style='font-family:Arial;color:#888;padding:14px;'>Đang tải...</body></html>";
     viewer.style.display = "block";
-
+    
     const editor = document.getElementById("logEditor");
     editor.innerHTML = ""; editor.style.display = "none";
-
+    
     document.getElementById("logSaveBtn").style.display = "none";
     document.getElementById("logModeToggle").textContent = "✏️ Edit";
     document.getElementById("logZoomLabel").textContent = "100%";
-
+    
     const cameraBtn = document.getElementById("logCameraBtn");
     if (cameraBtn) cameraBtn.style.display = "none";
-
+    
     document.getElementById("logModal").classList.add("show");
     fetchLogContent(record);
 }
@@ -3625,7 +3750,7 @@ async function fetchLogContent(record) {
         const { result: data, ok } = await apiPost("/get-log", { record: buildRecordPayloadForBackend(record) });
         if (logCurrentRecord !== record) return;
         if (!ok) throw new Error(data.message || "Cannot load log.");
-
+        
         logCurrentFileName = data.fileName;
         logCurrentContent = data.content && data.content.length ? data.content : "";
         renderLogInViewer(logCurrentContent);
@@ -3718,12 +3843,12 @@ async function saveLogContent() {
     const editor = document.getElementById("logEditor");
     const saveBtn = document.getElementById("logSaveBtn");
     const isLegacyText = logCurrentFileName && logCurrentFileName.endsWith(".txt");
-    const content = isLegacyText ? (editor.innerText || "") : sanitizeLogHtml(editor.innerHTML || "");
+    let content = isLegacyText ? (editor.innerText || "") : sanitizeLogHtml(editor.innerHTML || "");
 
     saveBtn.disabled = true; saveBtn.textContent = "Đang lưu...";
 
     try {
-        const { result: data, ok } = await apiPost("/save-log", { record: buildRecordPayloadForBackend(logCurrentRecord), content });
+        const { result: data, ok } = await apiPost("/save-log", { record: buildRecordPayloadForBackend(logCurrentRecord), content: content });
         if (!ok) throw new Error(data.message || "Save failed.");
         if (data.fileName) logCurrentFileName = data.fileName;
         logCurrentContent = content;
