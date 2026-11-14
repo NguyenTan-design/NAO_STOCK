@@ -2004,6 +2004,7 @@ async function loadData() {
         filteredData = [...allData];
         renderTable();
         createStatusChart();
+        restoreAddDialogDraft();
 
         setTimeout(function() { ensureLib("ExcelJS", EXCELJS_URL).catch(function() {}); }, 2000);
     }
@@ -2424,16 +2425,182 @@ function updateQuickSaveButton(visible) {
 
 let newRecord = { DATE: "", KHO: "", STATUS: "", "PART NUMBER": "", DETAIL: "", QTY: "", "VỊ TRÍ": "", PIC: "" };
 
+const ADD_DRAFT_STORAGE_KEY = 'naoStockAddDraft_v1';
+let addConfirmationShown = false;
+let addDialogHistoryGuard = false;
+let addBackWarningShown = false;
+
+function isAddDialogOpen() {
+    const modal = document.getElementById('addModal');
+    return !!modal && modal.classList.contains('show');
+}
+
+function activateAddDialogHistoryGuard() {
+    if (addDialogHistoryGuard) return;
+    try {
+        const currentState = history.state && typeof history.state === 'object' ? history.state : {};
+        history.pushState(Object.assign({}, currentState, { __naoStockAddDialogGuard: true }), '', location.href);
+        addDialogHistoryGuard = true;
+    } catch (error) {
+        console.warn('Không thể bật chặn Back:', error);
+    }
+}
+
+function releaseAddDialogHistoryGuard() {
+    if (!addDialogHistoryGuard) return;
+    addDialogHistoryGuard = false;
+    try {
+        if (history.state && history.state.__naoStockAddDialogGuard) history.back();
+    } catch (error) {
+        console.warn('Không thể giải phóng chặn Back:', error);
+    }
+}
+
+function clearAddDialogDraft() {
+    try { sessionStorage.removeItem(ADD_DRAFT_STORAGE_KEY); } catch (error) {}
+}
+
+function saveAddDialogDraft() {
+    if (!isAddDialogOpen()) return;
+    try {
+        if (!addConfirmationShown) readCurrentStepIntoRecord();
+        const targetIndex = editMode && editTarget ? allData.indexOf(editTarget) : -1;
+        const draft = {
+            version: 1,
+            savedAt: Date.now(),
+            addStep: addStep,
+            editMode: editMode,
+            exportMode: exportMode,
+            confirmationShown: addConfirmationShown,
+            newRecord: newRecord,
+            editOriginal: editOriginal,
+            targetIndex: targetIndex,
+            targetSnapshot: editMode && editTarget ? Object.assign({}, editTarget) : null
+        };
+        sessionStorage.setItem(ADD_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (error) {
+        console.warn('Không thể lưu bản nháp Add Case:', error);
+    }
+}
+
+function sameEditSnapshot(record, snapshot) {
+    if (!record || !snapshot) return false;
+    const fields = ['DATE', 'KHO', 'STATUS', 'PART NUMBER', 'DETAIL', 'QTY', 'VỊ TRÍ', 'PIC', 'LOG'];
+    return fields.every(function(field) {
+        return String(record[field] == null ? '' : record[field]) === String(snapshot[field] == null ? '' : snapshot[field]);
+    });
+}
+
+function restoreAddDialogDraft() {
+    let draft;
+    try {
+        const raw = sessionStorage.getItem(ADD_DRAFT_STORAGE_KEY);
+        if (!raw) return false;
+        draft = JSON.parse(raw);
+    } catch (error) {
+        clearAddDialogDraft();
+        return false;
+    }
+
+    if (!draft || draft.version !== 1 || !draft.newRecord || typeof draft.newRecord !== 'object') {
+        clearAddDialogDraft();
+        return false;
+    }
+
+    let restoredTarget = null;
+    if (draft.editMode) {
+        if (Number.isInteger(draft.targetIndex) && draft.targetIndex >= 0) {
+            const candidate = allData[draft.targetIndex];
+            if (sameEditSnapshot(candidate, draft.targetSnapshot)) restoredTarget = candidate;
+        }
+        if (!restoredTarget && draft.targetSnapshot) {
+            restoredTarget = allData.find(function(item) { return sameEditSnapshot(item, draft.targetSnapshot); }) || null;
+        }
+        if (!restoredTarget) {
+            showToast('Không thể khôi phục Edit: record gốc không còn trong dữ liệu. Bản nháp vẫn được giữ trong phiên hiện tại.', 'error', 5000);
+            return false;
+        }
+    }
+
+    newRecord = {
+        DATE: String(draft.newRecord.DATE || ''),
+        KHO: String(draft.newRecord.KHO || ''),
+        STATUS: String(draft.newRecord.STATUS || ''),
+        'PART NUMBER': String(draft.newRecord['PART NUMBER'] || ''),
+        DETAIL: String(draft.newRecord.DETAIL || ''),
+        QTY: String(draft.newRecord.QTY || ''),
+        'VỊ TRÍ': String(draft.newRecord['VỊ TRÍ'] || ''),
+        PIC: String(draft.newRecord.PIC || '')
+    };
+    addStep = Math.max(1, Math.min(TOTAL_ADD_STEPS, Number(draft.addStep) || 1));
+    editMode = !!draft.editMode;
+    exportMode = !!draft.exportMode;
+    editTarget = restoredTarget;
+    editOriginal = draft.editOriginal || null;
+    addConfirmationShown = !!draft.confirmationShown;
+
+    document.getElementById('addModal').classList.add('show');
+    renderAddStep();
+    if (addConfirmationShown) showAddConfirmation();
+    activateAddDialogHistoryGuard();
+    showToast('Đã khôi phục nội dung Add Case đang nhập.', 'success');
+    return true;
+}
+
+function bindAddDraftPersistence() {
+    const content = document.getElementById('addStepContent');
+    if (!content || content.dataset.draftBound === '1') return;
+    content.dataset.draftBound = '1';
+    content.addEventListener('input', saveAddDialogDraft);
+    content.addEventListener('change', saveAddDialogDraft);
+}
+
+window.addEventListener('pagehide', saveAddDialogDraft);
+window.addEventListener('beforeunload', saveAddDialogDraft);
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') saveAddDialogDraft();
+});
+window.addEventListener('popstate', function() {
+    if (!isAddDialogOpen()) {
+        addDialogHistoryGuard = false;
+        return;
+    }
+    // Nếu đang ở màn hình cắt ảnh, Back đầu tiên chỉ đóng lớp cắt ảnh.
+    const cropOverlay = document.getElementById('cropOverlay');
+    if (cropOverlay && cropOverlay.classList.contains('show')) closeCropOverlay();
+    saveAddDialogDraft();
+    try {
+        const currentState = history.state && typeof history.state === 'object' ? history.state : {};
+        history.pushState(Object.assign({}, currentState, { __naoStockAddDialogGuard: true }), '', location.href);
+        addDialogHistoryGuard = true;
+    } catch (error) {
+        console.warn('Không thể giữ trang Add Case khi nhấn Back:', error);
+    }
+    if (!addBackWarningShown) {
+        showToast('Dữ liệu Add Case/Edit đang được giữ. Dùng nút × để đóng biểu mẫu.', 'info', 3500);
+        addBackWarningShown = true;
+    }
+});
+
 function openAddDialog() {
     editMode = false; exportMode = false; editTarget = null; editOriginal = null; addStep = 1;
+    addConfirmationShown = false; addBackWarningShown = false;
     newRecord = { DATE: "", KHO: "", STATUS: "", "PART NUMBER": "", DETAIL: "", QTY: "", "VỊ TRÍ": "", PIC: "" };
     document.getElementById("addModal").classList.add("show");
+    activateAddDialogHistoryGuard();
     renderAddStep();
+    saveAddDialogDraft();
 }
 
 function closeAddDialog() {
-    editMode = false; exportMode = false; updateQuickSaveButton(false);
+    editMode = false; exportMode = false; editTarget = null; editOriginal = null;
+    addConfirmationShown = false;
+    updateQuickSaveButton(false);
     document.getElementById("addModal").classList.remove("show");
+    const cropOverlay = document.getElementById("cropOverlay");
+    if (cropOverlay) cropOverlay.classList.remove("show");
+    clearAddDialogDraft();
+    releaseAddDialogHistoryGuard();
     const nextBtn = document.getElementById("addNextBtn");
     const backBtn = document.getElementById("addBackBtn");
     nextBtn.textContent = "Next"; nextBtn.onclick = addNextStep; nextBtn.disabled = false; backBtn.disabled = false;
@@ -2537,6 +2704,7 @@ function renderAddStep() {
             <div id="addError" class="add-error"></div>
         `;
     }
+    saveAddDialogDraft();
 }
 
 function buildOptionsHtml(options, selected) {
@@ -2701,7 +2869,6 @@ function makePaddedOCRDataUrl(gray, width, height) {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const imageData = ctx.createImageData(width, height);
     const rgba = imageData.data;
-
     for (let i = 0; i < gray.length; i++) {
         const j = i * 4;
         rgba[j] = gray[i];
@@ -2711,7 +2878,7 @@ function makePaddedOCRDataUrl(gray, width, height) {
     }
     ctx.putImageData(imageData, 0, 0);
 
-    const padding = Math.max(18, Math.round(Math.min(width, height) * 0.045));
+    const padding = Math.max(18, Math.round(Math.min(width, height) * 0.05));
     const padded = document.createElement('canvas');
     padded.width = width + padding * 2;
     padded.height = height + padding * 2;
@@ -2723,114 +2890,85 @@ function makePaddedOCRDataUrl(gray, width, height) {
 }
 
 /*
- * Tạo 3 ảnh độc lập từ cùng vùng cắt:
- * 1) Grayscale + cân bằng tương phản: giữ lại nét và mức xám gốc.
- * 2) Otsu: phù hợp nền tương đối đồng đều.
- * 3) Adaptive threshold: phù hợp ảnh có ánh sáng/độ sáng không đồng đều.
- * Không ép OCR chỉ đọc một ảnh nhị phân như phiên bản cũ.
+ * Tối ưu tốc độ: chỉ tạo một ảnh grayscale đã cân bằng tương phản.
+ * Ảnh Otsu dự phòng chỉ được tạo khi lượt OCR đầu tiên chưa đủ tốt.
  */
 async function preprocessImageForOCR(img, cropX, cropY, cropW, cropH, mode) {
-    const targetHeight = mode === 'partNumber' ? 420 : 700;
-    let upscale = Math.max(1, Math.min(4, targetHeight / Math.max(1, cropH)));
-
+    const targetHeight = mode === 'partNumber' ? 380 : 640;
+    const upscale = Math.max(1, Math.min(3.2, targetHeight / Math.max(1, cropH)));
     let outW = Math.max(1, Math.round(cropW * upscale));
     let outH = Math.max(1, Math.round(cropH * upscale));
-    const MAX_DIM = 3200;
-    const MAX_PIXELS = 3500000;
-    const cap = Math.min(1, MAX_DIM / outW, MAX_DIM / outH, Math.sqrt(MAX_PIXELS / (outW * outH)));
+
+    const maxDimension = 2800;
+    const maxPixels = 2800000;
+    const cap = Math.min(1, maxDimension / outW, maxDimension / outH, Math.sqrt(maxPixels / (outW * outH)));
     if (cap < 1) {
         outW = Math.max(1, Math.round(outW * cap));
         outH = Math.max(1, Math.round(outH * cap));
     }
 
-    const sourceCanvas = document.createElement('canvas');
-    sourceCanvas.width = outW;
-    sourceCanvas.height = outH;
-    const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
-    sourceCtx.imageSmoothingEnabled = true;
-    sourceCtx.imageSmoothingQuality = 'high';
-    sourceCtx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
 
-    const source = sourceCtx.getImageData(0, 0, outW, outH).data;
-    const pixelCount = outW * outH;
-    const gray = new Uint8ClampedArray(pixelCount);
+    const source = ctx.getImageData(0, 0, outW, outH).data;
+    const total = outW * outH;
+    const gray = new Uint8ClampedArray(total);
     const histogram = new Uint32Array(256);
-
-    for (let i = 0; i < pixelCount; i++) {
-        const j = i * 4;
-        const value = Math.round(0.299 * source[j] + 0.587 * source[j + 1] + 0.114 * source[j + 2]);
-        gray[i] = value;
-        histogram[value]++;
-    }
-
-    // Percentile contrast stretching: ít bị ảnh hưởng bởi một vài điểm lóe sáng/tối.
-    const low = percentileFromHistogram(histogram, pixelCount, 0.01);
-    const high = percentileFromHistogram(histogram, pixelCount, 0.99);
-    const range = Math.max(1, high - low);
-    const normalized = new Uint8ClampedArray(pixelCount);
-    for (let i = 0; i < pixelCount; i++) {
-        normalized[i] = Math.max(0, Math.min(255, Math.round((gray[i] - low) * 255 / range)));
-    }
-
-    // Ước lượng màu nền từ viền ảnh để xử lý nhãn chữ sáng trên nền tối.
-    let borderSum = 0, borderCount = 0;
-    const borderX = Math.max(1, Math.floor(outW * 0.06));
+    const borderX = Math.max(1, Math.floor(outW * 0.05));
     const borderY = Math.max(1, Math.floor(outH * 0.08));
+    let borderSum = 0;
+    let borderCount = 0;
+
     for (let y = 0; y < outH; y++) {
         for (let x = 0; x < outW; x++) {
+            const i = y * outW + x;
+            const j = i * 4;
+            const value = Math.round(0.299 * source[j] + 0.587 * source[j + 1] + 0.114 * source[j + 2]);
+            gray[i] = value;
+            histogram[value]++;
             if (x < borderX || x >= outW - borderX || y < borderY || y >= outH - borderY) {
-                borderSum += normalized[y * outW + x];
+                borderSum += value;
                 borderCount++;
             }
         }
     }
-    const invertPolarity = borderCount > 0 && (borderSum / borderCount) < 118;
-    if (invertPolarity) {
-        for (let i = 0; i < pixelCount; i++) normalized[i] = 255 - normalized[i];
-    }
 
-    // Variant 1: grayscale đã cân bằng tương phản, không nhị phân hóa.
-    const grayVariant = new Uint8ClampedArray(normalized);
-
-    // Variant 2: Otsu global threshold.
-    const threshold = otsuThreshold(normalized);
-    const otsu = new Uint8ClampedArray(pixelCount);
-    for (let i = 0; i < pixelCount; i++) otsu[i] = normalized[i] <= threshold ? 0 : 255;
-
-    // Variant 3: adaptive threshold bằng integral image.
-    // Kích thước vùng lấy trung bình thay đổi theo kích thước vùng cắt.
-    const stride = outW + 1;
-    const integral = new Float64Array((outW + 1) * (outH + 1));
-    for (let y = 1; y <= outH; y++) {
-        let rowSum = 0;
-        for (let x = 1; x <= outW; x++) {
-            rowSum += normalized[(y - 1) * outW + (x - 1)];
-            integral[y * stride + x] = integral[(y - 1) * stride + x] + rowSum;
+    // Cân bằng tương phản theo percentile để tránh vùng lóe sáng làm sai toàn ảnh.
+    const low = percentileFromHistogram(histogram, total, 0.015);
+    const high = percentileFromHistogram(histogram, total, 0.985);
+    const range = high - low;
+    if (range >= 28) {
+        const scale = 255 / range;
+        for (let i = 0; i < total; i++) {
+            gray[i] = Math.max(0, Math.min(255, Math.round((gray[i] - low) * scale)));
         }
     }
 
-    const radius = Math.max(8, Math.min(24, Math.round(Math.min(outW, outH) * 0.035)));
-    const adaptive = new Uint8ClampedArray(pixelCount);
-    const offset = mode === 'partNumber' ? 7 : 9;
-    for (let y = 0; y < outH; y++) {
-        const y1 = Math.max(0, y - radius);
-        const y2 = Math.min(outH, y + radius + 1);
-        for (let x = 0; x < outW; x++) {
-            const x1 = Math.max(0, x - radius);
-            const x2 = Math.min(outW, x + radius + 1);
-            const area = (x2 - x1) * (y2 - y1);
-            const sum = integral[y2 * stride + x2] - integral[y1 * stride + x2]
-                      - integral[y2 * stride + x1] + integral[y1 * stride + x1];
-            const localMean = sum / Math.max(1, area);
-            adaptive[y * outW + x] = normalized[y * outW + x] < localMean - offset ? 0 : 255;
-        }
+    // Nếu nền ở viền tối, đảo cực để chữ trở thành tối trên nền sáng.
+    const borderMean = borderCount ? borderSum / borderCount : 255;
+    if (borderMean < 112) {
+        for (let i = 0; i < total; i++) gray[i] = 255 - gray[i];
     }
 
-    return [
-        { name: 'Grayscale', dataUrl: makePaddedOCRDataUrl(grayVariant, outW, outH) },
-        { name: 'Otsu', dataUrl: makePaddedOCRDataUrl(otsu, outW, outH) },
-        { name: 'Adaptive', dataUrl: makePaddedOCRDataUrl(adaptive, outW, outH) }
-    ];
+    return {
+        dataUrl: makePaddedOCRDataUrl(gray, outW, outH),
+        gray: gray,
+        width: outW,
+        height: outH
+    };
+}
+
+function createOtsuFallback(processed) {
+    const gray = processed.gray;
+    const threshold = otsuThreshold(gray);
+    const binary = new Uint8ClampedArray(gray.length);
+    for (let i = 0; i < gray.length; i++) binary[i] = gray[i] <= threshold ? 0 : 255;
+    return makePaddedOCRDataUrl(binary, processed.width, processed.height);
 }
 
 async function getTesseractWorker() {
@@ -2875,64 +3013,38 @@ function cleanDetailOCR(value) {
         .trim();
 }
 
-function rankOCRCandidates(results, maxRuns) {
-    const grouped = new Map();
-    results.forEach(function(item) {
-        const key = item.text;
-        if (!key) return;
-        if (!grouped.has(key)) {
-            grouped.set(key, { text: item.text, votes: 0, confidenceTotal: 0, maxConfidence: 0, sources: [] });
-        }
-        const group = grouped.get(key);
-        group.votes++;
-        group.confidenceTotal += item.confidence;
-        group.maxConfidence = Math.max(group.maxConfidence, item.confidence);
-        group.sources.push(item.variant + '/PSM ' + item.psm);
+async function recognizeOCRPass(worker, dataUrl, psm, context) {
+    const isPartNumber = context === 'partNumber';
+    await worker.setParameters({
+        tessedit_pageseg_mode: psm,
+        tessedit_char_whitelist: isPartNumber ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' : '',
+        preserve_interword_spaces: '1',
+        user_defined_dpi: '300'
     });
 
-    return Array.from(grouped.values()).map(function(group) {
-        group.averageConfidence = group.confidenceTotal / group.votes;
-        // Kết hợp Confidence trung bình và mức đồng thuận giữa các lần OCR.
-        group.score = group.averageConfidence * 0.72 + (group.votes / maxRuns) * 28;
-        return group;
-    }).sort(function(a, b) {
-        if (b.score !== a.score) return b.score - a.score;
-        if (b.votes !== a.votes) return b.votes - a.votes;
-        return b.averageConfidence - a.averageConfidence;
-    });
+    const response = await worker.recognize(dataUrl);
+    const data = response && response.data ? response.data : {};
+    const text = isPartNumber ? cleanPartNumberOCR(data.text) : cleanDetailOCR(data.text);
+    const rawConfidence = Number(data.confidence);
+    const confidence = Number.isFinite(rawConfidence) ? Math.max(0, Math.min(100, rawConfidence)) : 0;
+    return { text: text, confidence: confidence, psm: psm };
 }
 
-async function runOCRPasses(worker, variants, attempts, context) {
-    const results = [];
-    const whitelist = context === 'partNumber' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' : '';
-    const maxRuns = variants.length * attempts.length;
-    let completed = 0;
-
-    for (const variant of variants) {
-        for (const attempt of attempts) {
-            completed++;
-            setOCRStatus('Đang nhận diện ' + completed + '/' + maxRuns + ' — ' + variant.name + ' / PSM ' + attempt.psm + '...', 'loading');
-            await worker.setParameters({
-                tessedit_pageseg_mode: attempt.psm,
-                tessedit_char_whitelist: whitelist,
-                preserve_interword_spaces: '1',
-                user_defined_dpi: '300'
-            });
-
-            const response = await worker.recognize(variant.dataUrl);
-            const data = response && response.data ? response.data : {};
-            const raw = context === 'partNumber' ? cleanPartNumberOCR(data.text) : cleanDetailOCR(data.text);
-            const confidenceValue = Number(data.confidence);
-            const confidence = Number.isFinite(confidenceValue) ? Math.max(0, Math.min(100, confidenceValue)) : 0;
-            if (raw) {
-                results.push({ text: raw, confidence: confidence, variant: variant.name, psm: attempt.psm });
-            }
+function chooseOCRResult(results, context) {
+    return results.filter(function(item) { return !!item.text; }).sort(function(a, b) {
+        let scoreA = a.confidence;
+        let scoreB = b.confidence;
+        if (context === 'partNumber') {
+            if (a.text.length < 2) scoreA -= 25;
+            if (b.text.length < 2) scoreB -= 25;
+            if (a.text.length > 40) scoreA -= 10;
+            if (b.text.length > 40) scoreB -= 10;
         }
-    }
-    return { results: results, maxRuns: maxRuns };
+        return scoreB - scoreA;
+    })[0] || null;
 }
 
-/* ---------- EXECUTE CROP + MULTI-PASS OCR ---------- */
+/* ---------- FAST OCR: first pass + conditional fallback ---------- */
 async function executeCropOCR() {
     if (partNumberOCRInProgress) return;
     if (cropData.rect.w < 10 || cropData.rect.h < 10) {
@@ -2946,7 +3058,7 @@ async function executeCropOCR() {
         btn.disabled = true;
         btn.textContent = 'Đang xử lý...';
     }
-    setOCRStatus('Đang chuẩn bị nhiều phiên bản ảnh...', 'loading');
+    setOCRStatus('Đang tối ưu ảnh và nhận diện...', 'loading');
 
     try {
         const img = document.getElementById('cropImage');
@@ -2957,53 +3069,66 @@ async function executeCropOCR() {
         const cropW = cropData.rect.w * scaleX;
         const cropH = cropData.rect.h * scaleY;
 
-        const variants = await preprocessImageForOCR(img, cropX, cropY, cropW, cropH, ocrContext);
+        const processed = await preprocessImageForOCR(img, cropX, cropY, cropW, cropH, ocrContext);
         currentOCRProgressCallback = function(m) {
-            if (m && m.status === 'recognizing text') {
-                const pct = Math.round((m.progress || 0) * 100);
-                if (btn) btn.textContent = 'OCR ' + pct + '%';
+            if (m && m.status === 'recognizing text' && btn) {
+                btn.textContent = 'OCR ' + Math.round((m.progress || 0) * 100) + '%';
             }
         };
 
         const worker = await getTesseractWorker();
-        let attempts;
-        if (ocrContext === 'partNumber') {
-            // PSM 7: một dòng; PSM 8: một từ; PSM 13: raw line.
-            attempts = [{ psm: '7' }, { psm: '8' }, { psm: '13' }];
-        } else {
-            // PSM 6: block; PSM 11: text rải rác; PSM 3: tự động phân vùng.
-            attempts = [{ psm: '6' }, { psm: '11' }, { psm: '3' }];
+        const isPartNumber = ocrContext === 'partNumber';
+        const primaryPsm = isPartNumber ? '7' : '6';
+        const fallbackPsm = isPartNumber ? '13' : '11';
+        const reviewThreshold = isPartNumber ? 82 : 76;
+        const candidates = [];
+
+        setOCRStatus('Đang nhận diện lượt 1/3...', 'loading');
+        const first = await recognizeOCRPass(worker, processed.dataUrl, primaryPsm, ocrContext);
+        candidates.push(first);
+
+        // Chỉ chạy lượt 2 khi lượt đầu có độ tin cậy chưa đủ cao hoặc không có nội dung.
+        if (!first.text || first.confidence < reviewThreshold) {
+            setOCRStatus('Đang kiểm tra lại bằng chế độ OCR dự phòng...', 'loading');
+            const second = await recognizeOCRPass(worker, processed.dataUrl, fallbackPsm, ocrContext);
+            candidates.push(second);
         }
 
-        const batch = await runOCRPasses(worker, variants, attempts, ocrContext);
-        const ranked = rankOCRCandidates(batch.results, batch.maxRuns);
-        if (!ranked.length) {
-            throw new Error('Không nhận diện được ký tự. Hãy khoanh vùng sát hơn, tăng ánh sáng hoặc chụp ảnh rõ nét hơn.');
+        let best = chooseOCRResult(candidates, ocrContext);
+
+        // Chỉ tạo ảnh nhị phân Otsu khi hai lượt đầu đều yếu; tránh chi phí xử lý không cần thiết.
+        if ((!best || best.confidence < (isPartNumber ? 68 : 62)) && candidates.length < 3) {
+            setOCRStatus('Đang thử tăng tương phản lần cuối...', 'loading');
+            const otsuUrl = createOtsuFallback(processed);
+            const third = await recognizeOCRPass(worker, otsuUrl, primaryPsm, ocrContext);
+            candidates.push(third);
+            best = chooseOCRResult(candidates, ocrContext);
         }
 
-        const best = ranked[0];
-        const second = ranked[1] || null;
-        const closeCompetition = !!second && (best.score - second.score) < 8;
-        const lowConfidence = best.averageConfidence < (ocrContext === 'partNumber' ? 55 : 50);
-        const lowConsensus = best.votes < 2;
-        const needsReview = closeCompetition || lowConfidence || lowConsensus;
+        if (!best || !best.text) {
+            throw new Error('Không nhận diện được nội dung. Hãy khoanh vùng sát ký tự hơn, tăng ánh sáng hoặc chụp lại ảnh rõ nét hơn.');
+        }
 
-        if (ocrContext === 'partNumber') {
+        const alternatives = candidates
+            .filter(function(item) { return item.text && item.text !== best.text; })
+            .sort(function(a, b) { return b.confidence - a.confidence; });
+        const competingResult = alternatives[0] || null;
+        const disagreement = !!competingResult;
+        const needsReview = best.confidence < (isPartNumber ? 78 : 68) || disagreement;
+
+        if (isPartNumber) {
             const inputEl = document.getElementById('addPartNumber');
             if (inputEl && inputEl.isConnected) {
                 inputEl.value = best.text;
+                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
                 inputEl.focus();
             }
-
-            const confidenceText = Math.round(best.averageConfidence) + '%';
-            const consensusText = best.votes + '/' + batch.maxRuns + ' lượt';
-            const alternatives = ranked.slice(1, 3).map(function(x) { return x.text; });
+            const alternativeText = competingResult ? ' | Phương án khác: ' + competingResult.text : '';
             if (needsReview) {
-                const suffix = alternatives.length ? ' | Phương án khác: ' + alternatives.join(' / ') : '';
-                setOCRStatus('Đã điền: ' + best.text + '. Cần kiểm tra lại (Confidence ' + confidenceText + ', đồng thuận ' + consensusText + ').' + suffix, 'warning');
-                showToast('Đã điền Part Number — vui lòng kiểm tra ký tự trước khi Next.', 'info');
+                setOCRStatus('Đã điền: ' + best.text + ' (Confidence ' + Math.round(best.confidence) + '%). Vui lòng kiểm tra ký tự.' + alternativeText, 'warning');
+                showToast('Đã điền Part Number — cần kiểm tra trước khi Next.', 'info');
             } else {
-                setOCRStatus('Đã nhận diện: ' + best.text + ' (Confidence ' + confidenceText + ', đồng thuận ' + consensusText + ').', 'success');
+                setOCRStatus('Đã nhận diện: ' + best.text + ' (Confidence ' + Math.round(best.confidence) + '%).', 'success');
                 showToast('Đã nhận diện Part Number.', 'success');
             }
         } else {
@@ -3014,15 +3139,15 @@ async function executeCropOCR() {
                 if (!alreadyPresent) {
                     const separator = existing && !existing.endsWith('\n') ? '\n' : '';
                     inputEl.value = existing + separator + best.text;
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 inputEl.focus();
             }
-
             if (needsReview) {
-                setOCRStatus('Đã thêm Detail nhưng kết quả OCR cần kiểm tra (Confidence ' + Math.round(best.averageConfidence) + '%, đồng thuận ' + best.votes + '/' + batch.maxRuns + ' lượt).', 'warning');
-                showToast('Đã thêm Detail — vui lòng kiểm tra nội dung.', 'info');
+                setOCRStatus('Đã thêm Detail (Confidence ' + Math.round(best.confidence) + '%). Vui lòng kiểm tra nội dung.', 'warning');
+                showToast('Đã thêm Detail — cần kiểm tra nội dung.', 'info');
             } else {
-                setOCRStatus('Đã nhận diện và thêm Detail (Confidence ' + Math.round(best.averageConfidence) + '%, đồng thuận ' + best.votes + '/' + batch.maxRuns + ' lượt).', 'success');
+                setOCRStatus('Đã nhận diện và thêm Detail (Confidence ' + Math.round(best.confidence) + '%).', 'success');
                 showToast('Đã thêm nội dung vào Detail.', 'success');
             }
         }
@@ -3180,7 +3305,9 @@ function addNextStep() {
     }
 
     addStep++;
+    addConfirmationShown = false;
     renderAddStep();
+    saveAddDialogDraft();
 }
 
 const ADD_STEP_FIELDS = [
@@ -3232,15 +3359,24 @@ async function quickSaveFromStep() {
 }
 
 function addPreviousStep() {
+    if (addConfirmationShown) {
+        addConfirmationShown = false;
+        renderAddStep();
+        saveAddDialogDraft();
+        return;
+    }
     if (addStep <= 1) return;
+    readCurrentStepIntoRecord();
     addStep--;
     renderAddStep();
+    saveAddDialogDraft();
 }
 
 /* =========================================================
    CONFIRM
    ========================================================= */
 function showAddConfirmation() {
+    addConfirmationShown = true;
     const title = document.getElementById("addStepTitle");
     const content = document.getElementById("addStepContent");
     const nextBtn = document.getElementById("addNextBtn");
@@ -3268,6 +3404,7 @@ function showAddConfirmation() {
     nextBtn.textContent = editMode ? "Save Changes" : "Add Record";
     nextBtn.onclick = editMode ? saveEditedRecord : saveNewRecord;
     nextBtn.disabled = false;
+    saveAddDialogDraft();
 }
 
 /* =========================================================
@@ -3363,8 +3500,11 @@ function openEditDialog(record) {
         DETAIL: String(record["DETAIL"] || ""), QTY: String(record["QTY"] || ""),
         "VỊ TRÍ": String(record["VỊ TRÍ"] || ""), PIC: String(record["PIC"] || "")
     };
+    addConfirmationShown = false; addBackWarningShown = false;
     document.getElementById("addModal").classList.add("show");
+    activateAddDialogHistoryGuard();
     renderAddStep();
+    saveAddDialogDraft();
 }
 
 function getTodayMMDDYY() {
@@ -3377,6 +3517,7 @@ function openExportDialog(record) {
     if (record._pendingId || record._pendingEdit || record._pendingDelete) { showToast("Record đang được xử lý, vui lòng thử lại sau.", "info"); return; }
 
     editMode = false; exportMode = true; editTarget = null; editOriginal = null;
+    addConfirmationShown = false; addBackWarningShown = false;
     addStep = 1;
     newRecord = {
         DATE: getTodayMMDDYY(), KHO: String(record["KHO"] || ""), STATUS: "PART OUT",
@@ -3384,7 +3525,9 @@ function openExportDialog(record) {
         QTY: "1", "VỊ TRÍ": String(record["VỊ TRÍ"] || ""), PIC: String(record["PIC"] || "")
     };
     document.getElementById("addModal").classList.add("show");
+    activateAddDialogHistoryGuard();
     renderAddStep();
+    saveAddDialogDraft();
 }
 
 async function saveEditedRecord() {
@@ -3917,6 +4060,7 @@ function handleCameraCapture(event) {
    START
    ========================================================= */
 trackVisit();
+bindAddDraftPersistence();
 if (restoreSession()) {
     document.getElementById("loginOverlay").style.display = "none";
     applyRoleUI();
