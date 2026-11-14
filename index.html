@@ -653,6 +653,12 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     border: 1px solid #fecaca;
 }
 
+.ocr-status.warning {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
 /* CROP OVERLAY */
 .crop-overlay {
     display: none;
@@ -2651,163 +2657,191 @@ function rotateCropImage(degrees) {
     img.src = canvas.toDataURL('image/png');
 }
 
-/* ---------- OTSU THRESHOLD ---------- */
+/* ---------- OCR IMAGE PROCESSING: MULTI-VARIANT ---------- */
 function otsuThreshold(gray) {
-    const hist = new Array(256).fill(0);
+    const hist = new Uint32Array(256);
     for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
 
     const total = gray.length;
     let sum = 0;
     for (let i = 0; i < 256; i++) sum += i * hist[i];
 
-    let sumB = 0, wB = 0, maxVariance = 0, bestThreshold = 128;
-
+    let sumB = 0, weightB = 0, maxVariance = -1, bestThreshold = 128;
     for (let t = 0; t < 256; t++) {
-        wB += hist[t];
-        if (wB === 0) continue;
-        const wF = total - wB;
-        if (wF === 0) break;
+        weightB += hist[t];
+        if (weightB === 0) continue;
+        const weightF = total - weightB;
+        if (weightF === 0) break;
         sumB += t * hist[t];
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-        const between = wB * wF * (mB - mF) * (mB - mF);
-        if (between > maxVariance) {
-            maxVariance = between;
+        const meanB = sumB / weightB;
+        const meanF = (sum - sumB) / weightF;
+        const variance = weightB * weightF * (meanB - meanF) * (meanB - meanF);
+        if (variance > maxVariance) {
+            maxVariance = variance;
             bestThreshold = t;
         }
     }
     return bestThreshold;
 }
 
-/* ---------- MEDIAN FILTER 3x3 ---------- */
-function medianFilter3x3(gray, w, h) {
-    const copy = new Uint8ClampedArray(gray);
-    const values = new Uint8ClampedArray(9);
-
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            let k = 0;
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    values[k++] = copy[(y + dy) * w + (x + dx)];
-                }
-            }
-            for (let i = 0; i < 8; i++) {
-                for (let j = i + 1; j < 9; j++) {
-                    if (values[i] > values[j]) {
-                        const tmp = values[i];
-                        values[i] = values[j];
-                        values[j] = tmp;
-                    }
-                }
-            }
-            gray[y * w + x] = values[4];
-        }
+function percentileFromHistogram(hist, total, percentile) {
+    const target = Math.max(0, Math.min(total - 1, Math.floor(total * percentile)));
+    let cumulative = 0;
+    for (let i = 0; i < 256; i++) {
+        cumulative += hist[i];
+        if (cumulative > target) return i;
     }
+    return 255;
 }
 
-/* ---------- PREPROCESS IMAGE FOR OCR ---------- */
-async function preprocessImageForOCR(img, cropX, cropY, cropW, cropH, mode) {
-    const targetHeight = (mode === 'partNumber') ? 200 : 800;
-    let upscale = Math.max(1, Math.min(4, targetHeight / cropH));
-
-    const MAX_DIM = 4000;
-    let outW = Math.round(cropW * upscale);
-    let outH = Math.round(cropH * upscale);
-    if (outW > MAX_DIM || outH > MAX_DIM) {
-        const cap = Math.min(MAX_DIM / outW, MAX_DIM / outH);
-        outW = Math.round(outW * cap);
-        outH = Math.round(outH * cap);
-    }
-
+function makePaddedOCRDataUrl(gray, width, height) {
     const canvas = document.createElement('canvas');
-    canvas.width = outW;
-    canvas.height = outH;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const imageData = ctx.createImageData(width, height);
+    const rgba = imageData.data;
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
-
-    const imageData = ctx.getImageData(0, 0, outW, outH);
-    const data = imageData.data;
-    const pixelCount = outW * outH;
-
-    // 1) Grayscale
-    const gray = new Uint8ClampedArray(pixelCount);
-    for (let i = 0; i < pixelCount; i++) {
-        const idx = i * 4;
-        gray[i] = Math.round(0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
-    }
-
-    // 2) Contrast stretching
-    let minV = 255, maxV = 0;
-    for (let i = 0; i < pixelCount; i++) {
-        if (gray[i] < minV) minV = gray[i];
-        if (gray[i] > maxV) maxV = gray[i];
-    }
-    const range = maxV - minV;
-    if (range > 10) {
-        const s = 255 / range;
-        for (let i = 0; i < pixelCount; i++) {
-            gray[i] = Math.round((gray[i] - minV) * s);
-        }
-    }
-
-    // 3) Auto-detect inversion
-    let blackCount = 0;
-    for (let i = 0; i < pixelCount; i++) if (gray[i] < 128) blackCount++;
-    const inverted = (blackCount / pixelCount) > 0.5;
-
-    // 4) Otsu binarization + sanity check
-    let threshold = otsuThreshold(gray);
-    let testBlack = 0;
-    for (let i = 0; i < pixelCount; i++) if (gray[i] < threshold) testBlack++;
-    if (testBlack / pixelCount < 0.005 && threshold > 100) {
-        threshold = Math.min(240, threshold + 50);
-    }
-
-    for (let i = 0; i < pixelCount; i++) {
-        let v = gray[i] <= threshold ? 0 : 255;
-        if (inverted) v = 255 - v;
-        gray[i] = v;
-    }
-
-    // 5) Median filter cho Detail
-    if (mode === 'detail' && pixelCount > 100000) {
-        medianFilter3x3(gray, outW, outH);
-    }
-
-    // 6) Ghi lại imageData
-    for (let i = 0; i < pixelCount; i++) {
-        const idx = i * 4;
-        data[idx] = gray[i];
-        data[idx + 1] = gray[i];
-        data[idx + 2] = gray[i];
-        data[idx + 3] = 255;
+    for (let i = 0; i < gray.length; i++) {
+        const j = i * 4;
+        rgba[j] = gray[i];
+        rgba[j + 1] = gray[i];
+        rgba[j + 2] = gray[i];
+        rgba[j + 3] = 255;
     }
     ctx.putImageData(imageData, 0, 0);
 
-    // 7) Padding trắng
-    const padding = Math.max(20, Math.round(Math.min(outW, outH) * 0.04));
-    const paddedCanvas = document.createElement('canvas');
-    paddedCanvas.width = outW + padding * 2;
-    paddedCanvas.height = outH + padding * 2;
-    const pctx = paddedCanvas.getContext('2d');
-
+    const padding = Math.max(18, Math.round(Math.min(width, height) * 0.045));
+    const padded = document.createElement('canvas');
+    padded.width = width + padding * 2;
+    padded.height = height + padding * 2;
+    const pctx = padded.getContext('2d');
     pctx.fillStyle = '#ffffff';
-    pctx.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
+    pctx.fillRect(0, 0, padded.width, padded.height);
     pctx.drawImage(canvas, padding, padding);
+    return padded.toDataURL('image/png');
+}
 
-    return paddedCanvas.toDataURL('image/png');
+/*
+ * Tạo 3 ảnh độc lập từ cùng vùng cắt:
+ * 1) Grayscale + cân bằng tương phản: giữ lại nét và mức xám gốc.
+ * 2) Otsu: phù hợp nền tương đối đồng đều.
+ * 3) Adaptive threshold: phù hợp ảnh có ánh sáng/độ sáng không đồng đều.
+ * Không ép OCR chỉ đọc một ảnh nhị phân như phiên bản cũ.
+ */
+async function preprocessImageForOCR(img, cropX, cropY, cropW, cropH, mode) {
+    const targetHeight = mode === 'partNumber' ? 420 : 700;
+    let upscale = Math.max(1, Math.min(4, targetHeight / Math.max(1, cropH)));
+
+    let outW = Math.max(1, Math.round(cropW * upscale));
+    let outH = Math.max(1, Math.round(cropH * upscale));
+    const MAX_DIM = 3200;
+    const MAX_PIXELS = 3500000;
+    const cap = Math.min(1, MAX_DIM / outW, MAX_DIM / outH, Math.sqrt(MAX_PIXELS / (outW * outH)));
+    if (cap < 1) {
+        outW = Math.max(1, Math.round(outW * cap));
+        outH = Math.max(1, Math.round(outH * cap));
+    }
+
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = outW;
+    sourceCanvas.height = outH;
+    const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
+    sourceCtx.imageSmoothingEnabled = true;
+    sourceCtx.imageSmoothingQuality = 'high';
+    sourceCtx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+
+    const source = sourceCtx.getImageData(0, 0, outW, outH).data;
+    const pixelCount = outW * outH;
+    const gray = new Uint8ClampedArray(pixelCount);
+    const histogram = new Uint32Array(256);
+
+    for (let i = 0; i < pixelCount; i++) {
+        const j = i * 4;
+        const value = Math.round(0.299 * source[j] + 0.587 * source[j + 1] + 0.114 * source[j + 2]);
+        gray[i] = value;
+        histogram[value]++;
+    }
+
+    // Percentile contrast stretching: ít bị ảnh hưởng bởi một vài điểm lóe sáng/tối.
+    const low = percentileFromHistogram(histogram, pixelCount, 0.01);
+    const high = percentileFromHistogram(histogram, pixelCount, 0.99);
+    const range = Math.max(1, high - low);
+    const normalized = new Uint8ClampedArray(pixelCount);
+    for (let i = 0; i < pixelCount; i++) {
+        normalized[i] = Math.max(0, Math.min(255, Math.round((gray[i] - low) * 255 / range)));
+    }
+
+    // Ước lượng màu nền từ viền ảnh để xử lý nhãn chữ sáng trên nền tối.
+    let borderSum = 0, borderCount = 0;
+    const borderX = Math.max(1, Math.floor(outW * 0.06));
+    const borderY = Math.max(1, Math.floor(outH * 0.08));
+    for (let y = 0; y < outH; y++) {
+        for (let x = 0; x < outW; x++) {
+            if (x < borderX || x >= outW - borderX || y < borderY || y >= outH - borderY) {
+                borderSum += normalized[y * outW + x];
+                borderCount++;
+            }
+        }
+    }
+    const invertPolarity = borderCount > 0 && (borderSum / borderCount) < 118;
+    if (invertPolarity) {
+        for (let i = 0; i < pixelCount; i++) normalized[i] = 255 - normalized[i];
+    }
+
+    // Variant 1: grayscale đã cân bằng tương phản, không nhị phân hóa.
+    const grayVariant = new Uint8ClampedArray(normalized);
+
+    // Variant 2: Otsu global threshold.
+    const threshold = otsuThreshold(normalized);
+    const otsu = new Uint8ClampedArray(pixelCount);
+    for (let i = 0; i < pixelCount; i++) otsu[i] = normalized[i] <= threshold ? 0 : 255;
+
+    // Variant 3: adaptive threshold bằng integral image.
+    // Kích thước vùng lấy trung bình thay đổi theo kích thước vùng cắt.
+    const stride = outW + 1;
+    const integral = new Float64Array((outW + 1) * (outH + 1));
+    for (let y = 1; y <= outH; y++) {
+        let rowSum = 0;
+        for (let x = 1; x <= outW; x++) {
+            rowSum += normalized[(y - 1) * outW + (x - 1)];
+            integral[y * stride + x] = integral[(y - 1) * stride + x] + rowSum;
+        }
+    }
+
+    const radius = Math.max(8, Math.min(24, Math.round(Math.min(outW, outH) * 0.035)));
+    const adaptive = new Uint8ClampedArray(pixelCount);
+    const offset = mode === 'partNumber' ? 7 : 9;
+    for (let y = 0; y < outH; y++) {
+        const y1 = Math.max(0, y - radius);
+        const y2 = Math.min(outH, y + radius + 1);
+        for (let x = 0; x < outW; x++) {
+            const x1 = Math.max(0, x - radius);
+            const x2 = Math.min(outW, x + radius + 1);
+            const area = (x2 - x1) * (y2 - y1);
+            const sum = integral[y2 * stride + x2] - integral[y1 * stride + x2]
+                      - integral[y2 * stride + x1] + integral[y1 * stride + x1];
+            const localMean = sum / Math.max(1, area);
+            adaptive[y * outW + x] = normalized[y * outW + x] < localMean - offset ? 0 : 255;
+        }
+    }
+
+    return [
+        { name: 'Grayscale', dataUrl: makePaddedOCRDataUrl(grayVariant, outW, outH) },
+        { name: 'Otsu', dataUrl: makePaddedOCRDataUrl(otsu, outW, outH) },
+        { name: 'Adaptive', dataUrl: makePaddedOCRDataUrl(adaptive, outW, outH) }
+    ];
 }
 
 async function getTesseractWorker() {
     if (tesseractWorker) return tesseractWorker;
     if (tesseractWorkerPromise) return tesseractWorkerPromise;
 
-    tesseractWorkerPromise = (async () => {
-        await ensureLib("Tesseract", TESSERACT_URL);
+    tesseractWorkerPromise = (async function() {
+        await ensureLib('Tesseract', TESSERACT_URL);
+        if (!window.Tesseract || typeof Tesseract.createWorker !== 'function') {
+            throw new Error('Không tải được thư viện Tesseract.js.');
+        }
 
         const worker = await Tesseract.createWorker('eng', 1, {
             workerPath: TESSERACT_WORKER_PATH,
@@ -2817,153 +2851,194 @@ async function getTesseractWorker() {
                 if (currentOCRProgressCallback) currentOCRProgressCallback(m);
             }
         });
-
         tesseractWorker = worker;
         return worker;
-    })();
+    })().catch(function(error) {
+        tesseractWorkerPromise = null;
+        throw error;
+    });
 
     return tesseractWorkerPromise;
 }
 
-/* ---------- EXECUTE CROP + OCR (ĐÃ TỐI ƯU) ---------- */
+function cleanPartNumberOCR(value) {
+    return String(value || '').toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9\-./_]/g, '');
+}
+
+function cleanDetailOCR(value) {
+    return String(value || '')
+        .replace(/\r/g, '')
+        .split('\n')
+        .map(function(line) { return line.replace(/[\t ]+$/g, '').replace(/[\t ]{2,}/g, ' '); })
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+function rankOCRCandidates(results, maxRuns) {
+    const grouped = new Map();
+    results.forEach(function(item) {
+        const key = item.text;
+        if (!key) return;
+        if (!grouped.has(key)) {
+            grouped.set(key, { text: item.text, votes: 0, confidenceTotal: 0, maxConfidence: 0, sources: [] });
+        }
+        const group = grouped.get(key);
+        group.votes++;
+        group.confidenceTotal += item.confidence;
+        group.maxConfidence = Math.max(group.maxConfidence, item.confidence);
+        group.sources.push(item.variant + '/PSM ' + item.psm);
+    });
+
+    return Array.from(grouped.values()).map(function(group) {
+        group.averageConfidence = group.confidenceTotal / group.votes;
+        // Kết hợp Confidence trung bình và mức đồng thuận giữa các lần OCR.
+        group.score = group.averageConfidence * 0.72 + (group.votes / maxRuns) * 28;
+        return group;
+    }).sort(function(a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.votes !== a.votes) return b.votes - a.votes;
+        return b.averageConfidence - a.averageConfidence;
+    });
+}
+
+async function runOCRPasses(worker, variants, attempts, context) {
+    const results = [];
+    const whitelist = context === 'partNumber' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' : '';
+    const maxRuns = variants.length * attempts.length;
+    let completed = 0;
+
+    for (const variant of variants) {
+        for (const attempt of attempts) {
+            completed++;
+            setOCRStatus('Đang nhận diện ' + completed + '/' + maxRuns + ' — ' + variant.name + ' / PSM ' + attempt.psm + '...', 'loading');
+            await worker.setParameters({
+                tessedit_pageseg_mode: attempt.psm,
+                tessedit_char_whitelist: whitelist,
+                preserve_interword_spaces: '1',
+                user_defined_dpi: '300'
+            });
+
+            const response = await worker.recognize(variant.dataUrl);
+            const data = response && response.data ? response.data : {};
+            const raw = context === 'partNumber' ? cleanPartNumberOCR(data.text) : cleanDetailOCR(data.text);
+            const confidenceValue = Number(data.confidence);
+            const confidence = Number.isFinite(confidenceValue) ? Math.max(0, Math.min(100, confidenceValue)) : 0;
+            if (raw) {
+                results.push({ text: raw, confidence: confidence, variant: variant.name, psm: attempt.psm });
+            }
+        }
+    }
+    return { results: results, maxRuns: maxRuns };
+}
+
+/* ---------- EXECUTE CROP + MULTI-PASS OCR ---------- */
 async function executeCropOCR() {
+    if (partNumberOCRInProgress) return;
     if (cropData.rect.w < 10 || cropData.rect.h < 10) {
-        showToast("Vui lòng khoanh vùng ký tự trước khi nhận diện.", "info");
+        showToast('Vui lòng khoanh vùng ký tự trước khi nhận diện.', 'info');
         return;
     }
 
     const btn = document.getElementById('btnCropOCR');
-    btn.disabled = true;
-    btn.textContent = "Đang xử lý...";
-
-    setOCRStatus("Đang chuẩn bị ảnh...", "loading");
+    partNumberOCRInProgress = true;
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Đang xử lý...';
+    }
+    setOCRStatus('Đang chuẩn bị nhiều phiên bản ảnh...', 'loading');
 
     try {
         const img = document.getElementById('cropImage');
-
-        const scaleX = img.naturalWidth / img.clientWidth;
-        const scaleY = img.naturalHeight / img.clientHeight;
-
+        const scaleX = img.naturalWidth / Math.max(1, img.clientWidth);
+        const scaleY = img.naturalHeight / Math.max(1, img.clientHeight);
         const cropX = cropData.rect.x * scaleX;
         const cropY = cropData.rect.y * scaleY;
         const cropW = cropData.rect.w * scaleX;
         const cropH = cropData.rect.h * scaleY;
 
-        // === TIỀN XỬ LÝ ẢNH ===
-        const dataUrl = await preprocessImageForOCR(img, cropX, cropY, cropW, cropH, ocrContext);
-
+        const variants = await preprocessImageForOCR(img, cropX, cropY, cropW, cropH, ocrContext);
         currentOCRProgressCallback = function(m) {
-            if (m && m.status === "recognizing text") {
+            if (m && m.status === 'recognizing text') {
                 const pct = Math.round((m.progress || 0) * 100);
-                setOCRStatus("Đang nhận diện: " + pct + "%", "loading");
+                if (btn) btn.textContent = 'OCR ' + pct + '%';
             }
         };
 
         const worker = await getTesseractWorker();
+        let attempts;
+        if (ocrContext === 'partNumber') {
+            // PSM 7: một dòng; PSM 8: một từ; PSM 13: raw line.
+            attempts = [{ psm: '7' }, { psm: '8' }, { psm: '13' }];
+        } else {
+            // PSM 6: block; PSM 11: text rải rác; PSM 3: tự động phân vùng.
+            attempts = [{ psm: '6' }, { psm: '11' }, { psm: '3' }];
+        }
+
+        const batch = await runOCRPasses(worker, variants, attempts, ocrContext);
+        const ranked = rankOCRCandidates(batch.results, batch.maxRuns);
+        if (!ranked.length) {
+            throw new Error('Không nhận diện được ký tự. Hãy khoanh vùng sát hơn, tăng ánh sáng hoặc chụp ảnh rõ nét hơn.');
+        }
+
+        const best = ranked[0];
+        const second = ranked[1] || null;
+        const closeCompetition = !!second && (best.score - second.score) < 8;
+        const lowConfidence = best.averageConfidence < (ocrContext === 'partNumber' ? 55 : 50);
+        const lowConsensus = best.votes < 2;
+        const needsReview = closeCompetition || lowConfidence || lowConsensus;
 
         if (ocrContext === 'partNumber') {
-            // === NHẬN DIỆN ĐA CHẾ ĐỘ CHO PART NUMBER ===
-            const attempts = [
-                { psm: '7',  whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' },
-                { psm: '13', whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./_' }
-            ];
-
-            let best = null;
-
-            for (const attempt of attempts) {
-                setOCRStatus("Đang nhận diện (mode " + attempt.psm + ")...", "loading");
-
-                await worker.setParameters({
-                    tessedit_pageseg_mode: attempt.psm,
-                    tessedit_char_whitelist: attempt.whitelist
-                });
-
-                const { data } = await worker.recognize(dataUrl);
-                const text = String(data.text || '').replace(/\s+/g, '').trim();
-                const confidence = data.confidence || 0;
-
-                if (!best || confidence > best.confidence || (!best.text && text)) {
-                    best = { text, confidence };
-                }
-            }
-
-            let cleaned = best.text.toUpperCase().replace(/[^A-Z0-9\-./_]/g, '');
-            if (!cleaned) cleaned = best.text.toUpperCase();
-
-            if (!cleaned) {
-                throw new Error("Không nhận diện được ký tự. Thử khoanh vùng rõ hơn hoặc chụp lại ảnh nét hơn.");
-            }
-
-            const inputEl = document.getElementById("addPartNumber");
+            const inputEl = document.getElementById('addPartNumber');
             if (inputEl && inputEl.isConnected) {
-                inputEl.value = cleaned;
+                inputEl.value = best.text;
                 inputEl.focus();
             }
-            setOCRStatus("Đã nhận diện: " + cleaned + " (độ tin cậy: " + Math.round(best.confidence) + "%)", "success");
-            showToast("Đã nhận diện: " + cleaned, "success");
-        }
-        else {
-            // === NHẬN DIỆN ĐA CHẾ ĐỘ CHO DETAIL ===
-            const attempts = [
-                { psm: '6' },
-                { psm: '3' }
-            ];
 
-            let best = null;
-
-            for (const attempt of attempts) {
-                setOCRStatus("Đang nhận diện (mode " + attempt.psm + ")...", "loading");
-
-                await worker.setParameters({
-                    tessedit_pageseg_mode: attempt.psm,
-                    tessedit_char_whitelist: '',
-                    preserve_interword_spaces: '1'
-                });
-
-                const { data } = await worker.recognize(dataUrl);
-                const text = String(data.text || '').trim();
-                const confidence = data.confidence || 0;
-
-                if (!best || confidence > best.confidence) {
-                    best = { text, confidence };
-                }
-
-                if (confidence > 80) break;
+            const confidenceText = Math.round(best.averageConfidence) + '%';
+            const consensusText = best.votes + '/' + batch.maxRuns + ' lượt';
+            const alternatives = ranked.slice(1, 3).map(function(x) { return x.text; });
+            if (needsReview) {
+                const suffix = alternatives.length ? ' | Phương án khác: ' + alternatives.join(' / ') : '';
+                setOCRStatus('Đã điền: ' + best.text + '. Cần kiểm tra lại (Confidence ' + confidenceText + ', đồng thuận ' + consensusText + ').' + suffix, 'warning');
+                showToast('Đã điền Part Number — vui lòng kiểm tra ký tự trước khi Next.', 'info');
+            } else {
+                setOCRStatus('Đã nhận diện: ' + best.text + ' (Confidence ' + confidenceText + ', đồng thuận ' + consensusText + ').', 'success');
+                showToast('Đã nhận diện Part Number.', 'success');
             }
-
-            if (!best.text) {
-                throw new Error("Không nhận diện được ký tự.");
-            }
-
-            const cleaned = best.text
-                .split('\n')
-                .map(function(line) { return line.replace(/\s+$/, ''); })
-                .join('\n')
-                .replace(/\n{3,}/g, '\n\n')
-                .trim();
-
-            const inputEl = document.getElementById("addDetail");
+        } else {
+            const inputEl = document.getElementById('addDetail');
             if (inputEl && inputEl.isConnected) {
-                const existing = inputEl.value;
-                const separator = existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
-                inputEl.value = existing + separator + cleaned;
+                const existing = String(inputEl.value || '').trim();
+                const alreadyPresent = existing && existing.toLowerCase().includes(best.text.toLowerCase());
+                if (!alreadyPresent) {
+                    const separator = existing && !existing.endsWith('\n') ? '\n' : '';
+                    inputEl.value = existing + separator + best.text;
+                }
                 inputEl.focus();
             }
-            setOCRStatus("Đã nhận diện và thêm vào Detail (độ tin cậy: " + Math.round(best.confidence) + "%)", "success");
-            showToast("Đã thêm nội dung vào Detail.", "success");
+
+            if (needsReview) {
+                setOCRStatus('Đã thêm Detail nhưng kết quả OCR cần kiểm tra (Confidence ' + Math.round(best.averageConfidence) + '%, đồng thuận ' + best.votes + '/' + batch.maxRuns + ' lượt).', 'warning');
+                showToast('Đã thêm Detail — vui lòng kiểm tra nội dung.', 'info');
+            } else {
+                setOCRStatus('Đã nhận diện và thêm Detail (Confidence ' + Math.round(best.averageConfidence) + '%, đồng thuận ' + best.votes + '/' + batch.maxRuns + ' lượt).', 'success');
+                showToast('Đã thêm nội dung vào Detail.', 'success');
+            }
         }
 
         closeCropOverlay();
-    }
-    catch (err) {
-        console.error("OCR Error:", err);
-        setOCRStatus("Lỗi: " + err.message, "error");
-        showToast("Lỗi OCR: " + err.message, "error");
-    }
-    finally {
+    } catch (err) {
+        console.error('OCR Error:', err);
+        setOCRStatus('Lỗi: ' + (err && err.message ? err.message : String(err)), 'error');
+        showToast('Lỗi OCR: ' + (err && err.message ? err.message : String(err)), 'error');
+    } finally {
         currentOCRProgressCallback = null;
-        btn.disabled = false;
-        btn.textContent = "Cắt & Nhận diện";
+        partNumberOCRInProgress = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Cắt & Nhận diện';
+        }
     }
 }
 
