@@ -198,7 +198,6 @@
     "03/12/26||SERVICE||PART IN||K71332||Gauge dial\n(Đồng hồ so)||1||NAO-LKN026||LY": "log_186.html",
     "03/12/26||SERVICE||PART IN||2MHBHJ001300||Jig\n(Jig đo lực máy in)||1||NAO-LKN039||LY": "log_172.html",
     "06/09/26||WARRANTY||PART IN||K1HEBA125300||Board GPX 202608008\nFMV-RD26-222||1||NAO-SHE000-000||LY": "log_152.html",
-    "03/02/26||WARRANTY||PART IN||2AHEBC016600||CPU BOX||1||NAO-SHE000-000||LY": "log_145.html",
     "11/02/26||FMA||PART IN||Y60247||NAO borrowed parts from BNO: Union and Coupler\nBorrow 3 months\nFMV-PR26-291||4||SHE||LY": "log_217.html",
     "11/02/26||VÃNG LAI||PART IN||Camera cable + PC + Camera power cable||hàng KS gửi NAO xử lý lỗi BU4||1||SHE||LY": "log_219.html",
     "08/25/26||SERVICE||PART IN||AA1ZT00||Presure gauge\n\n(Jig đo khí cho placing head)||1||NAO-SHE000-000||LY": "log_162.html",
@@ -296,5 +295,6 @@
     "11/14/26||FMV FOR SALE||PART IN||2AHFBA0159**||Aimex 3 CPU box||1||Temp||LY": "log_305.html",
     "11/14/26||FMV FOR SALE||PART IN||2AHFBA009500||Aimex3\nElectrical box||1||Temp||LY": "log_307.html",
     "11/14/26||FMV FOR SALE||PART IN||2AGTBA001000||Base CPU box\nNXT3||1||Temp||LY": "log_308.html",
-    "11/14/26||FMV FOR SALE||PART IN||2AGTBC001800||Module CPU box\n(NXT3)||1||Temp||LY": "log_306.html"
+    "11/14/26||FMV FOR SALE||PART IN||2AGTBC001800||Module CPU box\n(NXT3)||1||Temp||LY": "log_306.html",
+    "03/02/26||WARRANTY||PART IN||2AHEBC016600||NXTR CPU BOX||1||NAO-SHE000-000||LY": "log_145.html"
 }
