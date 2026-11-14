@@ -246,5 +246,9 @@
     "11/11/26||VÃNG LAI||PART IN||RH02||HC1021   1191||1||SHE||LY": "log_255.html",
     "11/14/26||FMA||PART IN||2MHBSL022800||Stepper motor||2||temp||LY": "log_256.html",
     "11/14/26||FMA||PART IN||2MHBSS006400||Stepper motor trục S||1||Temp||LY": "log_257.html",
-    "11/14/26||FMA||PART IN||2MHBSL018400||Servo motor trục Z1||1||Temp||LY": "log_258.html"
+    "11/14/26||FMA||PART IN||2MHBSL018400||Servo motor trục Z1||1||Temp||LY": "log_258.html",
+    "11/14/26||FMA||PART IN||2MHBSC007301||Servo motor trục X 200w||1||Temp||LY": "log_259.html",
+    "11/14/26||FMA||PART IN||2MHBSC007401||MOTOR, AC, SERVO,\nMH751N2SNO1 (Y AXIS\n750W)||1||Temp||LY": "log_260.html",
+    "11/14/26||FMA||PART IN||K1HSSC100900||AC SERVO MOTOR\nTYPE MZ751N2LNO7\nRATED OUTPUT 750W\nS/N 25Y1037262H||1||Temp||LY": "log_261.html",
+    "11/14/26||FMA||PART IN||K1HSSL103400||AC SERVO MOTOR\nTYPE MZ751A2KNO4\nRATED OUTPUT 750W\nS/N 25Y1001720J||1||Temp||LY": "log_262.html"
 }
