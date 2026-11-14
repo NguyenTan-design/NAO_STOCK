@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="Stock.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- CSP: chỉ cho phép script từ 2 CDN cần dùng và kết nối tới Worker. Nếu đổi địa chỉ Worker/CDN thì cập nhật dòng này. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://nao-stock.quoctan91.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
+<!-- CSP: cho phép các CDN cần dùng (Plotly, SheetJS, ExcelJS, Tesseract.js) và kết nối tới Worker. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.plot.ly https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://nao-stock.quoctan91.workers.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://tessdata.projectnaptha.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>NAO STOCK Management</title>
 
 <!-- Plotly và SheetJS (nặng) được tải khi cần, xem ensureLib() -->
@@ -627,6 +627,84 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 .add-secondary-btn:disabled { opacity: 0.55; cursor: wait; }
 
 /* =========================
+   PART NUMBER ROW + OCR
+   ========================= */
+.part-number-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.part-number-input-row .add-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.ocr-btn {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0 14px;
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(15, 118, 110, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+}
+
+.ocr-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, #0f766e 0%, #115e59 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(15, 118, 110, 0.35);
+}
+
+.ocr-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.ocr-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.ocr-status {
+    margin-top: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    display: none;
+    word-break: break-word;
+}
+
+.ocr-status.show { display: block; }
+
+.ocr-status.loading {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.ocr-status.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.ocr-status.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* =========================
    CONFIRM
    ========================= */
 .add-confirm-row { margin-bottom: 12px; }
@@ -1192,6 +1270,12 @@ body.role-user .add-btn {
         font-size: 18px;
         padding: 1px 8px;
     }
+
+    .ocr-btn {
+        font-size: 16px;
+        padding: 0 12px;
+        min-width: 46px;
+    }
 }
 
 /* =========================
@@ -1224,6 +1308,12 @@ body.role-user .add-btn {
     .add-quick-btn {
         padding: 7px 12px;
         font-size: 11px;
+    }
+
+    .ocr-btn {
+        font-size: 14px;
+        padding: 0 10px;
+        min-width: 42px;
     }
 }
 
@@ -1613,6 +1703,8 @@ td.date-cell { vertical-align: top; }
 </div>
 
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraCapture(event)">
+<!-- NEW: Part Number OCR camera input -->
+<input type="file" id="partNumberCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePartNumberCamera(event)">
 
 <!-- =========================================================
      TOAST
@@ -1738,6 +1830,13 @@ function handleSessionExpired() {
 const PLOTLY_URL = "https://cdn.plot.ly/plotly-2.35.2.min.js";
 const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 const EXCELJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+
+/* Tesseract.js: dùng cho chức năng OCR Part Number (chụp ảnh → text) */
+const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+const TESSERACT_WORKER_PATH = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js";
+const TESSERACT_CORE_PATH = "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.0";
+const TESSERACT_LANG_PATH = "https://tessdata.projectnaptha.com/4.0.0";
+
 const libPromises = {};
 
 function ensureLib(globalName, url) {
@@ -2920,7 +3019,11 @@ function renderAddStep() {
         title.textContent = addTitlePrefix() + " — Step 4 / " + TOTAL_ADD_STEPS;
         content.innerHTML = `
             <label class="add-step-label">Part Number</label>
-            <input type="text" id="addPartNumber" class="add-input" placeholder="Enter part number..." value="${escapeAttribute(newRecord["PART NUMBER"] || "")}">
+            <div class="part-number-input-row">
+                <input type="text" id="addPartNumber" class="add-input" placeholder="Enter part number..." value="${escapeAttribute(newRecord["PART NUMBER"] || "")}">
+                <button type="button" id="partNumberCameraBtn" class="ocr-btn" title="Chụp ảnh để nhận diện Part Number" aria-label="Chụp ảnh để nhận diện Part Number" onclick="openPartNumberCamera()">📷</button>
+            </div>
+            <div id="ocrStatus" class="ocr-status"></div>
             <div id="addError" class="add-error"></div>
         `;
         setTimeout(function() {
@@ -2995,6 +3098,122 @@ function buildOptionsHtml(options, selected) {
     }
 
     return html;
+}
+
+/* =========================================================
+   PART NUMBER OCR (chụp ảnh → text)
+   ========================================================= */
+let partNumberOCRInProgress = false;
+
+function openPartNumberCamera() {
+    if (partNumberOCRInProgress) {
+        showToast("Đang nhận diện, vui lòng đợi...", "info");
+        return;
+    }
+
+    const input = document.getElementById("partNumberCameraInput");
+    if (!input) return;
+
+    input.value = "";
+    input.click();
+}
+
+function setOCRStatus(text, type) {
+    const el = document.getElementById("ocrStatus");
+    if (!el || !el.isConnected) return;
+
+    if (!text) {
+        el.className = "ocr-status";
+        el.textContent = "";
+        return;
+    }
+
+    el.className = "ocr-status show " + (type || "loading");
+    el.textContent = text;
+}
+
+function fileToDataURL(file) {
+    return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function() { resolve(reader.result); };
+        reader.onerror = function() { reject(new Error("Không đọc được file ảnh.")); };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handlePartNumberCamera(event) {
+    const file = event.target.files && event.target.files[0];
+
+    // Reset ngay để lần chụp sau vẫn kích hoạt onchange
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type || file.type.indexOf("image") !== 0) {
+        showToast("File không phải là ảnh.", "error");
+        return;
+    }
+
+    const cameraBtn = document.getElementById("partNumberCameraBtn");
+    const inputEl = document.getElementById("addPartNumber");
+
+    partNumberOCRInProgress = true;
+    if (cameraBtn) cameraBtn.disabled = true;
+
+    setOCRStatus("Đang chuẩn bị ảnh...", "loading");
+
+    try {
+        const dataUrl = await fileToDataURL(file);
+
+        setOCRStatus("Đang tải thư viện OCR (lần đầu có thể mất 5-15 giây)...", "loading");
+
+        await ensureLib("Tesseract", TESSERACT_URL);
+
+        setOCRStatus("Đang nhận diện Part Number...", "loading");
+
+        const { data: { text } } = await Tesseract.recognize(
+            dataUrl,
+            "eng",
+            {
+                workerPath: TESSERACT_WORKER_PATH,
+                corePath: TESSERACT_CORE_PATH,
+                langPath: TESSERACT_LANG_PATH,
+                logger: function(m) {
+                    if (m && m.status === "recognizing text") {
+                        const pct = Math.round((m.progress || 0) * 100);
+                        setOCRStatus("Đang nhận diện Part Number: " + pct + "%", "loading");
+                    }
+                }
+            }
+        );
+
+        // Part number thường không có khoảng trắng → gộp toàn bộ whitespace
+        const cleaned = String(text || "").replace(/\s+/g, "").trim();
+
+        if (!cleaned) {
+            setOCRStatus("Không nhận diện được ký tự. Vui lòng chụp lại rõ hơn hoặc nhập tay.", "error");
+            showToast("Không nhận diện được ký tự.", "error", 3500);
+            return;
+        }
+
+        if (inputEl && inputEl.isConnected) {
+            inputEl.value = cleaned;
+            inputEl.focus();
+        }
+
+        setOCRStatus("Đã nhận diện: " + cleaned + "  (có thể sửa lại nếu cần)", "success");
+        showToast("Đã nhận diện Part Number: " + cleaned, "success", 3000);
+    }
+    catch (err) {
+        console.error("OCR error:", err);
+
+        setOCRStatus("Lỗi OCR: " + (err && err.message ? err.message : "Không xác định"), "error");
+        showToast("Lỗi OCR: " + (err && err.message ? err.message : "Không xác định"), "error", 5000);
+    }
+    finally {
+        partNumberOCRInProgress = false;
+        if (cameraBtn) cameraBtn.disabled = false;
+    }
 }
 
 /* =========================================================
@@ -3306,7 +3525,9 @@ async function saveNewRecord() {
         _pendingId: pendingId
     });
 
-    allData.push(optimisticRecord);
+    // Dùng unshift để record mới nằm ở đầu mảng → stable sort giữ nó
+    // ở đầu nhóm các record có cùng DATE (thay vì bị đẩy xuống cuối nhóm).
+    allData.unshift(optimisticRecord);
     sortData();
 
     selectedStatus = null;
@@ -3341,7 +3562,7 @@ async function saveNewRecord() {
         });
 
         if (index !== -1) allData[index] = savedRecord;
-        else allData.push(savedRecord);
+        else allData.unshift(savedRecord);
 
         sortData();
         filteredData = [...allData];
@@ -4314,7 +4535,7 @@ function insertImageFile(file) {
 }
 
 /* =========================================================
-   CAMERA CAPTURE
+   CAMERA CAPTURE (LOG EDITOR)
    ========================================================= */
 function openCameraCapture() {
     if (!logEditMode) {
