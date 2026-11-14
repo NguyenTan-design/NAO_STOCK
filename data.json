@@ -2891,5 +2891,203 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K1HEBA113803",
+        "DETAIL": "CPU BOX with Image Board",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000405",
+        "DETAIL": "Metal Squeegee Holder\n380mm 50deg",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000404",
+        "DETAIL": "Metal Squeegee Holder\n380mm 55deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000402",
+        "DETAIL": "Metal Squeegee Holder\n380mm 60deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000403",
+        "DETAIL": "Metal Squeegee Holder\n380mm 65deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000304",
+        "DETAIL": "Metal Squeegee Holder\n480mm 50deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000303",
+        "DETAIL": "Metal Squeegee Holder\n480mm 55deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000301",
+        "DETAIL": "Metal Squeegee Holder\n480mm 60deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2UHBNS000302",
+        "DETAIL": "Metal Squeegee Holder\n480mm 65deg",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS002800",
+        "DETAIL": "Squeegee Assy",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS002200",
+        "DETAIL": "Squeegee Assy",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS002900",
+        "DETAIL": "Squeegee Assy",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS000200",
+        "DETAIL": "270mm squeegee Assy\n(2pcs/set, Including\nsqueegee,backup\nplate retainer)",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS007200",
+        "DETAIL": "Squeegee Assy",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "KTHSNS101501",
+        "DETAIL": "Squeegee\n585mm",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K1HSNS105201",
+        "DETAIL": "Squeegee\n530mm",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K1HSNS104601",
+        "DETAIL": "Squeegee\n300mm",
+        "QTY": "2",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "K3HBNS002300",
+        "DETAIL": "Squeegee Assy",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
