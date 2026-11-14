@@ -816,29 +816,33 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
 
 .crop-hint { color: #94a3b8; font-size: 13px; flex: 1; min-width: 150px; }
 
-.crop-actions { display: flex; gap: 10px; }
+.crop-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.btn-cancel {
+.btn-rotate, .btn-cancel, .btn-ocr {
     padding: 8px 16px;
     border: none;
     border-radius: var(--radius-sm);
-    background: #475569;
     color: white;
     cursor: pointer;
     font-weight: bold;
     transition: 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.btn-rotate {
+    background: #475569;
+    font-size: 16px;
+    padding: 8px 12px;
+}
+.btn-rotate:hover { background: #334155; }
+
+.btn-cancel { background: #475569; }
 .btn-cancel:hover { background: #334155; }
 
 .btn-ocr {
-    padding: 8px 16px;
-    border: none;
-    border-radius: var(--radius-sm);
     background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.15s;
     box-shadow: 0 1px 2px rgba(5, 150, 105, 0.3);
 }
 .btn-ocr:hover:not(:disabled) { background: linear-gradient(180deg, #059669 0%, #047857 100%); }
@@ -1423,7 +1427,8 @@ body.role-user .add-btn {
     }
 
     .crop-hint { font-size: 11px; }
-    .btn-cancel, .btn-ocr { padding: 6px 12px; font-size: 12px; }
+    .btn-rotate, .btn-cancel, .btn-ocr { padding: 6px 12px; font-size: 12px; }
+    .btn-rotate { font-size: 14px; }
 }
 
 /* =========================
@@ -1859,6 +1864,8 @@ td.date-cell { vertical-align: top; }
         <div class="crop-footer">
             <div class="crop-hint">Kéo chuột hoặc chạm để khoanh vùng ký tự</div>
             <div class="crop-actions">
+                <button type="button" class="btn-rotate" onclick="rotateCropImage(-90)" title="Xoay trái 90 độ">↺</button>
+                <button type="button" class="btn-rotate" onclick="rotateCropImage(90)" title="Xoay phải 90 độ">↻</button>
                 <button class="btn-cancel" onclick="closeCropOverlay()">Hủy</button>
                 <button class="btn-ocr" id="btnCropOCR" onclick="executeCropOCR()">Cắt & Nhận diện</button>
             </div>
@@ -2910,6 +2917,30 @@ function closeCropOverlay() {
     document.getElementById('cropOverlay').classList.remove('show');
     document.getElementById('cropImage').src = '';
     cropData.img = null;
+}
+
+function rotateCropImage(degrees) {
+    const img = document.getElementById('cropImage');
+    if (!img || !img.src) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    
+    const isRotate90 = Math.abs(degrees) === 90 || Math.abs(degrees) === 270;
+    
+    canvas.width = isRotate90 ? h : w;
+    canvas.height = isRotate90 ? w : h;
+    
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((degrees * Math.PI) / 180);
+    
+    ctx.drawImage(img, -w / 2, -h / 2);
+    
+    // Cập nhật src mới, thao tác này sẽ kích hoạt lại img.onload để reset vùng chọn
+    img.src = canvas.toDataURL('image/jpeg', 0.95);
 }
 
 async function getTesseractWorker() {
