@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="Stock.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- CSP: cho phép các CDN cần dùng (Plotly, SheetJS, ExcelJS, Tesseract.js) và kết nối tới Worker. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.plot.ly https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://nao-stock.quoctan91.workers.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://tessdata.projectnaptha.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<!-- CSP: cho phép các CDN cần dùng (SheetJS, ExcelJS, Tesseract.js) và kết nối tới Worker. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://nao-stock.quoctan91.workers.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://tessdata.projectnaptha.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>NAO STOCK Management</title>
 
 <!-- DYNAMIC OPTIONS -->
@@ -208,70 +208,6 @@ body { min-height: 100vh; }
 .logout-btn:hover { background: linear-gradient(180deg, #334155 0%, #1e293b 100%); }
 
 /* =========================
-   CHART
-   ========================= */
-.chart-container {
-    margin: 10px 20px 0 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 5px;
-    height: 45px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: height 0.25s ease, padding 0.25s ease;
-}
-
-.chart-container.show-chart {
-    height: 360px;
-    padding: 10px;
-}
-
-.chart-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    min-height: 30px;
-}
-
-.chart-title {
-    text-align: center;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--dark);
-    letter-spacing: -0.01em;
-}
-
-.chart-toggle-btn {
-    position: absolute;
-    right: 0;
-    top: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 6px 11px;
-    background: var(--dark);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.18s ease;
-    letter-spacing: 0.02em;
-}
-
-.chart-toggle-btn:hover {
-    background: var(--primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-.chart-container:not(.show-chart) .chart-title { display: none; }
-.chart-container:not(.show-chart) .chart-header { min-height: 33px; }
-.chart-container:not(.show-chart) .chart-toggle-btn { position: static; }
-
-#statusChart { width: 100%; height: 320px; }
-
-/* =========================
    PAGINATION
    ========================= */
 .pagination-top {
@@ -364,15 +300,67 @@ tbody td {
 tbody tr:nth-child(even) { background: #fafbfc; }
 tbody tr:hover { filter: brightness(0.97); }
 
-th:nth-child(1), td:nth-child(1) { width: 10%; text-align: center; }
-th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; }
-th:nth-child(3), td:nth-child(3) { width: 13%; text-align: center; }
-th:nth-child(4), td:nth-child(4) { width: 13%; text-align: center; }
-th:nth-child(5), td:nth-child(5) { width: 28%; text-align: left; }
-th:nth-child(6), td:nth-child(6) { width: 7%;  text-align: center; }
-th:nth-child(7), td:nth-child(7) { width: 13%; text-align: center; }
-th:nth-child(8), td:nth-child(8) { width: 10%; text-align: center; }
-th:nth-child(9), td:nth-child(9) { width: 10%; text-align: center; }
+th.col-select, td.col-select { width: 4%;  text-align: center; padding-left: 2px; padding-right: 2px; }
+th.col-date,   td.col-date   { width: 10%; text-align: center; }
+th.col-kho,    td.col-kho    { width: 12%; text-align: center; }
+th.col-status, td.col-status { width: 13%; text-align: center; }
+th.col-pn,     td.col-pn     { width: 13%; text-align: center; }
+th.col-detail, td.col-detail { width: 28%; text-align: left; }
+th.col-qty,    td.col-qty    { width: 7%;  text-align: center; }
+th.col-vitri,  td.col-vitri  { width: 13%; text-align: center; }
+th.col-pic,    td.col-pic    { width: 10%; text-align: center; }
+th.col-log,    td.col-log    { width: 10%; text-align: center; }
+
+/* Ẩn / hiện cột */
+.hide-col-kho .col-kho, .hide-col-status .col-status, .hide-col-pn .col-pn, .hide-col-detail .col-detail,
+.hide-col-qty .col-qty, .hide-col-vitri .col-vitri, .hide-col-pic .col-pic, .hide-col-log .col-log { display: none; }
+/* Cột DATE chứa nút sửa / xóa nên chỉ ẩn phần chữ ngày */
+.hide-col-date .date-value, .hide-col-date th.col-date .th-text { display: none; }
+
+/* Ô tích chọn record */
+.row-check, #selectAllCheck { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary); vertical-align: middle; margin: 0; }
+td.col-select { vertical-align: top; padding-top: 10px; }
+tbody tr.row-selected td { box-shadow: inset 0 0 0 9999px rgba(79, 70, 229, 0.13); }
+
+.selection-bar {
+    margin: 6px 20px 0 20px;
+    padding: 7px 12px;
+    background: var(--primary-light);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.selection-bar[hidden] { display: none; }
+.sel-link { border: none; background: none; padding: 0; color: var(--primary); text-decoration: underline; cursor: pointer; font-size: 13px; font-weight: 600; }
+.sel-link[hidden] { display: none; }
+
+.col-btn { background: linear-gradient(180deg, #475569 0%, #334155 100%); color: white; box-shadow: 0 1px 2px rgba(51, 65, 85, 0.3); }
+.col-menu {
+    position: fixed;
+    z-index: 1500;
+    min-width: 230px;
+    max-width: calc(100vw - 16px);
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+}
+.col-menu[hidden] { display: none; }
+.col-menu-title { font-size: 12px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 8px 6px; }
+.col-menu-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; }
+.col-menu-item:hover { background: var(--primary-light); }
+.col-menu-item input { width: 17px; height: 17px; accent-color: var(--primary); margin: 0; }
+.col-menu-reset { width: 100%; margin-top: 6px; padding: 9px; border: 1px solid var(--border-strong); background: #f8fafc; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text); }
+.col-menu-reset:hover { background: var(--primary-light); }
 
 tbody tr.part-in-row { background: #ecfdf5 !important; }
 tbody tr.part-in-row:hover { background: #d1fae5 !important; }
@@ -1183,23 +1171,22 @@ body.role-user .add-btn {
     .filter-area { gap: 5px; }
     .filter-row { gap: 5px; flex-wrap: nowrap; overflow-x: auto; padding: 4px; }
     .filter-btn { padding: 7px 9px; font-size: 11px; }
-    .chart-container { margin: 10px; height: 40px; padding: 4px; }
-    .chart-container.show-chart { height: 380px; padding: 5px; }
-    .chart-title { font-size: 14px; }
-    .chart-toggle-btn { font-size: 9px; padding: 5px 8px; }
-    #statusChart { height: 335px; }
     .pagination-top { padding: 10px 5px; }
     .table-container { margin: 10px; max-height: calc(100vh - 330px); overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .record-info { margin: 8px 10px 0 10px; }
-    th:nth-child(1), td:nth-child(1) { width: 13.5%; }
-    th:nth-child(2), td:nth-child(2) { width: 18%;   }
-    th:nth-child(3), td:nth-child(3) { width: 18%;   }
-    th:nth-child(4), td:nth-child(4) { width: 13%;   }
-    th:nth-child(5), td:nth-child(5) { width: 28%;   }
-    th:nth-child(6), td:nth-child(6) { width: 7%;    }
-    th:nth-child(7), td:nth-child(7) { width: 20%;   }
-    th:nth-child(8), td:nth-child(8) { width: 15%;   }
-    th:nth-child(9), td:nth-child(9) { width: 12.5%; }
+    th.col-select, td.col-select { width: 8%; }
+    th.col-date,   td.col-date   { width: 13.5%; }
+    th.col-kho,    td.col-kho    { width: 18%; }
+    th.col-status, td.col-status { width: 18%; }
+    th.col-pn,     td.col-pn     { width: 13%; }
+    th.col-detail, td.col-detail { width: 28%; }
+    th.col-qty,    td.col-qty    { width: 7%; }
+    th.col-vitri,  td.col-vitri  { width: 20%; }
+    th.col-pic,    td.col-pic    { width: 15%; }
+    th.col-log,    td.col-log    { width: 12.5%; }
+    .selection-bar { margin: 6px 10px 0 10px; font-size: 12px; }
+    .sel-link { font-size: 12px; }
+    .col-menu-item { padding: 11px 8px; }
     thead th { padding: 8px 2px; font-size: 10px; }
     tbody td { padding: 7px 2px; font-size: 10px; vertical-align: top; }
     .status { font-size: 8px; padding: 4px 4px; white-space: normal; }
@@ -1228,8 +1215,6 @@ body.role-user .add-btn {
     thead th { font-size: 9px; }
     tbody td { font-size: 9px; vertical-align: top; }
     .page-btn { padding: 6px 9px; font-size: 11px; }
-    .chart-container.show-chart { height: 340px; }
-    #statusChart { height: 300px; }
     .add-primary-btn, .add-secondary-btn, .add-quick-btn { padding: 7px 12px; font-size: 11px; }
     .ocr-btn { font-size: 14px; padding: 0 10px; min-width: 42px; }
 }
@@ -1488,41 +1473,40 @@ td.date-cell { vertical-align: top; }
 </div>
 </div>
 
-<!-- STATUS CHART -->
-<div class="chart-container" id="chartContainer">
-    <div class="chart-header">
-        <div class="chart-title">Status Overview</div>
-        <button class="chart-toggle-btn" id="chartToggleBtn" onclick="toggleChart()">Show graph</button>
-    </div>
-    <div id="statusChart"></div>
-</div>
-
 <!-- PAGINATION -->
 <div class="pagination-top">
     <button class="page-btn" id="prevBtn" onclick="previousPage()">Previous</button>
     <span class="page-info" id="pageInfo">Page 1</span>
     <button class="page-btn" id="nextBtn" onclick="nextPage()">Next</button>
     <button class="filter-btn add-btn" onclick="openAddDialog()">Add Case</button>
-    <button class="filter-btn export-btn" onclick="exportToExcel()">Export Excel</button>
+    <button class="filter-btn export-btn" id="exportExcelBtn" onclick="exportToExcel()">Export Excel</button>
+    <button type="button" class="filter-btn col-btn" id="colMenuBtn" onclick="toggleColumnMenu(event)" aria-haspopup="true">⚙ Cột</button>
 </div>
+<div class="col-menu" id="colMenu" hidden></div>
 
 <!-- RECORD INFO -->
 <div class="record-info" id="recordInfo">Loading...</div>
+<div class="selection-bar" id="selectionBar" hidden>
+    <span id="selectionCount"></span>
+    <button type="button" class="sel-link" id="selectAllFilteredBtn" onclick="selectAllFiltered()"></button>
+    <button type="button" class="sel-link" onclick="clearSelection()">Bỏ chọn</button>
+</div>
 
 <!-- TABLE -->
 <div class="table-container">
     <table>
         <thead>
             <tr>
-                <th>DATE</th>
-                <th>KHO</th>
-                <th>STATUS</th>
-                <th>PART NUMBER</th>
-                <th>DETAIL</th>
-                <th>QTY</th>
-                <th>VỊ TRÍ</th>
-                <th>PIC</th>
-                <th>LOG</th>
+                <th class="col-select"><input type="checkbox" id="selectAllCheck" title="Chọn / bỏ chọn tất cả record trên trang này" aria-label="Chọn tất cả record trên trang này" onchange="toggleSelectPage(this.checked)"></th>
+                <th class="col-date"><span class="th-text">DATE</span></th>
+                <th class="col-kho">KHO</th>
+                <th class="col-status">STATUS</th>
+                <th class="col-pn">PART NUMBER</th>
+                <th class="col-detail">DETAIL</th>
+                <th class="col-qty">QTY</th>
+                <th class="col-vitri">VỊ TRÍ</th>
+                <th class="col-pic">PIC</th>
+                <th class="col-log">LOG</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -1702,7 +1686,6 @@ function handleSessionExpired() {
 }
 
 /* ---------- Tải thư viện nặng khi cần ---------- */
-const PLOTLY_URL = "https://cdn.plot.ly/plotly-2.35.2.min.js";
 const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 const EXCELJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
 const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
@@ -1907,89 +1890,6 @@ function showToast(message, type, duration) {
 }
 
 /* =========================================================
-   CHART
-   ========================================================= */
-let statusChartLoaded = false;
-let chartVisible = false;
-
-function toggleChart() {
-    const container = document.getElementById("chartContainer");
-    const button = document.getElementById("chartToggleBtn");
-    chartVisible = !chartVisible;
-
-    if (chartVisible) {
-        container.classList.add("show-chart");
-        button.textContent = "Hide Graph";
-        renderStatusChart().then(function() {
-            setTimeout(function() {
-                if (statusChartLoaded && typeof Plotly !== "undefined") Plotly.Plots.resize("statusChart");
-            }, 300);
-        });
-    }
-    else {
-        container.classList.remove("show-chart");
-        button.textContent = "Show graph";
-    }
-}
-
-function computeChartData() {
-    const statusCount = { "part in": 0, "part out": 0 };
-    allData.forEach(function(item) {
-        const status = String(item["STATUS"] || "").trim().toLowerCase();
-        if (status === "part in") statusCount["part in"]++;
-        else if (status === "part out") statusCount["part out"]++;
-    });
-
-    const total = statusCount["part in"] + statusCount["part out"];
-    if (total === 0) return null;
-
-    return {
-        data: [{
-            type: "pie",
-            values: [statusCount["part in"], statusCount["part out"]],
-            labels: ["Part In", "Part Out"],
-            hole: 0.08,
-            textinfo: "label+percent",
-            texttemplate: "%{label}<br>%{value} / %{percent:.1%}",
-            hovertemplate: "<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent:.1%}<extra></extra>",
-            marker: { colors: ["#10b981", "#ef4444"], line: { color: "#ffffff", width: 2 } },
-            pull: [0.04, 0.04],
-            rotation: 0,
-            direction: "clockwise",
-            sort: false
-        }],
-        layout: {
-            margin: { l: 10, r: 10, t: 10, b: 55 },
-            showlegend: true,
-            legend: { orientation: "h", x: 0.5, xanchor: "center", y: -0.15 },
-            paper_bgcolor: "rgba(0,0,0,0)",
-            plot_bgcolor: "rgba(0,0,0,0)",
-            transition: { duration: 1000, easing: "cubic-in-out" }
-        },
-        config: { responsive: true, displayModeBar: false }
-    };
-}
-
-let chartQueue = Promise.resolve();
-
-function renderStatusChart() {
-    chartQueue = chartQueue.then(async function() {
-        if (!chartVisible) return;
-        const chart = computeChartData();
-        if (!chart) return;
-        try { await ensureLib("Plotly", PLOTLY_URL); }
-        catch (error) { console.error(error); showToast(error.message, "error", 4000); return; }
-
-        if (statusChartLoaded) await Plotly.react("statusChart", chart.data, chart.layout, chart.config);
-        else { await Plotly.newPlot("statusChart", chart.data, chart.layout, chart.config); statusChartLoaded = true; }
-    }).catch(function(error) { console.error("CHART ERROR:", error); });
-    return chartQueue;
-}
-
-function createStatusChart() { return renderStatusChart(); }
-function updateStatusChart() { return renderStatusChart(); }
-
-/* =========================================================
    LOAD JSON
    ========================================================= */
 async function loadData() {
@@ -2001,9 +1901,9 @@ async function loadData() {
         if (!Array.isArray(allData)) throw new Error("data.json must contain an array.");
 
         sortData();
+        selectedRecords.clear();
         filteredData = [...allData];
         renderTable();
-        createStatusChart();
         restoreAddDialogDraft();
 
         setTimeout(function() { ensureLib("ExcelJS", EXCELJS_URL).catch(function() {}); }, 2000);
@@ -2012,7 +1912,7 @@ async function loadData() {
         console.error("LOAD DATA ERROR:", error);
         document.getElementById("tableBody").innerHTML = `
             <tr>
-                <td colspan="9" class="message">
+                <td colspan="10" class="message">
                     Failed to load data.<br><br>
                     ${escapeHTML(error.message)}
                     <br><br>
@@ -2133,7 +2033,7 @@ function renderTable() {
     recordInfo.textContent = totalRecords === 0 ? "0 records" : `Showing ${startIndex + 1}-${endIndex} of ${totalRecords} records`;
 
     if (pageData.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="9" class="message">No records found.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="10" class="message">No records found.</td></tr>`;
     }
     else {
         tableBody.innerHTML = pageData.map(function(item, i) {
@@ -2148,6 +2048,7 @@ function renderTable() {
             const viTri = escapeHTML(item["VỊ TRÍ"] || "");
             const pic = escapeHTML(item["PIC"] || "");
             const logButton = createLogButton(startIndex + i);
+            const isSelected = selectedRecords.has(item);
 
             const exportButton = normalizedStatus === "PART IN"
                 ? `<button type="button" class="row-action-btn export-btn" title="Xuất PART OUT" aria-label="Xuất PART OUT" onclick="handleExportButtonClick(event, ${startIndex + i})">📤</button>`
@@ -2158,8 +2059,9 @@ function renderTable() {
             else if (normalizedStatus === "PART OUT") rowClass = "part-out-row";
 
             return `
-                <tr class="${rowClass}" data-idx="${startIndex + i}">
-                    <td class="date-cell">
+                <tr class="${rowClass}${isSelected ? " row-selected" : ""}" data-idx="${startIndex + i}">
+                    <td class="col-select"><input type="checkbox" class="row-check" aria-label="Chọn record" ${isSelected ? "checked" : ""} onchange="toggleRowSelect(${startIndex + i}, this.checked)"></td>
+                    <td class="col-date date-cell">
                         <div class="date-cell-inner">
                             <div class="date-value">${date}</div>
                             <div class="row-actions">
@@ -2169,14 +2071,14 @@ function renderTable() {
                             </div>
                         </div>
                     </td>
-                    <td>${kho}</td>
-                    <td>${status}</td>
-                    <td>${partNumber}</td>
-                    <td>${detail}</td>
-                    <td>${qty}</td>
-                    <td>${viTri}</td>
-                    <td>${pic}</td>
-                    <td>${logButton}</td>
+                    <td class="col-kho">${kho}</td>
+                    <td class="col-status">${status}</td>
+                    <td class="col-pn">${partNumber}</td>
+                    <td class="col-detail">${detail}</td>
+                    <td class="col-qty">${qty}</td>
+                    <td class="col-vitri">${viTri}</td>
+                    <td class="col-pic">${pic}</td>
+                    <td class="col-log">${logButton}</td>
                 </tr>
             `;
         }).join("");
@@ -2185,7 +2087,209 @@ function renderTable() {
     pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
     prevBtn.disabled = currentPage <= 1;
     nextBtn.disabled = currentPage >= totalPages;
+    updateSelectionUI();
 }
+
+/* =========================================================
+   CHỌN RECORD (ô tích đầu dòng) — dùng cho Export Excel
+   ========================================================= */
+const selectedRecords = new Set();
+
+function getPageRecords() {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredData.slice(start, start + rowsPerPage);
+}
+
+function toggleRowSelect(idx, checked) {
+    const record = filteredData[Number(idx)];
+    if (!record) return;
+    if (checked) selectedRecords.add(record); else selectedRecords.delete(record);
+    updateSelectionUI();
+}
+
+function toggleSelectPage(checked) {
+    getPageRecords().forEach(function(r) { if (checked) selectedRecords.add(r); else selectedRecords.delete(r); });
+    updateSelectionUI();
+}
+
+function selectAllFiltered() {
+    filteredData.forEach(function(r) { selectedRecords.add(r); });
+    updateSelectionUI();
+}
+
+function clearSelection() {
+    selectedRecords.clear();
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    // Bỏ khỏi danh sách chọn những record đã bị xoá / thay thế
+    if (selectedRecords.size > 0) {
+        const live = new Set(allData);
+        Array.from(selectedRecords).forEach(function(r) { if (!live.has(r)) selectedRecords.delete(r); });
+    }
+
+    document.querySelectorAll("#tableBody tr[data-idx]").forEach(function(tr) {
+        const rec = filteredData[Number(tr.getAttribute("data-idx"))];
+        const on = !!rec && selectedRecords.has(rec);
+        tr.classList.toggle("row-selected", on);
+        const cb = tr.querySelector(".row-check");
+        if (cb) cb.checked = on;
+    });
+
+    const pageRecords = getPageRecords();
+    let selectedOnPage = 0;
+    pageRecords.forEach(function(r) { if (selectedRecords.has(r)) selectedOnPage++; });
+    const head = document.getElementById("selectAllCheck");
+    if (head) {
+        head.checked = pageRecords.length > 0 && selectedOnPage === pageRecords.length;
+        head.indeterminate = selectedOnPage > 0 && selectedOnPage < pageRecords.length;
+    }
+
+    const count = selectedRecords.size;
+    let selectedInFiltered = 0;
+    filteredData.forEach(function(r) { if (selectedRecords.has(r)) selectedInFiltered++; });
+
+    const bar = document.getElementById("selectionBar");
+    if (bar) {
+        bar.hidden = count === 0;
+        document.getElementById("selectionCount").textContent = "Đã chọn " + count + " record — Export Excel chỉ xuất các record này";
+        const allBtn = document.getElementById("selectAllFilteredBtn");
+        allBtn.hidden = filteredData.length <= selectedInFiltered;
+        allBtn.textContent = "Chọn tất cả " + filteredData.length + " kết quả";
+    }
+
+    const exportBtn = document.getElementById("exportExcelBtn");
+    if (exportBtn) exportBtn.textContent = count > 0 ? "Export Excel (" + count + ")" : "Export Excel";
+}
+
+/* =========================================================
+   ẨN / HIỆN CỘT (nhớ lựa chọn trên thiết bị)
+   ========================================================= */
+const TABLE_COLUMNS = [
+    { key: "date",   label: "DATE (vẫn giữ nút sửa / xóa)" },
+    { key: "kho",    label: "KHO" },
+    { key: "status", label: "STATUS" },
+    { key: "pn",     label: "PART NUMBER" },
+    { key: "detail", label: "DETAIL" },
+    { key: "qty",    label: "QTY" },
+    { key: "vitri",  label: "VỊ TRÍ" },
+    { key: "pic",    label: "PIC" },
+    { key: "log",    label: "LOG" }
+];
+const COLUMN_PREF_KEY = "naoStockHiddenColumns_v1";
+const hiddenColumns = new Set();
+
+function loadColumnPrefs() {
+    try {
+        const raw = localStorage.getItem(COLUMN_PREF_KEY);
+        if (!raw) return;
+        const list = JSON.parse(raw);
+        if (!Array.isArray(list)) return;
+        list.forEach(function(key) { if (TABLE_COLUMNS.some(function(c) { return c.key === key; })) hiddenColumns.add(key); });
+    }
+    catch (e) {}
+}
+
+function saveColumnPrefs() {
+    try { localStorage.setItem(COLUMN_PREF_KEY, JSON.stringify(Array.from(hiddenColumns))); }
+    catch (e) {}
+}
+
+function applyColumnVisibility() {
+    const table = document.querySelector(".table-container table");
+    if (table) TABLE_COLUMNS.forEach(function(c) { table.classList.toggle("hide-col-" + c.key, hiddenColumns.has(c.key)); });
+
+    const btn = document.getElementById("colMenuBtn");
+    if (btn) btn.textContent = "⚙ Cột (" + (TABLE_COLUMNS.length - hiddenColumns.size) + "/" + TABLE_COLUMNS.length + ")";
+
+    document.querySelectorAll("#colMenu input[data-col]").forEach(function(cb) {
+        cb.checked = !hiddenColumns.has(cb.getAttribute("data-col"));
+    });
+}
+
+function setColumnVisible(key, visible) {
+    if (visible) hiddenColumns.delete(key); else hiddenColumns.add(key);
+    saveColumnPrefs();
+    applyColumnVisibility();
+}
+
+function showAllColumns() {
+    hiddenColumns.clear();
+    saveColumnPrefs();
+    applyColumnVisibility();
+}
+
+function buildColumnMenu() {
+    const menu = document.getElementById("colMenu");
+    if (!menu) return;
+    menu.textContent = "";
+
+    const title = document.createElement("div");
+    title.className = "col-menu-title";
+    title.textContent = "Hiển thị cột";
+    menu.appendChild(title);
+
+    TABLE_COLUMNS.forEach(function(c) {
+        const label = document.createElement("label");
+        label.className = "col-menu-item";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.setAttribute("data-col", c.key);
+        cb.addEventListener("change", function() { setColumnVisible(c.key, cb.checked); });
+        const span = document.createElement("span");
+        span.textContent = c.label;
+        label.appendChild(cb);
+        label.appendChild(span);
+        menu.appendChild(label);
+    });
+
+    const reset = document.createElement("button");
+    reset.type = "button";
+    reset.className = "col-menu-reset";
+    reset.textContent = "Hiện tất cả cột";
+    reset.addEventListener("click", showAllColumns);
+    menu.appendChild(reset);
+}
+
+function closeColumnMenu() {
+    const menu = document.getElementById("colMenu");
+    if (menu) menu.hidden = true;
+}
+
+function toggleColumnMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById("colMenu");
+    const btn = document.getElementById("colMenuBtn");
+    if (!menu || !btn) return;
+    if (!menu.hidden) { menu.hidden = true; return; }
+
+    menu.hidden = false;
+    const r = btn.getBoundingClientRect();
+    const w = menu.offsetWidth, h = menu.offsetHeight;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+    let top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+}
+
+document.addEventListener("pointerdown", function(event) {
+    const menu = document.getElementById("colMenu");
+    if (!menu || menu.hidden) return;
+    if (menu.contains(event.target) || event.target.closest("#colMenuBtn")) return;
+    menu.hidden = true;
+});
+document.addEventListener("keydown", function(event) { if (event.key === "Escape") closeColumnMenu(); });
+window.addEventListener("resize", closeColumnMenu);
+window.addEventListener("scroll", function(event) {
+    const menu = document.getElementById("colMenu");
+    if (menu && !menu.hidden && !menu.contains(event.target)) menu.hidden = true;
+}, true);
+
+loadColumnPrefs();
+buildColumnMenu();
+applyColumnVisibility();
 
 /* =========================================================
    PAGINATION / CLEAR / SCROLL
@@ -2217,8 +2321,9 @@ function escapeAttribute(value) {
 /* =========================================================
    EXPORT EXCEL
    ========================================================= */
-const EXPORT_IMG_HEIGHT = 150;
-const EXPORT_IMG_MAX_WIDTH = 400;
+const EXPORT_IMG_HEIGHT = 150;        // chiều cao ảnh trong ô (px @96dpi)
+const EXPORT_IMG_MAX_WIDTH = 400;     // chiều rộng tối đa của ảnh trong ô (px)
+const EXPORT_IMG_PAD = 3;             // viền trắng quanh ảnh trong ô (px)
 const EXPORT_FETCH_CONCURRENCY = 5;
 const EXPORT_BASE_COLS = 9;
 const EXPORT_EMBED_MAX_SIDE = 3000;
@@ -2226,44 +2331,53 @@ const EXPORT_JPEG_QUALITY = 0.95;
 
 let exportingExcel = false;
 
-function loadImageForExcel(src) {
+function loadImageElement(src) {
     return new Promise(function(resolve) {
         const img = new Image();
         let done = false;
         function finish(value) { if (done) return; done = true; clearTimeout(timer); resolve(value); }
         const timer = setTimeout(function() { finish(null); }, 15000);
         if (/^https?:/i.test(src)) img.crossOrigin = "anonymous";
-        img.onload = function() {
-            try {
-                const natW = img.naturalWidth;
-                const natH = img.naturalHeight;
-                if (!natW || !natH) return finish(null);
-                const scale = Math.min(EXPORT_IMG_HEIGHT / natH, EXPORT_IMG_MAX_WIDTH / natW, 1);
-                const dispW = Math.max(1, Math.round(natW * scale));
-                const dispH = Math.max(1, Math.round(natH * scale));
-                const m = /^data:image\/(png|jpe?g|gif);base64,(.+)$/i.exec(src);
-                if (m) {
-                    const type = m[1].toLowerCase();
-                    return finish({ base64: m[2], extension: type === "png" ? "png" : (type === "gif" ? "gif" : "jpeg"), width: dispW, height: dispH });
-                }
-                let cw = natW, ch = natH;
-                const longest = Math.max(cw, ch);
-                if (longest > EXPORT_EMBED_MAX_SIDE) {
-                    const k = EXPORT_EMBED_MAX_SIDE / longest;
-                    cw = Math.max(1, Math.round(cw * k)); ch = Math.max(1, Math.round(ch * k));
-                }
-                const canvas = document.createElement("canvas");
-                canvas.width = cw; canvas.height = ch;
-                const ctx = canvas.getContext("2d");
-                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cw, ch);
-                ctx.drawImage(img, 0, 0, cw, ch);
-                const dataUrl = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
-                finish({ base64: dataUrl.split(",")[1], extension: "jpeg", width: dispW, height: dispH });
-            } catch (err) { finish(null); }
-        };
+        img.onload = function() { finish(img.naturalWidth && img.naturalHeight ? img : null); };
         img.onerror = function() { finish(null); };
         img.src = src;
     });
+}
+
+/* Kích thước ảnh khi hiển thị trong ô (không phóng to quá kích thước gốc) */
+function exportDisplaySize(natW, natH) {
+    const s = Math.min(EXPORT_IMG_HEIGHT / natH, EXPORT_IMG_MAX_WIDTH / natW, 1);
+    return { s: s, w: Math.max(1, Math.round(natW * s)), h: Math.max(1, Math.round(natH * s)) };
+}
+
+/* Bước 1: chỉ đo kích thước ảnh (chưa mã hoá) để biết cần bao nhiêu chỗ trong bảng */
+async function probeImageForExcel(src) {
+    const img = await loadImageElement(src);
+    if (!img) return null;
+    return { src: src, natW: img.naturalWidth, natH: img.naturalHeight };
+}
+
+/* Bước 2: vẽ ảnh vào đúng khung ô (slotW x slotH, px) — giữ nguyên tỷ lệ, đệm nền trắng.
+   Ảnh được neo theo ô nên luôn nằm trọn trong ô, không phụ thuộc DPI/zoom của Excel. */
+async function composeImageForSlot(info, slotW, slotH) {
+    const img = await loadImageElement(info.src);
+    if (!img) return null;
+    try {
+        const d = exportDisplaySize(info.natW, info.natH);
+        // k = số pixel ảnh gốc trên mỗi px hiển thị (giữ độ phân giải gốc, giới hạn cạnh dài)
+        const k = Math.min(1 / d.s, EXPORT_EMBED_MAX_SIDE / Math.max(slotW, slotH));
+        const cw = Math.max(1, Math.round(slotW * k)), ch = Math.max(1, Math.round(slotH * k));
+        const dw = Math.max(1, Math.round(d.w * k)), dh = Math.max(1, Math.round(d.h * k));
+        const canvas = document.createElement("canvas");
+        canvas.width = cw; canvas.height = ch;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cw, ch);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh);
+        const dataUrl = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
+        canvas.width = 0; canvas.height = 0;
+        return { base64: dataUrl.split(",")[1], extension: "jpeg" };
+    } catch (err) { return null; }
 }
 
 async function fetchLogImagesForRecord(record) {
@@ -2282,16 +2396,31 @@ async function fetchLogImagesForRecord(record) {
     const images = [];
     let failed = 0;
     for (let i = 0; i < sources.length; i++) {
-        const info = await loadImageForExcel(sources[i]);
+        const info = await probeImageForExcel(sources[i]);
         if (info) images.push(info);
         else failed++;
     }
     return { images, failed };
 }
 
+/* Nếu có record được tích chọn → chỉ xuất các record đó (theo thứ tự trong bảng); ngược lại xuất toàn bộ danh sách hiện tại */
+function getExportRecords() {
+    if (selectedRecords.size > 0) {
+        const chosen = allData.filter(function(r) { return selectedRecords.has(r); });
+        if (chosen.length > 0) return chosen;
+    }
+    return filteredData.slice();
+}
+
+function hasExportSelection() {
+    return selectedRecords.size > 0 && allData.some(function(r) { return selectedRecords.has(r); });
+}
+
 async function exportToExcel() {
     if (exportingExcel) { showToast("Đang export, vui lòng đợi...", "info"); return; }
-    if (!filteredData || filteredData.length === 0) { alert("No data to export."); return; }
+    const records = getExportRecords();
+    if (!records || records.length === 0) { alert("No data to export."); return; }
+    const exportingSelected = hasExportSelection();
 
     try { await ensureLib("ExcelJS", EXCELJS_URL); }
     catch (error) { alert("Excel export library failed to load. Please check your internet connection and try again."); return; }
@@ -2313,11 +2442,11 @@ async function exportToExcel() {
 
     exportingExcel = true;
     try {
-        const records = filteredData.slice();
+        const label = exportingSelected ? " (" + records.length + " record đã chọn)" : "";
         const imagesByRecord = new Array(records.length);
         let doneCount = 0, failedImages = 0, failedLogs = 0, cursor = 0;
 
-        showToast("Đang lấy ảnh log 0/" + records.length + "...", "info", 600000);
+        showToast("Đang lấy ảnh log 0/" + records.length + label + "...", "info", 600000);
 
         async function worker() {
             while (true) {
@@ -2330,112 +2459,73 @@ async function exportToExcel() {
                     catch (err) { failedLogs++; }
                 }
                 doneCount++;
-                showToast("Đang lấy ảnh log " + doneCount + "/" + records.length + "...", "info", 600000);
+                showToast("Đang lấy ảnh log " + doneCount + "/" + records.length + label + "...", "info", 600000);
             }
         }
         const workers = [];
         for (let w = 0; w < Math.min(EXPORT_FETCH_CONCURRENCY, records.length); w++) workers.push(worker());
         await Promise.all(workers);
 
-        showToast("Đang tạo file Excel...", "info", 600000);
-
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet("NAO Stock");
         const baseWidths = [10, 12, 10, 18, 50, 8, 12, 18, 15];
         const headers = ["DATE", "KHO", "STATUS", "PART NUMBER", "DETAIL", "QTY", "VỊ TRÍ", "PIC", "LOG"];
 
+        // Khung ô ảnh: cao cố định, mỗi cột rộng đúng bằng ảnh rộng nhất của cột đó
+        const slotH = EXPORT_IMG_HEIGHT + 2 * EXPORT_IMG_PAD;
         let maxImages = 0;
         imagesByRecord.forEach(function(list) { if (list && list.length > maxImages) maxImages = list.length; });
-        const imageColPx = Array(maxImages).fill(0);
-        imagesByRecord.forEach(function(list) { (list || []).forEach(function(img, k) { if (img.width > imageColPx[k]) imageColPx[k] = img.width; }); });
+        const slotW = Array(maxImages).fill(0);
+        let totalImages = 0;
+        imagesByRecord.forEach(function(list) {
+            (list || []).forEach(function(im, k) {
+                totalImages++;
+                const w = exportDisplaySize(im.natW, im.natH).w + 2 * EXPORT_IMG_PAD;
+                if (w > slotW[k]) slotW[k] = w;
+            });
+        });
+        for (let k = 0; k < maxImages; k++) slotW[k] = Math.max(80, slotW[k]);
 
         const headerRow = headers.slice();
         for (let k = 0; k < maxImages; k++) headerRow.push("ẢNH " + (k + 1));
 
         sheet.addRow(headerRow);
-        sheet.columns = baseWidths.map(function(w) { return { width: w }; }).concat(imageColPx.map(function(px) { return { width: Math.max(8, (px + 8) / 7) }; }));
+        // Excel: độ rộng cột (ký tự) × 7 ≈ số pixel
+        sheet.columns = baseWidths.map(function(w) { return { width: w }; }).concat(slotW.map(function(px) { return { width: px / 7 }; }));
 
         const header = sheet.getRow(1);
         header.font = { bold: true };
         header.alignment = { vertical: "middle", horizontal: "center" };
 
-        // Rebuild each source image on a canvas matching the exact Excel cell aspect ratio.
-        // The exported picture itself is then anchored to the cell's top-left and bottom-right
-        // boundaries (two-cell anchor), avoiding PC Excel's inconsistent one-cell ext rendering.
-        async function createCellFittedImage(imgInfo, targetWidthPx, targetHeightPx) {
-            const ext = String(imgInfo.extension || "jpeg").toLowerCase();
-            const mime = ext === "png" ? "image/png" : (ext === "gif" ? "image/gif" : "image/jpeg");
-            const sourceImage = new Image();
-            const sourceUrl = "data:" + mime + ";base64," + imgInfo.base64;
-
-            await new Promise(function(resolve, reject) {
-                sourceImage.onload = resolve;
-                sourceImage.onerror = function() { reject(new Error("Không thể chuẩn hóa ảnh Excel.")); };
-                sourceImage.src = sourceUrl;
-            });
-
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.max(1, Math.round(targetWidthPx));
-            canvas.height = Math.max(1, Math.round(targetHeightPx));
-            const ctx = canvas.getContext("2d");
-            if (!ctx) throw new Error("Không thể tạo canvas cho ảnh Excel.");
-
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-
-            const padding = 4;
-            const availableWidth = Math.max(1, canvas.width - padding * 2);
-            const availableHeight = Math.max(1, canvas.height - padding * 2);
-            const scale = Math.min(
-                availableWidth / sourceImage.naturalWidth,
-                availableHeight / sourceImage.naturalHeight
-            );
-            const drawWidth = sourceImage.naturalWidth * scale;
-            const drawHeight = sourceImage.naturalHeight * scale;
-            const drawX = (canvas.width - drawWidth) / 2;
-            const drawY = (canvas.height - drawHeight) / 2;
-            ctx.drawImage(sourceImage, drawX, drawY, drawWidth, drawHeight);
-
-            return canvas.toDataURL("image/png").split(",")[1];
-        }
-
+        let composed = 0;
         for (let i = 0; i < records.length; i++) {
             const item = records[i];
             const row = sheet.addRow([formatDateForExport(item["DATE"]), item["KHO"] || "", item["STATUS"] || "", item["PART NUMBER"] || "", item["DETAIL"] || "", item["QTY"] || "", item["VỊ TRÍ"] || "", item["PIC"] || "", ""]);
             row.alignment = { vertical: "middle", wrapText: true };
 
             const list = imagesByRecord[i] || [];
-            if (list.length === 0) continue;
-
-            let rowMaxH = 0;
-            list.forEach(function(img) {
-                if (img.height > rowMaxH) rowMaxH = img.height;
-            });
-            row.height = Math.max(15, (rowMaxH + 6) * 0.75);
-
+            let placed = false;
             for (let k = 0; k < list.length; k++) {
-                const img = list[k];
-                const imageColumnIndex = EXPORT_BASE_COLS + k + 1;
-                const imageColumn = sheet.getColumn(imageColumnIndex);
-                // Excel column width is character-based; convert it to the pixel grid used by ExcelJS.
-                const cellWidthPx = Math.max(1, Math.floor((imageColumn.width || 8.43) * 7 + 5));
-                const cellHeightPx = Math.max(1, Math.round(row.height * 96 / 72));
-                const fittedBase64 = await createCellFittedImage(img, cellWidthPx, cellHeightPx);
-                const imageId = workbook.addImage({ base64: fittedBase64, extension: "png" });
-                const imageColumnZeroBased = EXPORT_BASE_COLS + k;
-
-                // Bound the image to exactly one cell. Unlike ext-based oneCell anchors,
-                // Excel desktop cannot render the picture beyond the cell's bottom/right edges.
+                const out = await composeImageForSlot(list[k], slotW[k], slotH);
+                composed++;
+                if (composed % 3 === 0) {
+                    showToast("Đang xử lý ảnh " + composed + "/" + totalImages + "...", "info", 600000);
+                    await new Promise(function(resolve) { setTimeout(resolve, 0); }); // nhường giao diện
+                }
+                if (!out) { failedImages++; continue; }
+                const imageId = workbook.addImage({ base64: out.base64, extension: out.extension });
+                // Neo ảnh từ góc trên-trái đến góc dưới-phải CỦA Ô → ảnh luôn nằm gọn trong ô trên mọi thiết bị
                 sheet.addImage(imageId, {
-                    tl: { col: imageColumnZeroBased, row: row.number - 1 },
-                    br: { col: imageColumnZeroBased + 1, row: row.number },
-                    editAs: "twoCell"
+                    tl: { nativeCol: EXPORT_BASE_COLS + k, nativeColOff: 0, nativeRow: row.number - 1, nativeRowOff: 0 },
+                    br: { nativeCol: EXPORT_BASE_COLS + k + 1, nativeColOff: 0, nativeRow: row.number, nativeRowOff: 0 },
+                    editAs: "oneCell"
                 });
+                placed = true;
             }
+            if (placed) row.height = slotH * 0.75; // px → pt
         }
 
+        showToast("Đang tạo file Excel...", "info", 600000);
         const buffer = await workbook.xlsx.writeBuffer();
         if (fileHandle) {
             const writable = await fileHandle.createWritable();
@@ -2449,7 +2539,7 @@ async function exportToExcel() {
             setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
         }
 
-        let msg = "Export Excel thành công.";
+        let msg = "Export Excel thành công" + (exportingSelected ? " (" + records.length + " record đã chọn)." : ".");
         if (failedImages > 0 || failedLogs > 0) msg += " (Bỏ qua " + failedImages + " ảnh và " + failedLogs + " log không tải được)";
         showToast(msg, failedImages > 0 || failedLogs > 0 ? "info" : "success", 5000);
     }
@@ -3494,7 +3584,6 @@ async function saveNewRecord() {
     filteredData = [...allData];
     currentPage = 1;
     renderTable();
-    updateStatusChart();
     closeAddDialog();
     showToast("Đang lưu...", "info");
 
@@ -3511,7 +3600,6 @@ async function saveNewRecord() {
         sortData();
         filteredData = [...allData];
         renderTable();
-        updateStatusChart();
         showToast("Record added successfully.", "success");
     }
     catch (error) {
@@ -3519,7 +3607,6 @@ async function saveNewRecord() {
         allData = allData.filter(function(item) { return item._pendingId !== pendingId; });
         filteredData = [...allData];
         renderTable();
-        updateStatusChart();
         showToast("Save failed: " + error.message + " — record was not saved.", "error", 5000);
     }
 }
@@ -3642,7 +3729,6 @@ function refreshAfterEdit() {
     applyFilter();
     currentPage = page;
     renderTable();
-    updateStatusChart();
 }
 
 /* ---------- EDIT / EXPORT BUTTON: CLICK -> 3s HOLD CONFIRM ---------- */
@@ -3813,6 +3899,7 @@ async function performDeleteRecord(password) {
         return { status: "error" };
     }
 
+    selectedRecords.delete(target);
     allData.splice(allData.indexOf(target), 1);
     refreshAfterEdit();
     showToast("Record deleted successfully.", "success");
