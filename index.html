@@ -2359,12 +2359,55 @@ async function exportToExcel() {
         header.font = { bold: true };
         header.alignment = { vertical: "middle", horizontal: "center" };
 
-        records.forEach(function(item, i) {
+        // Rebuild each source image on a canvas matching the exact Excel cell aspect ratio.
+        // The exported picture itself is then anchored to the cell's top-left and bottom-right
+        // boundaries (two-cell anchor), avoiding PC Excel's inconsistent one-cell ext rendering.
+        async function createCellFittedImage(imgInfo, targetWidthPx, targetHeightPx) {
+            const ext = String(imgInfo.extension || "jpeg").toLowerCase();
+            const mime = ext === "png" ? "image/png" : (ext === "gif" ? "image/gif" : "image/jpeg");
+            const sourceImage = new Image();
+            const sourceUrl = "data:" + mime + ";base64," + imgInfo.base64;
+
+            await new Promise(function(resolve, reject) {
+                sourceImage.onload = resolve;
+                sourceImage.onerror = function() { reject(new Error("Không thể chuẩn hóa ảnh Excel.")); };
+                sourceImage.src = sourceUrl;
+            });
+
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(targetWidthPx));
+            canvas.height = Math.max(1, Math.round(targetHeightPx));
+            const ctx = canvas.getContext("2d");
+            if (!ctx) throw new Error("Không thể tạo canvas cho ảnh Excel.");
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            const padding = 4;
+            const availableWidth = Math.max(1, canvas.width - padding * 2);
+            const availableHeight = Math.max(1, canvas.height - padding * 2);
+            const scale = Math.min(
+                availableWidth / sourceImage.naturalWidth,
+                availableHeight / sourceImage.naturalHeight
+            );
+            const drawWidth = sourceImage.naturalWidth * scale;
+            const drawHeight = sourceImage.naturalHeight * scale;
+            const drawX = (canvas.width - drawWidth) / 2;
+            const drawY = (canvas.height - drawHeight) / 2;
+            ctx.drawImage(sourceImage, drawX, drawY, drawWidth, drawHeight);
+
+            return canvas.toDataURL("image/png").split(",")[1];
+        }
+
+        for (let i = 0; i < records.length; i++) {
+            const item = records[i];
             const row = sheet.addRow([formatDateForExport(item["DATE"]), item["KHO"] || "", item["STATUS"] || "", item["PART NUMBER"] || "", item["DETAIL"] || "", item["QTY"] || "", item["VỊ TRÍ"] || "", item["PIC"] || "", ""]);
             row.alignment = { vertical: "middle", wrapText: true };
 
             const list = imagesByRecord[i] || [];
-            if (list.length === 0) return;
+            if (list.length === 0) continue;
 
             let rowMaxH = 0;
             list.forEach(function(img) {
@@ -2372,32 +2415,26 @@ async function exportToExcel() {
             });
             row.height = Math.max(15, (rowMaxH + 6) * 0.75);
 
-            list.forEach(function(img, k) {
-                const imageId = workbook.addImage({ base64: img.base64, extension: img.extension || "jpeg" });
-
-                // Fit the image inside its existing Excel cell with a small safety margin.
-                // The original column widths and row-height rules remain unchanged.
-                const imageColumn = sheet.getColumn(EXPORT_BASE_COLS + k + 1);
+            for (let k = 0; k < list.length; k++) {
+                const img = list[k];
+                const imageColumnIndex = EXPORT_BASE_COLS + k + 1;
+                const imageColumn = sheet.getColumn(imageColumnIndex);
+                // Excel column width is character-based; convert it to the pixel grid used by ExcelJS.
                 const cellWidthPx = Math.max(1, Math.floor((imageColumn.width || 8.43) * 7 + 5));
-                const cellHeightPx = Math.max(1, row.height * 96 / 72);
-                const availableWidth = Math.max(1, cellWidthPx - 8);
-                const availableHeight = Math.max(1, cellHeightPx - 8);
-                const scale = Math.min(availableWidth / img.width, availableHeight / img.height, 1);
-                const imageWidth = Math.max(1, img.width * scale);
-                const imageHeight = Math.max(1, img.height * scale);
-                const offsetX = Math.max(0, (cellWidthPx - imageWidth) / 2);
-                const offsetY = Math.max(0, (cellHeightPx - imageHeight) / 2);
+                const cellHeightPx = Math.max(1, Math.round(row.height * 96 / 72));
+                const fittedBase64 = await createCellFittedImage(img, cellWidthPx, cellHeightPx);
+                const imageId = workbook.addImage({ base64: fittedBase64, extension: "png" });
+                const imageColumnZeroBased = EXPORT_BASE_COLS + k;
 
+                // Bound the image to exactly one cell. Unlike ext-based oneCell anchors,
+                // Excel desktop cannot render the picture beyond the cell's bottom/right edges.
                 sheet.addImage(imageId, {
-                    tl: {
-                        col: EXPORT_BASE_COLS + k + offsetX / cellWidthPx,
-                        row: row.number - 1 + offsetY / cellHeightPx
-                    },
-                    ext: { width: imageWidth, height: imageHeight },
-                    editAs: "oneCell"
+                    tl: { col: imageColumnZeroBased, row: row.number - 1 },
+                    br: { col: imageColumnZeroBased + 1, row: row.number },
+                    editAs: "twoCell"
                 });
-            });
-        });
+            }
+        }
 
         const buffer = await workbook.xlsx.writeBuffer();
         if (fileHandle) {
