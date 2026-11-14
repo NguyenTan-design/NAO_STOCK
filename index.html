@@ -2215,22 +2215,14 @@ function escapeAttribute(value) {
 }
 
 /* =========================================================
-   EXPORT EXCEL (NORMALIZED IMAGE CELLS FOR PC + MOBILE)
+   EXPORT EXCEL
    ========================================================= */
-/*
- * Excel image geometry is deliberately normalized to one fixed box.
- * This avoids desktop Excel interpreting source-image dimensions/anchors
- * differently from mobile spreadsheet viewers.
- */
-const EXPORT_IMG_HEIGHT = 135;
-const EXPORT_IMG_MAX_WIDTH = 360;
-const EXPORT_IMG_COLUMN_WIDTH = 62;
-const EXPORT_IMG_ROW_HEIGHT = 120; // points; leaves vertical padding around 135px image
-const EXPORT_IMG_CENTER_X = 0.09;  // fraction of the image column
-const EXPORT_IMG_CENTER_Y = 0.08;  // fraction of the image row
+const EXPORT_IMG_HEIGHT = 150;
+const EXPORT_IMG_MAX_WIDTH = 400;
 const EXPORT_FETCH_CONCURRENCY = 5;
 const EXPORT_BASE_COLS = 9;
-const EXPORT_JPEG_QUALITY = 0.92;
+const EXPORT_EMBED_MAX_SIDE = 3000;
+const EXPORT_JPEG_QUALITY = 0.95;
 
 let exportingExcel = false;
 
@@ -2241,45 +2233,32 @@ function loadImageForExcel(src) {
         function finish(value) { if (done) return; done = true; clearTimeout(timer); resolve(value); }
         const timer = setTimeout(function() { finish(null); }, 15000);
         if (/^https?:/i.test(src)) img.crossOrigin = "anonymous";
-        img.decoding = "async";
         img.onload = function() {
             try {
                 const natW = img.naturalWidth;
                 const natH = img.naturalHeight;
                 if (!natW || !natH) return finish(null);
-
-                // Always embed a same-size JPEG canvas, even for data: URLs.
-                // Preserve aspect ratio and center the original on a white background.
+                const scale = Math.min(EXPORT_IMG_HEIGHT / natH, EXPORT_IMG_MAX_WIDTH / natW, 1);
+                const dispW = Math.max(1, Math.round(natW * scale));
+                const dispH = Math.max(1, Math.round(natH * scale));
+                const m = /^data:image\/(png|jpe?g|gif);base64,(.+)$/i.exec(src);
+                if (m) {
+                    const type = m[1].toLowerCase();
+                    return finish({ base64: m[2], extension: type === "png" ? "png" : (type === "gif" ? "gif" : "jpeg"), width: dispW, height: dispH });
+                }
+                let cw = natW, ch = natH;
+                const longest = Math.max(cw, ch);
+                if (longest > EXPORT_EMBED_MAX_SIDE) {
+                    const k = EXPORT_EMBED_MAX_SIDE / longest;
+                    cw = Math.max(1, Math.round(cw * k)); ch = Math.max(1, Math.round(ch * k));
+                }
                 const canvas = document.createElement("canvas");
-                canvas.width = EXPORT_IMG_MAX_WIDTH;
-                canvas.height = EXPORT_IMG_HEIGHT;
-                const ctx = canvas.getContext("2d", { alpha: false });
-                if (!ctx) return finish(null);
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const scale = Math.min(
-                    EXPORT_IMG_MAX_WIDTH / natW,
-                    EXPORT_IMG_HEIGHT / natH,
-                    1 // do not upscale small source images
-                );
-                const drawW = Math.max(1, Math.round(natW * scale));
-                const drawH = Math.max(1, Math.round(natH * scale));
-                const dx = Math.round((EXPORT_IMG_MAX_WIDTH - drawW) / 2);
-                const dy = Math.round((EXPORT_IMG_HEIGHT - drawH) / 2);
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = "high";
-                ctx.drawImage(img, dx, dy, drawW, drawH);
-
+                canvas.width = cw; canvas.height = ch;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cw, ch);
+                ctx.drawImage(img, 0, 0, cw, ch);
                 const dataUrl = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
-                const base64 = dataUrl.split(",")[1];
-                if (!base64) return finish(null);
-                finish({
-                    base64: base64,
-                    extension: "jpeg",
-                    width: EXPORT_IMG_MAX_WIDTH,
-                    height: EXPORT_IMG_HEIGHT
-                });
+                finish({ base64: dataUrl.split(",")[1], extension: "jpeg", width: dispW, height: dispH });
             } catch (err) { finish(null); }
         };
         img.onerror = function() { finish(null); };
@@ -2367,16 +2346,14 @@ async function exportToExcel() {
 
         let maxImages = 0;
         imagesByRecord.forEach(function(list) { if (list && list.length > maxImages) maxImages = list.length; });
+        const imageColPx = Array(maxImages).fill(0);
+        imagesByRecord.forEach(function(list) { (list || []).forEach(function(img, k) { if (img.width > imageColPx[k]) imageColPx[k] = img.width; }); });
 
         const headerRow = headers.slice();
         for (let k = 0; k < maxImages; k++) headerRow.push("ẢNH " + (k + 1));
 
         sheet.addRow(headerRow);
-        // Fixed Excel column geometry prevents per-image width differences
-        // and gives desktop Excel enough room for the normalized 360px image.
-        sheet.columns = baseWidths.map(function(w) { return { width: w }; }).concat(
-            Array.from({ length: maxImages }, function() { return { width: EXPORT_IMG_COLUMN_WIDTH }; })
-        );
+        sheet.columns = baseWidths.map(function(w) { return { width: w }; }).concat(imageColPx.map(function(px) { return { width: Math.max(8, (px + 8) / 7) }; }));
 
         const header = sheet.getRow(1);
         header.font = { bold: true };
@@ -2389,20 +2366,37 @@ async function exportToExcel() {
             const list = imagesByRecord[i] || [];
             if (list.length === 0) return;
 
+            let rowMaxH = 0;
+            list.forEach(function(img) {
+                if (img.height > rowMaxH) rowMaxH = img.height;
+            });
+            row.height = Math.max(15, (rowMaxH + 6) * 0.75);
+
             list.forEach(function(img, k) {
-                const imageId = workbook.addImage({ base64: img.base64, extension: "jpeg" });
-                // Fixed one-cell anchor + fixed ext + centered inset. The whole
-                // picture stays within its own image cell in desktop and mobile Excel.
+                const imageId = workbook.addImage({ base64: img.base64, extension: img.extension || "jpeg" });
+
+                // Fit the image inside its existing Excel cell with a small safety margin.
+                // The original column widths and row-height rules remain unchanged.
+                const imageColumn = sheet.getColumn(EXPORT_BASE_COLS + k + 1);
+                const cellWidthPx = Math.max(1, Math.floor((imageColumn.width || 8.43) * 7 + 5));
+                const cellHeightPx = Math.max(1, row.height * 96 / 72);
+                const availableWidth = Math.max(1, cellWidthPx - 8);
+                const availableHeight = Math.max(1, cellHeightPx - 8);
+                const scale = Math.min(availableWidth / img.width, availableHeight / img.height, 1);
+                const imageWidth = Math.max(1, img.width * scale);
+                const imageHeight = Math.max(1, img.height * scale);
+                const offsetX = Math.max(0, (cellWidthPx - imageWidth) / 2);
+                const offsetY = Math.max(0, (cellHeightPx - imageHeight) / 2);
+
                 sheet.addImage(imageId, {
                     tl: {
-                        col: EXPORT_BASE_COLS + k + EXPORT_IMG_CENTER_X,
-                        row: row.number - 1 + EXPORT_IMG_CENTER_Y
+                        col: EXPORT_BASE_COLS + k + offsetX / cellWidthPx,
+                        row: row.number - 1 + offsetY / cellHeightPx
                     },
-                    ext: { width: EXPORT_IMG_MAX_WIDTH, height: EXPORT_IMG_HEIGHT },
+                    ext: { width: imageWidth, height: imageHeight },
                     editAs: "oneCell"
                 });
             });
-            row.height = EXPORT_IMG_ROW_HEIGHT;
         });
 
         const buffer = await workbook.xlsx.writeBuffer();
