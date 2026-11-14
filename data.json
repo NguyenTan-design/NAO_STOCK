@@ -2726,5 +2726,16 @@
         "QTY": "2",
         "VỊ TRÍ": "temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "2MHBSS006400",
+        "DETAIL": "Stepper motor trục S",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
