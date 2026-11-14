@@ -2825,5 +2825,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMA",
+        "PART NUMBER": "K1HASLCG1403",
+        "DETAIL": "Rail clamp\n540mm",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
