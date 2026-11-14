@@ -671,6 +671,28 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     cursor: wait;
 }
 
+/* Small OCR Button for Detail step */
+.ocr-btn-small {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(15, 118, 110, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ocr-btn-small:hover:not(:disabled) {
+    background: linear-gradient(180deg, #0f766e 0%, #115e59 100%);
+    transform: translateY(-1px);
+}
+
 .ocr-status {
     margin-top: 10px;
     padding: 9px 12px;
@@ -1395,6 +1417,11 @@ body.role-user .add-btn {
         min-width: 46px;
     }
 
+    .ocr-btn-small {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+
     .crop-hint { font-size: 11px; }
     .btn-cancel, .btn-ocr { padding: 6px 12px; font-size: 12px; }
 }
@@ -1822,7 +1849,7 @@ td.date-cell { vertical-align: top; }
 <div id="cropOverlay" class="crop-overlay">
     <div class="crop-container">
         <div class="crop-header">
-            <span>Khoanh vùng Part Number</span>
+            <span id="cropTitle">Khoanh vùng ký tự</span>
             <button class="crop-close" onclick="closeCropOverlay()">×</button>
         </div>
         <div class="crop-image-wrapper" id="cropImageWrapper">
@@ -1840,8 +1867,8 @@ td.date-cell { vertical-align: top; }
 </div>
 
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraCapture(event)">
-<!-- Part Number OCR camera input -->
-<input type="file" id="partNumberCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePartNumberCamera(event)">
+<!-- Generic OCR camera input -->
+<input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleOCRImageSelect(event)">
 
 <!-- =========================================================
      TOAST
@@ -2750,7 +2777,7 @@ function renderAddStep() {
             <label class="add-step-label">Part Number</label>
             <div class="part-number-input-row">
                 <input type="text" id="addPartNumber" class="add-input" placeholder="Enter part number..." value="${escapeAttribute(newRecord["PART NUMBER"] || "")}">
-                <button type="button" id="partNumberCameraBtn" class="ocr-btn" title="Chụp ảnh để nhận diện Part Number" aria-label="Chụp ảnh để nhận diện Part Number" onclick="openPartNumberCamera()">📷</button>
+                <button type="button" id="partNumberCameraBtn" class="ocr-btn" title="Chụp ảnh để nhận diện Part Number" aria-label="Chụp ảnh để nhận diện Part Number" onclick="openCameraForOCR('partNumber')">📷</button>
             </div>
             <div id="ocrStatus" class="ocr-status"></div>
             <div id="addError" class="add-error"></div>
@@ -2760,8 +2787,12 @@ function renderAddStep() {
     else if (addStep === 5) {
         title.textContent = addTitlePrefix() + " — Step 5 / " + TOTAL_ADD_STEPS;
         content.innerHTML = `
-            <label class="add-step-label">Detail</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label class="add-step-label" style="margin-bottom: 0;">Detail</label>
+                <button type="button" class="ocr-btn-small" title="Chụp ảnh để nhận diện Detail" onclick="openCameraForOCR('detail')">📷 Quét ảnh</button>
+            </div>
             <textarea id="addDetail" class="add-textarea" placeholder="Enter detail...">${escapeHTML(newRecord["DETAIL"] || "")}</textarea>
+            <div id="ocrStatus" class="ocr-status"></div>
             <div id="addError" class="add-error"></div>
         `;
         setTimeout(function() { const input = document.getElementById("addDetail"); if (input) input.focus(); }, 50);
@@ -2811,8 +2842,9 @@ function buildOptionsHtml(options, selected) {
 }
 
 /* =========================================================
-   PART NUMBER OCR & CROP
+   OCR & CROP GENERALIZED
    ========================================================= */
+let ocrContext = 'partNumber'; // 'partNumber' or 'detail'
 let partNumberOCRInProgress = false;
 let tesseractWorker = null;
 let tesseractWorkerPromise = null;
@@ -2823,12 +2855,13 @@ let cropData = { img: null, rect: { x: 0, y: 0, w: 0, h: 0 }, naturalW: 0, natur
 let isDrawing = false;
 let startX = 0, startY = 0;
 
-function openPartNumberCamera() {
+function openCameraForOCR(context) {
     if (partNumberOCRInProgress) {
         showToast("Đang nhận diện, vui lòng đợi...", "info");
         return;
     }
-    const input = document.getElementById("partNumberCameraInput");
+    ocrContext = context;
+    const input = document.getElementById("ocrCameraInput");
     if (!input) return;
     input.value = "";
     input.click();
@@ -2842,7 +2875,7 @@ function setOCRStatus(text, type) {
     el.textContent = text;
 }
 
-function handlePartNumberCamera(event) {
+function handleOCRImageSelect(event) {
     const file = event.target.files && event.target.files[0];
     event.target.value = ""; // Reset
 
@@ -2860,6 +2893,7 @@ function handlePartNumberCamera(event) {
         
         img.onload = function() {
             document.getElementById('cropOverlay').classList.add('show');
+            document.getElementById('cropTitle').textContent = ocrContext === 'partNumber' ? 'Khoanh vùng Part Number' : 'Khoanh vùng Detail';
             
             const box = document.getElementById('cropBox');
             box.style.display = 'none';
@@ -2892,12 +2926,6 @@ async function getTesseractWorker() {
             logger: function(m) {
                 if (currentOCRProgressCallback) currentOCRProgressCallback(m);
             }
-        });
-
-        // Cấu hình tối ưu cho đọc Part Number
-        await worker.setParameters({
-            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./', 
-            tessedit_pageseg_mode: '7', // Treat the image as a single text line
         });
 
         tesseractWorker = worker;
@@ -2971,27 +2999,49 @@ async function executeCropOCR() {
         
         const worker = await getTesseractWorker();
         
-        setOCRStatus("Đang nhận diện Part Number...", "loading");
+        setOCRStatus("Đang nhận diện ký tự...", "loading");
+        
+        // Điều chỉnh tham số theo ngữ cảnh
+        if (ocrContext === 'partNumber') {
+            await worker.setParameters({
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./', 
+                tessedit_pageseg_mode: '7', // Đọc 1 dòng
+            });
+        } else {
+            await worker.setParameters({
+                tessedit_char_whitelist: '', 
+                tessedit_pageseg_mode: '6', // Đọc khối văn bản (block of text)
+            });
+        }
         
         const { data: { text } } = await worker.recognize(dataUrl);
         
-        // Xóa khoảng trắng vì Part Number thường không có space
-        const cleaned = String(text || '').replace(/\s+/g, '').trim();
-        
-        if (!cleaned) {
-            setOCRStatus("Không nhận diện được ký tự. Vui lòng chọn vùng rõ hơn.", "error");
-            showToast("Không nhận diện được ký tự.", "error");
-            return;
+        if (ocrContext === 'partNumber') {
+            const cleaned = String(text || '').replace(/\s+/g, '').trim();
+            if (!cleaned) throw new Error("Không nhận diện được ký tự.");
+            
+            const inputEl = document.getElementById("addPartNumber");
+            if (inputEl && inputEl.isConnected) {
+                inputEl.value = cleaned;
+                inputEl.focus();
+            }
+            setOCRStatus("Đã nhận diện: " + cleaned, "success");
+            showToast("Đã nhận diện: " + cleaned, "success");
+        } else {
+            // Detail mode: giữ khoảng trắng, xuống dòng. Nối chuỗi nếu có sẵn.
+            const cleaned = String(text || '').trim();
+            if (!cleaned) throw new Error("Không nhận diện được ký tự.");
+            
+            const inputEl = document.getElementById("addDetail");
+            if (inputEl && inputEl.isConnected) {
+                const existing = inputEl.value;
+                const separator = existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
+                inputEl.value = existing + separator + cleaned;
+                inputEl.focus();
+            }
+            setOCRStatus("Đã nhận diện và thêm vào Detail.", "success");
+            showToast("Đã thêm nội dung vào Detail.", "success");
         }
-        
-        const inputEl = document.getElementById("addPartNumber");
-        if (inputEl && inputEl.isConnected) {
-            inputEl.value = cleaned;
-            inputEl.focus();
-        }
-        
-        setOCRStatus("Đã nhận diện: " + cleaned, "success");
-        showToast("Đã nhận diện: " + cleaned, "success");
         
         closeCropOverlay();
         
@@ -3223,7 +3273,7 @@ function showAddConfirmation() {
         <div class="add-confirm-row"><div class="add-confirm-label">KHO</div><div class="add-confirm-value">${escapeHTML(newRecord.KHO)}</div></div>
         <div class="add-confirm-row"><div class="add-confirm-label">STATUS</div><div class="add-confirm-value">${escapeHTML(newRecord.STATUS)}</div></div>
         <div class="add-confirm-row"><div class="add-confirm-label">PART NUMBER</div><div class="add-confirm-value">${escapeHTML(newRecord["PART NUMBER"])}</div></div>
-        <div class="add-confirm-row"><div class="add-confirm-label">DETAIL</div><div class="add-confirm-value">${escapeHTML(newRecord["DETAIL"])}</div></div>
+        <div class="add-confirm-row"><div class="add-confirm-label">DETAIL</div><div class="add-confirm-value" style="white-space: pre-wrap;">${escapeHTML(newRecord["DETAIL"])}</div></div>
         <div class="add-confirm-row"><div class="add-confirm-label">QTY</div><div class="add-confirm-value">${escapeHTML(newRecord["QTY"])}</div></div>
         <div class="add-confirm-row"><div class="add-confirm-label">VỊ TRÍ</div><div class="add-confirm-value">${escapeHTML(newRecord["VỊ TRÍ"])}</div></div>
         <div class="add-confirm-row"><div class="add-confirm-label">PIC</div><div class="add-confirm-value">${escapeHTML(newRecord.PIC)}</div></div>
@@ -3252,7 +3302,6 @@ async function saveNewRecord() {
     const pendingId = "pending_" + Date.now() + "_" + Math.random().toString(36).slice(2);
     const optimisticRecord = Object.assign({}, recordToSend, { LOG: "", _pendingId: pendingId });
 
-    // Dùng unshift để record mới nằm ở đầu mảng → stable sort giữ nó ở đầu nhóm cùng DATE
     allData.unshift(optimisticRecord);
     sortData();
 
