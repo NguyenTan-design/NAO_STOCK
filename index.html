@@ -266,7 +266,6 @@ body { min-height: 100vh; }
 
 table {
     width: 100%;
-    min-width: 1000px;
     table-layout: fixed;
     border-collapse: collapse;
 }
@@ -2198,7 +2197,24 @@ function saveColumnPrefs() {
 
 function applyColumnVisibility() {
     const table = document.querySelector(".table-container table");
-    if (table) TABLE_COLUMNS.forEach(function(c) { table.classList.toggle("hide-col-" + c.key, hiddenColumns.has(c.key)); });
+    if (table) {
+        TABLE_COLUMNS.forEach(function(c) { table.classList.toggle("hide-col-" + c.key, hiddenColumns.has(c.key)); });
+        
+        // Cập nhật độ rộng bảng động để giảm kích thước khi ẩn cột
+        const visibleCount = TABLE_COLUMNS.length - hiddenColumns.size + 1; // +1 cho cột checkbox
+        const totalCount = TABLE_COLUMNS.length + 1;
+        const computedMinWidth = Math.max(300, Math.round((1000 / totalCount) * visibleCount));
+        
+        if (hiddenColumns.size > 0) {
+            table.style.width = "auto";
+            table.style.tableLayout = "auto";
+            table.style.minWidth = computedMinWidth + "px";
+        } else {
+            table.style.width = "100%";
+            table.style.tableLayout = "fixed";
+            table.style.minWidth = "1000px";
+        }
+    }
 
     const btn = document.getElementById("colMenuBtn");
     if (btn) btn.textContent = "⚙ Cột (" + (TABLE_COLUMNS.length - hiddenColumns.size) + "/" + TABLE_COLUMNS.length + ")";
