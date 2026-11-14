@@ -724,23 +724,6 @@ tbody tr.part-out-row:hover { background: #fee2e2 !important; }
     border: 1px solid #fecaca;
 }
 
-/* Gợi ý Part Number sau OCR */
-.ocr-candidates { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.ocr-candidates:empty { display: none; }
-.ocr-chip {
-    border: 1px solid var(--border-strong);
-    background: var(--primary-light);
-    color: var(--primary);
-    border-radius: 999px;
-    padding: 5px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    cursor: pointer;
-}
-.ocr-chip:hover { border-color: var(--primary); }
-.ocr-chip small { color: var(--text-muted); font-weight: 500; margin-left: 6px; font-family: inherit; }
-
 /* =========================
    CROP OVERLAY
    ========================= */
@@ -2804,7 +2787,6 @@ function renderAddStep() {
                 <button type="button" id="partNumberCameraBtn" class="ocr-btn" title="Chụp ảnh để nhận diện Part Number" aria-label="Chụp ảnh để nhận diện Part Number" onclick="openCameraForOCR('partNumber')">📷</button>
             </div>
             <div id="ocrStatus" class="ocr-status"></div>
-            <div id="ocrCandidates" class="ocr-candidates"></div>
             <div id="addError" class="add-error"></div>
         `;
         setTimeout(function() { const input = document.getElementById("addPartNumber"); if (input) input.focus(); }, 50);
@@ -2867,547 +2849,21 @@ function buildOptionsHtml(options, selected) {
 }
 
 /* =========================================================
-   OCR & CROP (Step 4: Part Number, Step 5: Detail)
-   - Tiền xử lý + chọn kết quả: xem NaoOCR bên dưới
+   OCR & CROP GENERALIZED
    ========================================================= */
-/* =========================================================
-   NaoOCR — tiền xử lý ảnh + chọn kết quả tốt nhất cho Step 4 (Part Number) & Step 5 (Detail)
-   Module thuần JS (không dùng DOM) → test được bằng Node.
-   ========================================================= */
-const NaoOCR = (function () {
-    "use strict";
-
-    const PAD = 24;                 // viền trắng quanh chữ (Tesseract cần lề)
-    const CFG = { pn: 64, detail: 58, sharpen: 1 };   // chiều cao dòng chữ mục tiêu (px) cho Part Number / Detail
-    const MAX_PIXELS = 4000000;     // giới hạn kích thước ảnh gửi vào Tesseract
-
-    function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
-    function odd(n) { n = Math.round(n); return n % 2 === 0 ? n + 1 : n; }
-
-    /* ---------- Ảnh xám: chọn kênh có độ tương phản cao nhất ---------- */
-    function rgbaToGray(rgba, n) {
-        const step = Math.max(1, Math.floor(n / 20000));
-        const sum = [0, 0, 0, 0], sq = [0, 0, 0, 0];
-        let c = 0;
-        for (let p = 0; p < n; p += step) {
-            const i = p * 4;
-            const r = rgba[i], g = rgba[i + 1], b = rgba[i + 2];
-            const v = [r, g, b, 0.299 * r + 0.587 * g + 0.114 * b];
-            for (let k = 0; k < 4; k++) { sum[k] += v[k]; sq[k] += v[k] * v[k]; }
-            c++;
-        }
-        const sd = sum.map(function (s, k) { const m = s / c; return Math.sqrt(Math.max(0, sq[k] / c - m * m)); });
-        // Mặc định dùng độ sáng; chỉ dùng kênh màu riêng khi nó tương phản hơn rõ rệt (chữ màu trên nền màu)
-        let best = 3;
-        for (let k = 0; k < 3; k++) if (sd[k] > sd[best] * 1.2) best = k;
-        const out = new Uint8ClampedArray(n);
-        if (best === 3) {
-            for (let p = 0, i = 0; p < n; p++, i += 4) out[p] = 0.299 * rgba[i] + 0.587 * rgba[i + 1] + 0.114 * rgba[i + 2];
-        } else {
-            for (let p = 0, i = best; p < n; p++, i += 4) out[p] = rgba[i];
-        }
-        return out;
-    }
-
-    function histogram(gray) {
-        const h = new Uint32Array(256);
-        for (let i = 0; i < gray.length; i++) h[gray[i]]++;
-        return h;
-    }
-
-    function percentile(hist, total, p) {
-        let acc = 0;
-        const target = total * p;
-        for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= target) return i; }
-        return 255;
-    }
-
-    /* Kéo giãn tương phản theo phân vị 1%–99% (chống chói/tối) */
-    function stretch(gray) {
-        const hist = histogram(gray);
-        const lo = percentile(hist, gray.length, 0.01);
-        const hi = percentile(hist, gray.length, 0.99);
-        if (hi - lo < 24) return gray;
-        const lut = new Uint8ClampedArray(256);
-        for (let i = 0; i < 256; i++) lut[i] = clamp((i - lo) * 255 / (hi - lo), 0, 255);
-        const out = new Uint8ClampedArray(gray.length);
-        for (let i = 0; i < gray.length; i++) out[i] = lut[gray[i]];
-        return out;
-    }
-
-    function otsu(gray) {
-        const hist = histogram(gray);
-        const total = gray.length;
-        let sumAll = 0;
-        for (let i = 0; i < 256; i++) sumAll += i * hist[i];
-        let wB = 0, sumB = 0, best = 0, thr = 127;
-        for (let t = 0; t < 256; t++) {
-            wB += hist[t];
-            if (wB === 0) continue;
-            const wF = total - wB;
-            if (wF === 0) break;
-            sumB += t * hist[t];
-            const mB = sumB / wB, mF = (sumAll - sumB) / wF;
-            const between = wB * wF * (mB - mF) * (mB - mF);
-            if (between > best) { best = between; thr = t; }
-        }
-        return thr;
-    }
-
-    /* Giá trị trung vị của khung viền ngoài ≈ màu nền */
-    function borderMedian(gray, w, h) {
-        const m = Math.max(1, Math.round(Math.min(w, h) * 0.04));
-        const hist = new Uint32Array(256);
-        let cnt = 0;
-        for (let y = 0; y < h; y++) {
-            const edgeRow = y < m || y >= h - m;
-            for (let x = 0; x < w; x++) {
-                if (edgeRow || x < m || x >= w - m) { hist[gray[y * w + x]]++; cnt++; }
-            }
-        }
-        return percentile(hist, cnt, 0.5);
-    }
-
-    function invert(gray) {
-        const out = new Uint8ClampedArray(gray.length);
-        for (let i = 0; i < gray.length; i++) out[i] = 255 - gray[i];
-        return out;
-    }
-
-    function integralImage(gray, w, h) {
-        const W = w + 1;
-        const I = new Float64Array(W * (h + 1));
-        for (let y = 0; y < h; y++) {
-            let row = 0;
-            for (let x = 0; x < w; x++) {
-                row += gray[y * w + x];
-                I[(y + 1) * W + x + 1] = I[y * W + x + 1] + row;
-            }
-        }
-        return I;
-    }
-
-    /* Nhị phân hoá thích nghi (Bradley): xử lý tốt bóng đổ, ánh sáng không đều.  Mực = 0, nền = 255 */
-    function adaptiveBinarize(gray, w, h, win, t) {
-        const I = integralImage(gray, w, h);
-        const W = w + 1, r = win >> 1;
-        const out = new Uint8ClampedArray(w * h);
-        for (let y = 0; y < h; y++) {
-            const y0 = Math.max(0, y - r), y1 = Math.min(h - 1, y + r);
-            for (let x = 0; x < w; x++) {
-                const x0 = Math.max(0, x - r), x1 = Math.min(w - 1, x + r);
-                const count = (x1 - x0 + 1) * (y1 - y0 + 1);
-                const sum = I[(y1 + 1) * W + x1 + 1] - I[y0 * W + x1 + 1] - I[(y1 + 1) * W + x0] + I[y0 * W + x0];
-                out[y * w + x] = gray[y * w + x] * count <= sum * (1 - t) ? 0 : 255;
-            }
-        }
-        return out;
-    }
-
-    /* Chuẩn hoá ánh sáng: chia cho độ sáng nền cục bộ → loại bỏ bóng đổ / gradient / chói */
-    function flatten(gray, w, h, win) {
-        const I = integralImage(gray, w, h);
-        const W = w + 1, r = win >> 1;
-        const out = new Uint8ClampedArray(w * h);
-        for (let y = 0; y < h; y++) {
-            const y0 = Math.max(0, y - r), y1 = Math.min(h - 1, y + r);
-            for (let x = 0; x < w; x++) {
-                const x0 = Math.max(0, x - r), x1 = Math.min(w - 1, x + r);
-                const count = (x1 - x0 + 1) * (y1 - y0 + 1);
-                const mean = (I[(y1 + 1) * W + x1 + 1] - I[y0 * W + x1 + 1] - I[(y1 + 1) * W + x0] + I[y0 * W + x0]) / count;
-                out[y * w + x] = Math.min(255, gray[y * w + x] * 238 / Math.max(mean, 1));
-            }
-        }
-        return out;
-    }
-
-    /* Unsharp mask: lấy lại độ sắc nét sau khi phóng to */
-    function sharpen(gray, w, h, amount) {
-        const I = integralImage(gray, w, h), W = w + 1;
-        const out = new Uint8ClampedArray(w * h);
-        for (let y = 0; y < h; y++) {
-            const y0 = Math.max(0, y - 2), y1 = Math.min(h - 1, y + 2);
-            for (let x = 0; x < w; x++) {
-                const x0 = Math.max(0, x - 2), x1 = Math.min(w - 1, x + 2);
-                const mean = (I[(y1 + 1) * W + x1 + 1] - I[y0 * W + x1 + 1] - I[(y1 + 1) * W + x0] + I[y0 * W + x0]) / ((x1 - x0 + 1) * (y1 - y0 + 1));
-                const v = gray[y * w + x];
-                out[y * w + x] = v + amount * (v - mean);
-            }
-        }
-        return out;
-    }
-
-    function globalBinarize(gray, thr) {
-        const out = new Uint8ClampedArray(gray.length);
-        for (let i = 0; i < gray.length; i++) out[i] = gray[i] <= thr ? 0 : 255;
-        return out;
-    }
-
-    /* Resize: trung bình vùng khi thu nhỏ, bilinear khi phóng to */
-    function resizeGray(src, w, h, nw, nh) {
-        const out = new Uint8ClampedArray(nw * nh);
-        if (nw < w || nh < h) {
-            const I = integralImage(src, w, h), W = w + 1;
-            const sx = w / nw, sy = h / nh;
-            for (let y = 0; y < nh; y++) {
-                const y0 = Math.floor(y * sy);
-                const y1 = Math.min(h, Math.max(y0 + 1, Math.floor((y + 1) * sy)));
-                for (let x = 0; x < nw; x++) {
-                    const x0 = Math.floor(x * sx);
-                    const x1 = Math.min(w, Math.max(x0 + 1, Math.floor((x + 1) * sx)));
-                    const sum = I[y1 * W + x1] - I[y0 * W + x1] - I[y1 * W + x0] + I[y0 * W + x0];
-                    out[y * nw + x] = sum / ((x1 - x0) * (y1 - y0));
-                }
-            }
-            return out;
-        }
-        for (let y = 0; y < nh; y++) {
-            const fy = Math.max(0, (y + 0.5) * h / nh - 0.5);
-            const y0 = Math.min(h - 1, Math.floor(fy)), y1 = Math.min(h - 1, y0 + 1), wy = fy - y0;
-            for (let x = 0; x < nw; x++) {
-                const fx = Math.max(0, (x + 0.5) * w / nw - 0.5);
-                const x0 = Math.min(w - 1, Math.floor(fx)), x1 = Math.min(w - 1, x0 + 1), wx = fx - x0;
-                const a = src[y0 * w + x0] * (1 - wx) + src[y0 * w + x1] * wx;
-                const b = src[y1 * w + x0] * (1 - wx) + src[y1 * w + x1] * wx;
-                out[y * nw + x] = a * (1 - wy) + b * wy;
-            }
-        }
-        return out;
-    }
-
-    function crop(gray, w, h, x0, y0, x1, y1) {
-        const nw = x1 - x0 + 1, nh = y1 - y0 + 1;
-        const out = new Uint8ClampedArray(nw * nh);
-        for (let y = 0; y < nh; y++) {
-            const so = (y0 + y) * w + x0;
-            out.set(gray.subarray(so, so + nw), y * nw);
-        }
-        return { gray: out, w: nw, h: nh };
-    }
-
-    function pad(gray, w, h, value) {
-        const nw = w + 2 * PAD, nh = h + 2 * PAD;
-        const out = new Uint8ClampedArray(nw * nh);
-        out.fill(value);
-        for (let y = 0; y < h; y++) out.set(gray.subarray(y * w, y * w + w), (y + PAD) * nw + PAD);
-        return { gray: out, w: nw, h: nh };
-    }
-
-    /* Phân tích dòng chữ: chiều cao dòng (trung vị) + hộp bao quanh vùng có mực */
-    function analyzeLines(bin, w, h) {
-        const rows = new Uint32Array(h), cols = new Uint32Array(w);
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                if (bin[y * w + x] === 0) { rows[y]++; cols[x]++; }
-            }
-        }
-        let maxRow = 0;
-        for (let y = 0; y < h; y++) if (rows[y] > maxRow) maxRow = rows[y];
-        if (maxRow === 0) return null;
-        const thr = Math.max(2, maxRow * 0.12);
-
-        let runs = [], start = -1;
-        for (let y = 0; y <= h; y++) {
-            const ink = y < h && rows[y] >= thr;
-            if (ink && start < 0) start = y;
-            else if (!ink && start >= 0) { runs.push([start, y - 1]); start = -1; }
-        }
-        if (!runs.length) return null;
-
-        const maxRunH = Math.max.apply(null, runs.map(function (r) { return r[1] - r[0] + 1; }));
-        // gộp các khoảng hở nhỏ (dấu chấm chữ i, dấu thanh)
-        const gapMax = Math.max(1, Math.round(maxRunH * 0.12));
-        const merged = [runs[0].slice()];
-        for (let i = 1; i < runs.length; i++) {
-            const last = merged[merged.length - 1];
-            if (runs[i][0] - last[1] - 1 <= gapMax) last[1] = runs[i][1];
-            else merged.push(runs[i].slice());
-        }
-        const good = merged.filter(function (r) { return (r[1] - r[0] + 1) >= maxRunH * 0.3; });
-        const heights = good.map(function (r) { return r[1] - r[0] + 1; }).sort(function (a, b) { return a - b; });
-        const lineH = heights[heights.length >> 1];
-
-        const colThr = Math.max(2, Math.round(lineH * 0.2));
-        let x0 = 0, x1 = w - 1;
-        while (x0 < w && cols[x0] < colThr) x0++;
-        while (x1 > x0 && cols[x1] < colThr) x1--;
-        return { lines: good.length, lineH: lineH, y0: good[0][0], y1: good[good.length - 1][1], x0: x0, x1: x1 };
-    }
-
-    /* =====================================================
-       PREPARE: RGBA vùng crop → các biến thể ảnh xám để OCR
-       mode: "pn" | "detail"
-       ===================================================== */
-    function prepare(rgba, w, h, mode) {
-        let gray = stretch(rgbaToGray(rgba, w * h));
-        const thr0 = otsu(gray);
-        let inverted = false;
-        if (borderMedian(gray, w, h) < thr0) { gray = invert(gray); inverted = true; }   // chữ trắng nền tối → đảo
-        gray = stretch(flatten(gray, w, h, odd(clamp(Math.min(w, h) * 0.8, 31, 201))));
-
-        // Phân tích sơ bộ để cắt sát chữ và ước lượng cỡ chữ
-        const win0 = odd(clamp(Math.min(w, h) * 0.5, 15, 151));
-        const info = analyzeLines(adaptiveBinarize(gray, w, h, win0, 0.15), w, h);
-
-        let cw = w, ch = h, lineH = 0;
-        if (info && info.y1 - info.y0 >= 5 && info.x1 - info.x0 >= 5) {
-            const m = Math.max(4, Math.round(info.lineH * 0.4));
-            const c = crop(gray, w, h,
-                Math.max(0, info.x0 - m), Math.max(0, info.y0 - m),
-                Math.min(w - 1, info.x1 + m), Math.min(h - 1, info.y1 + m));
-            gray = c.gray; cw = c.w; ch = c.h;
-            lineH = info.lineH;
-        }
-
-        // Phóng to / thu nhỏ để chiều cao dòng chữ ≈ giá trị tối ưu của Tesseract
-        const target = mode === "pn" ? CFG.pn : CFG.detail;
-        let scale = 1;
-        if (lineH >= 6) scale = clamp(target / lineH, 0.25, 5);
-        else scale = clamp(1200 / Math.max(cw, ch), 0.5, 4);
-        if (scale > 0.88 && scale < 1.12) scale = 1;
-        if (cw * ch * scale * scale > MAX_PIXELS) scale = Math.sqrt(MAX_PIXELS / (cw * ch));
-
-        let nw = cw, nh = ch, g2 = gray;
-        if (scale !== 1) {
-            nw = Math.max(8, Math.round(cw * scale));
-            nh = Math.max(8, Math.round(ch * scale));
-            g2 = resizeGray(gray, cw, ch, nw, nh);
-            if (scale > 1.5 && CFG.sharpen > 0) g2 = sharpen(g2, nw, nh, CFG.sharpen);
-        }
-        const bg = borderMedian(g2, nw, nh);
-        const effLine = lineH ? lineH * scale : target;
-
-        const variants = [];
-        const p1 = pad(g2, nw, nh, bg);
-        variants.push({ name: "gray", gray: p1.gray, w: p1.w, h: p1.h });
-
-        const win = odd(clamp(effLine * 2.2, 25, 121));
-        const p2 = pad(adaptiveBinarize(g2, nw, nh, win, 0.12), nw, nh, 255);
-        variants.push({ name: "adaptive", gray: p2.gray, w: p2.w, h: p2.h });
-
-        const p3 = pad(globalBinarize(g2, otsu(g2)), nw, nh, 255);
-        variants.push({ name: "otsu", gray: p3.gray, w: p3.w, h: p3.h });
-
-        return { variants: variants, info: { lineH: lineH, scale: scale, inverted: inverted, lines: info ? info.lines : 0 } };
-    }
-
-    /* =====================================================
-       PART NUMBER: chuẩn hoá + sửa nhầm lẫn ký tự
-       ===================================================== */
-    const TO_DIGIT = { O: "0", I: "1" };
-
-    function normalizePN(raw) {
-        let s = String(raw || "").toUpperCase()
-            .replace(/[\u2010-\u2015\u2212_~]/g, "-")
-            .replace(/[^A-Z0-9\-./]/g, "");
-        s = s.replace(/([\-./])\1+/g, "$1").replace(/^[\-./]+|[\-./]+$/g, "");
-        return s;
-    }
-
-    /* Chỉ sửa trường hợp chắc chắn: đoạn ≥4 ký tự gần như toàn số mà lẫn đúng 1 chữ O/I → đổi thành 0/1.
-       (Không tự đổi số → chữ vì hậu tố như "RELAY1" là hợp lệ.) */
-    function fixConfusables(pn) {
-        return pn.split(/([\-./])/).map(function (seg) {
-            if (seg.length < 4 || /^[\-./]$/.test(seg)) return seg;
-            const digits = (seg.match(/[0-9]/g) || []).length;
-            const letters = seg.length - digits;
-            if (letters === 1 && digits >= 3) {
-                return seg.replace(/[OI]/g, function (c) { return TO_DIGIT[c]; });
-            }
-            return seg;
-        }).join("");
-    }
-
-    function plausibilityPN(s) {
-        let b = 0;
-        if (s.length < 3) b -= 50;
-        else if (s.length > 40) b -= 10;
-        if (/[0-9]/.test(s)) b += 8;
-        if (/[A-Z]/.test(s)) b += 2;
-        return b;
-    }
-
-    /* Gom các lượt đọc: cùng một chuỗi xuất hiện ở nhiều lượt → tin cậy hơn */
-    function rankPN(results) {
-        const groups = {};
-        results.forEach(function (r) {
-            const t = r.text;
-            if (!t) return;
-            const g = groups[t] || (groups[t] = { text: t, conf: 0, votes: 0 });
-            g.votes++;
-            if (r.conf > g.conf) g.conf = r.conf;
-        });
-        return Object.keys(groups).map(function (k) {
-            const g = groups[k];
-            g.score = g.conf + 10 * (g.votes - 1) + plausibilityPN(g.text);
-            return g;
-        }).sort(function (a, b) { return b.score - a.score; });
-    }
-
-    /* Khoảng cách chỉnh sửa có trọng số: nhầm O/0, I/1, S/5… chỉ tốn 0.35 */
-    const CONF_GROUPS = ["O0QD", "I1L", "S5", "B8", "Z2", "G6", "UV"];
-    const CONF_MAP = {};
-    CONF_GROUPS.forEach(function (g, gi) { g.split("").forEach(function (c) { CONF_MAP[c] = gi; }); });
-
-    function subCost(a, b) {
-        if (a === b) return 0;
-        return (CONF_MAP[a] !== undefined && CONF_MAP[a] === CONF_MAP[b]) ? 0.35 : 1;
-    }
-
-    function weightedDistance(a, b) {
-        const m = a.length, n = b.length;
-        let prev = new Array(n + 1), cur = new Array(n + 1);
-        for (let j = 0; j <= n; j++) prev[j] = j;
-        for (let i = 1; i <= m; i++) {
-            cur[0] = i;
-            for (let j = 1; j <= n; j++) {
-                cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + subCost(a[i - 1], b[j - 1]));
-            }
-            const t = prev; prev = cur; cur = t;
-        }
-        return prev[n];
-    }
-
-    /* Tìm các Part Number đã có trong kho gần giống kết quả OCR */
-    function suggestKnown(text, known, limit) {
-        const out = [];
-        const len = text.length;
-        const maxDist = len >= 10 ? 1.4 : (len >= 6 ? 1.0 : 0.7);
-        for (let i = 0; i < known.length; i++) {
-            const k = known[i];
-            if (Math.abs(k.length - len) > 2) continue;
-            const d = weightedDistance(text, k);
-            if (d <= maxDist) out.push({ text: k, dist: d });
-        }
-        out.sort(function (a, b) { return a.dist - b.dist; });
-        return out.slice(0, limit || 3);
-    }
-
-    /* =====================================================
-       DETAIL: lọc dòng rác, chuẩn hoá khoảng trắng
-       ===================================================== */
-    function cleanDetail(data) {
-        let lines;
-        if (data && Array.isArray(data.lines) && data.lines.length) {
-            lines = data.lines.map(function (l) { return { t: l.text, c: l.confidence }; });
-        } else {
-            const conf = data && typeof data.confidence === "number" ? data.confidence : 0;
-            lines = String((data && data.text) || "").split(/\r?\n/).map(function (t) { return { t: t, c: conf }; });
-        }
-        const kept = [];
-        let alnumTotal = 0, confSum = 0;
-        lines.forEach(function (l) {
-            let t = String(l.t || "").replace(/\s+/g, " ").trim()
-                .replace(/^[|\\/_~`'"\u2018\u2019\u201C\u201D\[\]{}<>\s]+/, "").replace(/[|\\_~`\u2018\u2019\s]+$/, "");
-            const compact = t.replace(/\s/g, "");
-            const alnum = (compact.match(/[A-Za-z0-9]/g) || []).length;
-            if (compact.length < 2 || alnum < 2 || alnum / compact.length < 0.5) return;
-            if (l.c < 30 && alnum < 6) return;
-            kept.push(t);
-            alnumTotal += alnum;
-            confSum += l.c * alnum;
-        });
-        const meanConf = alnumTotal ? confSum / alnumTotal : 0;
-        return { text: kept.join("\n"), conf: meanConf, score: meanConf + Math.min(8, alnumTotal / 20) };
-    }
-
-    /* =====================================================
-       RUNNER: chạy nhiều lượt, dừng sớm khi đã chắc chắn
-       toInput(variant) → ảnh đưa vào worker.recognize (canvas / buffer)
-       onStep(text) → cập nhật trạng thái UI
-       ===================================================== */
-    const PN_WHITELIST = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./";
-
-    async function setParams(worker, psm, whitelist) {
-        await worker.setParameters({
-            tessedit_pageseg_mode: psm,
-            tessedit_char_whitelist: whitelist,
-            preserve_interword_spaces: "1",
-            user_defined_dpi: "300"
-        });
-    }
-
-    async function recognizePartNumber(worker, prep, toInput, onStep) {
-        const byName = {};
-        prep.variants.forEach(function (v) { byName[v.name] = v; });
-        const plan = [
-            { v: "gray", psm: "7", wl: PN_WHITELIST },
-            { v: "adaptive", psm: "7", wl: PN_WHITELIST },
-            { v: "otsu", psm: "7", wl: PN_WHITELIST },
-            { v: "gray", psm: "13", wl: PN_WHITELIST },
-            { v: "gray", psm: "7", wl: "" }
-        ];
-        const results = [];
-        let ranked = [];
-        for (let i = 0; i < plan.length; i++) {
-            const p = plan[i];
-            if (onStep) onStep("Đang nhận diện (lượt " + (i + 1) + "/" + plan.length + ")...");
-            await setParams(worker, p.psm, p.wl);
-            const res = await worker.recognize(toInput(byName[p.v]));
-            const text = fixConfusables(normalizePN(String(res.data.text || "").replace(/\s+/g, "")));
-            results.push({ text: text, conf: res.data.confidence || 0, pass: i });
-            ranked = rankPN(results);
-            const top = ranked[0];
-            if (top && ((top.votes >= 2 && top.conf >= 75) || (top.conf >= 93 && top.text.length >= 4))) break;
-        }
-        return { ranked: ranked, results: results };
-    }
-
-    async function recognizeDetail(worker, prep, toInput, onStep) {
-        const byName = {};
-        prep.variants.forEach(function (v) { byName[v.name] = v; });
-        const plan = [
-            { v: "gray", psm: "6" },
-            { v: "adaptive", psm: "6" },
-            { v: "gray", psm: "4" }
-        ];
-        let best = null;
-        for (let i = 0; i < plan.length; i++) {
-            const p = plan[i];
-            if (onStep) onStep("Đang nhận diện (lượt " + (i + 1) + "/" + plan.length + ")...");
-            await setParams(worker, p.psm, "");
-            const res = await worker.recognize(toInput(byName[p.v]));
-            const c = cleanDetail(res.data);
-            if (!best || c.score > best.score) best = c;
-            if (best.conf >= 85 && best.text.length >= 3) break;
-        }
-        return best;
-    }
-
-    return {
-        CFG: CFG,
-        prepare: prepare,
-        normalizePN: normalizePN,
-        fixConfusables: fixConfusables,
-        rankPN: rankPN,
-        weightedDistance: weightedDistance,
-        suggestKnown: suggestKnown,
-        cleanDetail: cleanDetail,
-        recognizePartNumber: recognizePartNumber,
-        recognizeDetail: recognizeDetail
-    };
-})();
-
-
-let ocrContext = 'partNumber'; // 'partNumber' | 'detail'
-let ocrBusy = false;
+let ocrContext = 'partNumber'; // 'partNumber' or 'detail'
+let partNumberOCRInProgress = false;
 let tesseractWorker = null;
 let tesseractWorkerPromise = null;
 let currentOCRProgressCallback = null;
-let ocrIdleTimer = null;
-const OCR_IDLE_MS = 180000;        // giải phóng Tesseract sau 3 phút không dùng (tiết kiệm RAM điện thoại)
-const OCR_MAX_CROP_SIDE = 2400;    // cạnh dài tối đa của vùng cắt đưa vào xử lý
-const OCR_DEFAULT_HINT = "Kéo chuột hoặc chạm để khoanh vùng ký tự";
 
-// State for crop tool (toạ độ rect theo ảnh đang hiển thị)
-let cropData = { rect: { x: 0, y: 0, w: 0, h: 0 } };
-let cropObjectUrl = null;
+// State for crop tool
+let cropData = { img: null, rect: { x: 0, y: 0, w: 0, h: 0 }, naturalW: 0, naturalH: 0 };
 let isDrawing = false;
 let startX = 0, startY = 0;
-let cropRotating = false;
 
 function openCameraForOCR(context) {
-    if (ocrBusy) {
+    if (partNumberOCRInProgress) {
         showToast("Đang nhận diện, vui lòng đợi...", "info");
         return;
     }
@@ -3426,19 +2882,6 @@ function setOCRStatus(text, type) {
     el.textContent = text;
 }
 
-function setCropHint(text) {
-    const el = document.querySelector("#cropOverlay .crop-hint");
-    if (el) el.textContent = text || OCR_DEFAULT_HINT;
-}
-
-/* Nạp ảnh vào khung crop bằng Object URL (nhẹ hơn base64, không tốn RAM gấp đôi) */
-function setCropImageSource(blob) {
-    const img = document.getElementById("cropImage");
-    if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
-    cropObjectUrl = URL.createObjectURL(blob);
-    img.src = cropObjectUrl;
-}
-
 function handleOCRImageSelect(event) {
     const file = event.target.files && event.target.files[0];
     event.target.value = ""; // Reset
@@ -3449,62 +2892,64 @@ function handleOCRImageSelect(event) {
         return;
     }
 
-    const img = document.getElementById("cropImage");
-    // Gán handler TRƯỚC khi đặt src để không bỏ lỡ sự kiện load
-    img.onload = function() {
-        document.getElementById("cropOverlay").classList.add("show");
-        document.getElementById("cropTitle").textContent = ocrContext === "partNumber" ? "Khoanh vùng Part Number" : "Khoanh vùng Detail (bỏ trống = đọc cả ảnh)";
-        const box = document.getElementById("cropBox");
-        box.style.display = "none";
-        cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
-        setCropHint(OCR_DEFAULT_HINT);
+    // Mở giao diện Crop
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = document.getElementById('cropImage');
+        img.src = e.target.result;
+        
+        img.onload = function() {
+            document.getElementById('cropOverlay').classList.add('show');
+            document.getElementById('cropTitle').textContent = ocrContext === 'partNumber' ? 'Khoanh vùng Part Number' : 'Khoanh vùng Detail';
+            
+            const box = document.getElementById('cropBox');
+            box.style.display = 'none';
+            cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
+            cropData.naturalW = img.naturalWidth;
+            cropData.naturalH = img.naturalHeight;
+            cropData.img = img;
+        };
     };
-    img.onerror = function() {
-        if (img.getAttribute("src")) showToast("Không đọc được ảnh này.", "error");
-    };
-    setCropImageSource(file);
+    reader.readAsDataURL(file);
 }
 
 function closeCropOverlay() {
-    document.getElementById("cropOverlay").classList.remove("show");
-    const img = document.getElementById("cropImage");
-    img.onload = null;
-    img.onerror = null;
-    img.removeAttribute("src");
-    if (cropObjectUrl) { URL.revokeObjectURL(cropObjectUrl); cropObjectUrl = null; }
-    cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
+    document.getElementById('cropOverlay').classList.remove('show');
+    document.getElementById('cropImage').src = '';
+    cropData.img = null;
 }
 
 function rotateCropImage(degrees) {
-    const img = document.getElementById("cropImage");
-    if (!img || !img.getAttribute("src") || cropRotating || ocrBusy) return;
-    cropRotating = true;
+    const img = document.getElementById('cropImage');
+    if (!img || !img.src) return;
 
-    const w = img.naturalWidth, h = img.naturalHeight;
-    const swap = Math.abs(degrees) === 90 || Math.abs(degrees) === 270;
-    const k = Math.min(1, 4096 / Math.max(w, h)); // giới hạn bộ nhớ trên điện thoại
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round((swap ? h : w) * k);
-    canvas.height = Math.round((swap ? w : h) * k);
-    const ctx = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    
+    const isRotate90 = Math.abs(degrees) === 90 || Math.abs(degrees) === 270;
+    
+    canvas.width = isRotate90 ? h : w;
+    canvas.height = isRotate90 ? w : h;
+    
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate((degrees * Math.PI) / 180);
-    ctx.drawImage(img, -w * k / 2, -h * k / 2, w * k, h * k);
-
-    // img.onload sẽ chạy lại và reset vùng chọn
-    canvas.toBlob(function(blob) {
-        cropRotating = false;
-        if (blob) setCropImageSource(blob);
-    }, "image/jpeg", 0.97);
+    
+    ctx.drawImage(img, -w / 2, -h / 2);
+    
+    // Cập nhật src mới, thao tác này sẽ kích hoạt lại img.onload để reset vùng chọn
+    img.src = canvas.toDataURL('image/jpeg', 0.95);
 }
 
 async function getTesseractWorker() {
-    clearTimeout(ocrIdleTimer);
     if (tesseractWorker) return tesseractWorker;
     if (tesseractWorkerPromise) return tesseractWorkerPromise;
 
-    tesseractWorkerPromise = (async function() {
+    tesseractWorkerPromise = (async () => {
         await ensureLib("Tesseract", TESSERACT_URL);
+        
         const worker = await Tesseract.createWorker('eng', 1, {
             workerPath: TESSERACT_WORKER_PATH,
             corePath: TESSERACT_CORE_PATH,
@@ -3513,267 +2958,192 @@ async function getTesseractWorker() {
                 if (currentOCRProgressCallback) currentOCRProgressCallback(m);
             }
         });
+
         tesseractWorker = worker;
         return worker;
-    })().catch(function(err) {
-        // Quan trọng: nếu tải lỗi (mất mạng) phải cho phép thử lại, không giữ promise lỗi mãi
-        tesseractWorkerPromise = null;
-        throw err;
-    });
+    })();
 
     return tesseractWorkerPromise;
 }
 
-function scheduleOcrIdleTerminate() {
-    clearTimeout(ocrIdleTimer);
-    ocrIdleTimer = setTimeout(function() {
-        if (ocrBusy || !tesseractWorker) return;
-        const w = tesseractWorker;
-        tesseractWorker = null;
-        tesseractWorkerPromise = null;
-        w.terminate().catch(function() {});
-    }, OCR_IDLE_MS);
-}
-
-/* Ảnh xám (Uint8ClampedArray) → canvas để đưa vào Tesseract */
-function ocrVariantToCanvas(v) {
-    const canvas = document.createElement("canvas");
-    canvas.width = v.w;
-    canvas.height = v.h;
-    const ctx = canvas.getContext("2d");
-    const imgData = ctx.createImageData(v.w, v.h);
-    const d = imgData.data, g = v.gray;
-    for (let i = 0, j = 0; i < g.length; i++, j += 4) {
-        d[j] = d[j + 1] = d[j + 2] = g[i];
-        d[j + 3] = 255;
-    }
-    ctx.putImageData(imgData, 0, 0);
-    return canvas;
-}
-
-/* Danh sách Part Number đã có trong kho (để đối chiếu / gợi ý) */
-function getKnownPartNumbers() {
-    const display = new Map();
-    allData.forEach(function(item) {
-        const raw = String(item["PART NUMBER"] || "").trim();
-        const key = NaoOCR.normalizePN(raw);
-        if (key && !display.has(key)) display.set(key, raw);
-    });
-    return { keys: Array.from(display.keys()), display: display };
-}
-
-function renderOCRCandidates(items, onPick) {
-    const box = document.getElementById("ocrCandidates");
-    if (!box || !box.isConnected) return;
-    box.textContent = "";
-    items.forEach(function(it) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "ocr-chip";
-        b.textContent = it.text;
-        if (it.hint) {
-            const s = document.createElement("small");
-            s.textContent = it.hint;
-            b.appendChild(s);
-        }
-        b.onclick = function() { onPick(it.text); };
-        box.appendChild(b);
-    });
-}
-
-function applyPartNumberResult(value) {
-    const inputEl = document.getElementById("addPartNumber");
-    if (inputEl && inputEl.isConnected) { inputEl.value = value; inputEl.focus(); }
-    else newRecord["PART NUMBER"] = value; // người dùng đã chuyển bước → vẫn giữ kết quả
-}
-
 async function executeCropOCR() {
-    if (ocrBusy) return;
-    const img = document.getElementById("cropImage");
-    if (!img || !img.getAttribute("src")) return;
-
-    const hasRect = cropData.rect.w >= 10 && cropData.rect.h >= 10;
-    if (!hasRect && ocrContext === "partNumber") {
+    if (cropData.rect.w < 10 || cropData.rect.h < 10) {
         showToast("Vui lòng khoanh vùng ký tự trước khi nhận diện.", "info");
         return;
     }
-
-    const btn = document.getElementById("btnCropOCR");
-    ocrBusy = true;
+    
+    const btn = document.getElementById('btnCropOCR');
     btn.disabled = true;
     btn.textContent = "Đang xử lý...";
-    const setBoth = function(text, type) { setOCRStatus(text, type); setCropHint(text); };
-    setBoth("Đang chuẩn bị ảnh...", "loading");
-
+    
+    setOCRStatus("Đang chuẩn bị ảnh...", "loading");
+    
     try {
-        // Vùng cắt theo toạ độ ảnh gốc
-        let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-        if (hasRect) {
-            const kx = img.naturalWidth / img.clientWidth;
-            const ky = img.naturalHeight / img.clientHeight;
-            sx = Math.max(0, Math.round(cropData.rect.x * kx));
-            sy = Math.max(0, Math.round(cropData.rect.y * ky));
-            sw = Math.min(img.naturalWidth - sx, Math.round(cropData.rect.w * kx));
-            sh = Math.min(img.naturalHeight - sy, Math.round(cropData.rect.h * ky));
-        }
-        const cap = Math.min(1, OCR_MAX_CROP_SIDE / Math.max(sw, sh));
-        const cw = Math.max(1, Math.round(sw * cap));
-        const ch = Math.max(1, Math.round(sh * cap));
-
-        const canvas = document.createElement("canvas");
-        canvas.width = cw;
-        canvas.height = ch;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const img = document.getElementById('cropImage');
+        
+        // Tính tỷ lệ scale từ ảnh hiển thị sang ảnh gốc
+        const scaleX = img.naturalWidth / img.clientWidth;
+        const scaleY = img.naturalHeight / img.clientHeight;
+        
+        const cropX = cropData.rect.x * scaleX;
+        const cropY = cropData.rect.y * scaleY;
+        const cropW = cropData.rect.w * scaleX;
+        const cropH = cropData.rect.h * scaleY;
+        
+        // Tạo canvas để cắt & tiền xử lý ảnh
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Phóng to ảnh nếu chiều cao quá nhỏ để Tesseract đọc tốt hơn (mục tiêu ~100px)
+        const targetHeight = 100;
+        const upscale = Math.max(1, targetHeight / cropH);
+        
+        canvas.width = cropW * upscale;
+        canvas.height = cropH * upscale;
+        
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
-        const rgba = ctx.getImageData(0, 0, cw, ch).data;
-
-        // Tiền xử lý: chọn kênh, kéo giãn tương phản, đảo nền tối, bù bóng, cắt sát chữ, chuẩn hoá cỡ chữ
-        const mode = ocrContext === "partNumber" ? "pn" : "detail";
-        const prep = NaoOCR.prepare(rgba, cw, ch, mode);
-
-        setBoth("Đang tải thư viện OCR...", "loading");
-        let stepText = "Đang nhận diện...";
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Vẽ vùng đã chọn lên canvas
+        ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+        
+        // Chuyển sang ảnh xám (Grayscale) để tăng độ tương phản
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            data[i] = gray; data[i+1] = gray; data[i+2] = gray;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        
+        setOCRStatus("Đang tải thư viện OCR...", "loading");
+        
         currentOCRProgressCallback = function(m) {
             if (m && m.status === "recognizing text") {
-                setBoth(stepText + " " + Math.round((m.progress || 0) * 100) + "%", "loading");
+                const pct = Math.round((m.progress || 0) * 100);
+                setOCRStatus("Đang nhận diện: " + pct + "%", "loading");
             }
         };
+        
         const worker = await getTesseractWorker();
-        const onStep = function(text) { stepText = text; setBoth(text, "loading"); };
-
-        if (ocrContext === "partNumber") {
-            const out = await NaoOCR.recognizePartNumber(worker, prep, ocrVariantToCanvas, onStep);
-            if (!out.ranked.length || !out.ranked[0].text) throw new Error("Không nhận diện được ký tự.");
-
-            const known = getKnownPartNumbers();
-            const ocrText = out.ranked[0].text;
-            let best = ocrText;
-            let message = "Đã nhận diện: " + best;
-
-            // Đối chiếu với Part Number đã có trong kho
-            const near = NaoOCR.suggestKnown(ocrText, known.keys, 3);
-            const exact = known.display.has(ocrText);
-            if (exact) {
-                best = known.display.get(ocrText);
-                message = "Đã nhận diện: " + best + " (có trong kho)";
-            }
-            else if (near.length && near[0].dist <= 0.4 && (!near[1] || near[1].dist - near[0].dist >= 0.3)) {
-                best = known.display.get(near[0].text);
-                message = "Đã khớp mã trong kho: " + best + " (OCR đọc: " + ocrText + ")";
-            }
-
-            const seen = new Set([best.toUpperCase()]);
-            const chips = [];
-            const addChip = function(text, hint) {
-                if (!text || seen.has(text.toUpperCase()) || chips.length >= 4) return;
-                seen.add(text.toUpperCase());
-                chips.push({ text: text, hint: hint });
-            };
-            addChip(ocrText, "OCR");
-            near.forEach(function(n) { addChip(known.display.get(n.text), "kho"); });
-            out.ranked.slice(1, 3).forEach(function(r) { addChip(r.text, "OCR"); });
-
-            applyPartNumberResult(best);
-            renderOCRCandidates(chips, function(text) {
-                const inputEl = document.getElementById("addPartNumber");
-                if (inputEl) { inputEl.value = text; inputEl.focus(); }
+        
+        setOCRStatus("Đang nhận diện ký tự...", "loading");
+        
+        // Điều chỉnh tham số theo ngữ cảnh
+        if (ocrContext === 'partNumber') {
+            await worker.setParameters({
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./', 
+                tessedit_pageseg_mode: '7', // Đọc 1 dòng
             });
-            setOCRStatus(message + (chips.length ? " — chạm gợi ý bên dưới nếu chưa đúng." : ""), "success");
-            showToast(message, "success");
+        } else {
+            await worker.setParameters({
+                tessedit_char_whitelist: '', 
+                tessedit_pageseg_mode: '6', // Đọc khối văn bản (block of text)
+            });
         }
-        else {
-            const best = await NaoOCR.recognizeDetail(worker, prep, ocrVariantToCanvas, onStep);
-            const cleaned = best ? best.text.trim() : "";
+        
+        const { data: { text } } = await worker.recognize(dataUrl);
+        
+        if (ocrContext === 'partNumber') {
+            const cleaned = String(text || '').replace(/\s+/g, '').trim();
             if (!cleaned) throw new Error("Không nhận diện được ký tự.");
-
+            
+            const inputEl = document.getElementById("addPartNumber");
+            if (inputEl && inputEl.isConnected) {
+                inputEl.value = cleaned;
+                inputEl.focus();
+            }
+            setOCRStatus("Đã nhận diện: " + cleaned, "success");
+            showToast("Đã nhận diện: " + cleaned, "success");
+        } else {
+            // Detail mode: giữ khoảng trắng, xuống dòng. Nối chuỗi nếu có sẵn.
+            const cleaned = String(text || '').trim();
+            if (!cleaned) throw new Error("Không nhận diện được ký tự.");
+            
             const inputEl = document.getElementById("addDetail");
             if (inputEl && inputEl.isConnected) {
                 const existing = inputEl.value;
-                const separator = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";
+                const separator = existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
                 inputEl.value = existing + separator + cleaned;
                 inputEl.focus();
             }
-            else newRecord["DETAIL"] = (newRecord["DETAIL"] ? newRecord["DETAIL"] + "\n" : "") + cleaned;
-            setOCRStatus("Đã nhận diện và thêm vào Detail — hãy kiểm tra lại nội dung.", "success");
+            setOCRStatus("Đã nhận diện và thêm vào Detail.", "success");
             showToast("Đã thêm nội dung vào Detail.", "success");
         }
-
+        
         closeCropOverlay();
-    }
-    catch (err) {
+        
+    } catch (err) {
         console.error("OCR Error:", err);
         setOCRStatus("Lỗi: " + err.message, "error");
         showToast("Lỗi OCR: " + err.message, "error");
-    }
-    finally {
+    } finally {
         currentOCRProgressCallback = null;
-        ocrBusy = false;
         btn.disabled = false;
         btn.textContent = "Cắt & Nhận diện";
-        setCropHint(OCR_DEFAULT_HINT);
-        scheduleOcrIdleTerminate();
     }
 }
 
-/* ---------- Kéo chuột / chạm để khoanh vùng ---------- */
-(function initCropPointer() {
-    const wrapper = document.getElementById("cropImageWrapper");
-    const img = document.getElementById("cropImage");
-    const box = document.getElementById("cropBox");
+// Các sự kiện kéo chuột/chạm để crop
+document.getElementById('cropImageWrapper').addEventListener('pointerdown', (e) => {
+    const img = document.getElementById('cropImage');
+    if (!img.src) return;
+    
+    const imgRect = img.getBoundingClientRect();
+    
+    // Chỉ bắt đầu kéo nếu click nằm trong vùng ảnh
+    if (e.clientX < imgRect.left || e.clientX > imgRect.right || e.clientY < imgRect.top || e.clientY > imgRect.bottom) return;
 
-    // Ảnh được căn giữa trong wrapper → phải cộng độ lệch để khung hiển thị khớp vùng thực sự được cắt
-    function imageOffset() {
-        const ir = img.getBoundingClientRect(), wr = wrapper.getBoundingClientRect();
-        return { x: ir.left - wr.left, y: ir.top - wr.top, rect: ir };
+    isDrawing = true;
+    startX = e.clientX - imgRect.left;
+    startY = e.clientY - imgRect.top;
+    
+    const box = document.getElementById('cropBox');
+    box.style.left = startX + 'px';
+    box.style.top = startY + 'px';
+    box.style.width = '0px';
+    box.style.height = '0px';
+    box.style.display = 'block';
+    
+    e.currentTarget.setPointerCapture(e.pointerId);
+});
+
+document.getElementById('cropImageWrapper').addEventListener('pointermove', (e) => {
+    if (!isDrawing) return;
+    
+    const img = document.getElementById('cropImage');
+    const imgRect = img.getBoundingClientRect();
+    const box = document.getElementById('cropBox');
+    
+    let currentX = e.clientX - imgRect.left;
+    let currentY = e.clientY - imgRect.top;
+    
+    currentX = Math.max(0, Math.min(currentX, img.clientWidth));
+    currentY = Math.max(0, Math.min(currentY, img.clientHeight));
+    
+    const x = Math.min(startX, currentX);
+    const y = Math.min(startY, currentY);
+    const w = Math.abs(currentX - startX);
+    const h = Math.abs(currentY - startY);
+    
+    box.style.left = x + 'px';
+    box.style.top = y + 'px';
+    box.style.width = w + 'px';
+    box.style.height = h + 'px';
+    
+    cropData.rect = { x, y, w, h };
+});
+
+document.getElementById('cropImageWrapper').addEventListener('pointerup', (e) => {
+    isDrawing = false;
+    if (cropData.rect.w < 10 || cropData.rect.h < 10) {
+        document.getElementById('cropBox').style.display = 'none';
+        cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
     }
-
-    function drawBox(x, y, w, h) {
-        const off = imageOffset();
-        box.style.left = (off.x + x) + "px";
-        box.style.top = (off.y + y) + "px";
-        box.style.width = w + "px";
-        box.style.height = h + "px";
-    }
-
-    wrapper.addEventListener("pointerdown", function(e) {
-        if (!img.getAttribute("src") || ocrBusy) return;
-        const ir = img.getBoundingClientRect();
-        // Cho phép bắt đầu ở sát mép ngoài ảnh (kẹp vào trong ảnh)
-        if (e.clientX < ir.left - 24 || e.clientX > ir.right + 24 || e.clientY < ir.top - 24 || e.clientY > ir.bottom + 24) return;
-
-        isDrawing = true;
-        startX = Math.max(0, Math.min(e.clientX - ir.left, img.clientWidth));
-        startY = Math.max(0, Math.min(e.clientY - ir.top, img.clientHeight));
-        cropData.rect = { x: startX, y: startY, w: 0, h: 0 };
-        drawBox(startX, startY, 0, 0);
-        box.style.display = "block";
-        wrapper.setPointerCapture(e.pointerId);
-    });
-
-    wrapper.addEventListener("pointermove", function(e) {
-        if (!isDrawing) return;
-        const ir = img.getBoundingClientRect();
-        const cx = Math.max(0, Math.min(e.clientX - ir.left, img.clientWidth));
-        const cy = Math.max(0, Math.min(e.clientY - ir.top, img.clientHeight));
-        const x = Math.min(startX, cx), y = Math.min(startY, cy);
-        const w = Math.abs(cx - startX), h = Math.abs(cy - startY);
-        drawBox(x, y, w, h);
-        cropData.rect = { x: x, y: y, w: w, h: h };
-    });
-
-    function endDrawing() {
-        if (!isDrawing) return;
-        isDrawing = false;
-        if (cropData.rect.w < 10 || cropData.rect.h < 10) {
-            box.style.display = "none";
-            cropData.rect = { x: 0, y: 0, w: 0, h: 0 };
-        }
-    }
-    wrapper.addEventListener("pointerup", endDrawing);
-    wrapper.addEventListener("pointercancel", endDrawing);
-})();
+});
 
 /* =========================================================
    DATE CONVERSION
