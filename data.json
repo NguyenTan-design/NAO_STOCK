@@ -3243,5 +3243,16 @@
         "QTY": "1",
         "VỊ TRÍ": "Temp",
         "PIC": "LY"
+    },
+    {
+        "DATE": "11/14/26",
+        "STATUS": "PART IN",
+        "LOG": "",
+        "KHO": "FMV FOR SALE",
+        "PART NUMBER": "2EGTBC019200",
+        "DETAIL": "Servo box \n(NXT3)",
+        "QTY": "1",
+        "VỊ TRÍ": "Temp",
+        "PIC": "LY"
     }
 ]
